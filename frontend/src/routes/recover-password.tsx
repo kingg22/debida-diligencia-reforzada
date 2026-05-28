@@ -1,130 +1,167 @@
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation } from "@tanstack/react-query"
+import { useState } from "react"
 import {
   createFileRoute,
   Link as RouterLink,
   redirect,
 } from "@tanstack/react-router"
 import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-
-import { LoginService } from "@/client"
-import { AuthLayout } from "@/components/Common/AuthLayout"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { LoadingButton } from "@/components/ui/loading-button"
+import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react"
 import { isLoggedIn } from "@/hooks/useAuth"
-import useCustomToast from "@/hooks/useCustomToast"
-import { handleError } from "@/utils"
+import { cn } from "@/lib/utils"
 
-const formSchema = z.object({
-  email: z.email(),
+const schema = z.object({
+  email: z
+    .string()
+    .min(1, "El correo es requerido")
+    .email("Ingresa un correo electrónico válido"),
 })
-
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof schema>
 
 export const Route = createFileRoute("/recover-password")({
   component: RecoverPassword,
   beforeLoad: async () => {
-    if (isLoggedIn()) {
-      throw redirect({
-        to: "/",
-      })
-    }
+    if (isLoggedIn()) throw redirect({ to: "/" })
   },
   head: () => ({
-    meta: [
-      {
-        title: "Recover Password - FastAPI Template",
-      },
-    ],
+    meta: [{ title: "Recuperar Contraseña — PanamaCompliance SGDDR" }],
   }),
 })
 
 function RecoverPassword() {
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-    },
-  })
-  const { showSuccessToast, showErrorToast } = useCustomToast()
+  const [sent, setSent] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const recoverPassword = async (data: FormData) => {
-    await LoginService.recoverPassword({
-      email: data.email,
-    })
-  }
-
-  const mutation = useMutation({
-    mutationFn: recoverPassword,
-    onSuccess: () => {
-      showSuccessToast("Password recovery email sent successfully")
-      form.reset()
-    },
-    onError: handleError.bind(showErrorToast),
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "" },
   })
 
-  const onSubmit = async (data: FormData) => {
-    if (mutation.isPending) return
-    mutation.mutate(data)
+  const onSubmit = async () => {
+    setLoading(true)
+    await new Promise((r) => setTimeout(r, 1000))
+    setLoading(false)
+    setSent(true)
   }
 
   return (
-    <AuthLayout>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-6"
+    <div
+      className="flex min-h-screen items-center justify-center p-6"
+      style={{ backgroundColor: "#040d1c" }}
+    >
+      <div className="w-full max-w-md">
+        <RouterLink
+          to="/login"
+          className="mb-10 inline-flex items-center gap-2 text-sm transition-colors hover:text-[#c9a84c]"
+          style={{ color: "#8a9bb5" }}
         >
-          <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-2xl font-bold">Password Recovery</h1>
-          </div>
+          <ArrowLeft size={15} /> Volver al inicio de sesión
+        </RouterLink>
 
-          <div className="grid gap-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      data-testid="email-input"
-                      placeholder="user@example.com"
-                      type="email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+        <h1
+          className="mb-3 text-[32px]"
+          style={{ fontFamily: "DM Serif Display, serif", color: "#f0ede8" }}
+        >
+          Recuperar contraseña
+        </h1>
+        <p className="mb-8 text-sm leading-relaxed" style={{ color: "#8a9bb5" }}>
+          Ingresa tu correo institucional y te enviaremos instrucciones para
+          restablecer tu contraseña.
+        </p>
+
+        {!sent ? (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <div>
+              <label
+                htmlFor="rec-email"
+                className="mb-1.5 block text-sm"
+                style={{ color: "#8a9bb5" }}
+              >
+                Correo electrónico
+              </label>
+              <input
+                id="rec-email"
+                type="email"
+                autoFocus
+                autoComplete="email"
+                placeholder="correo@institución.com"
+                disabled={loading}
+                {...register("email")}
+                className={cn(
+                  "h-11 w-full rounded-lg border px-4 text-sm text-[#f0ede8] placeholder:text-[#4a6080]",
+                  "outline-none transition-all focus:ring-[3px] focus:ring-[rgba(201,168,76,0.18)]",
+                  "disabled:opacity-50",
+                  errors.email
+                    ? "border-[#e05252] focus:border-[#e05252]"
+                    : "border-[#1b2e4a] focus:border-[#c9a84c]",
+                )}
+                style={{ backgroundColor: "#0f1f3a" }}
+              />
+              {errors.email && (
+                <p
+                  role="alert"
+                  className="mt-1.5 text-xs"
+                  style={{ color: "#e05252" }}
+                >
+                  {errors.email.message}
+                </p>
               )}
-            />
+            </div>
 
-            <LoadingButton
+            <button
               type="submit"
-              className="w-full"
-              loading={mutation.isPending}
+              disabled={loading}
+              className={cn(
+                "flex h-11 w-full items-center justify-center gap-2 rounded-lg",
+                "text-sm font-semibold transition-all hover:brightness-110",
+                "disabled:cursor-not-allowed disabled:opacity-70",
+              )}
+              style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
             >
-              Continue
-            </LoadingButton>
+              {loading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" />
+                  Enviando…
+                </>
+              ) : (
+                "Enviar instrucciones"
+              )}
+            </button>
+          </form>
+        ) : (
+          <div
+            role="alert"
+            className="flex items-start gap-4 rounded-xl p-5"
+            style={{
+              backgroundColor: "rgba(34,197,94,0.08)",
+              border: "1px solid rgba(34,197,94,0.30)",
+            }}
+          >
+            <CheckCircle
+              size={20}
+              className="mt-0.5 flex-shrink-0"
+              style={{ color: "#22c55e" }}
+            />
+            <div>
+              <p
+                className="mb-1 text-sm font-semibold"
+                style={{ color: "#22c55e" }}
+              >
+                Instrucciones enviadas
+              </p>
+              <p className="text-sm leading-relaxed" style={{ color: "#8a9bb5" }}>
+                Si el correo está registrado en el sistema, recibirás las
+                instrucciones en breve. Revisa también tu carpeta de spam.
+              </p>
+            </div>
           </div>
-
-          <div className="text-center text-sm">
-            Remember your password?{" "}
-            <RouterLink to="/login" className="underline underline-offset-4">
-              Log in
-            </RouterLink>
-          </div>
-        </form>
-      </Form>
-    </AuthLayout>
+        )}
+      </div>
+    </div>
   )
 }

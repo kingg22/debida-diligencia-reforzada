@@ -1,142 +1,418 @@
-import { zodResolver } from "@hookform/resolvers/zod"
+import { useState } from "react"
 import {
   createFileRoute,
   Link as RouterLink,
   redirect,
+  useNavigate,
 } from "@tanstack/react-router"
 import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import { Eye, EyeOff, AlertTriangle, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { authenticateMock, completeLogin } from "@/lib/mock-data"
+import { isLoggedIn } from "@/hooks/useAuth"
 
-import type { Body_login_login_access_token as AccessToken } from "@/client"
-import { AuthLayout } from "@/components/Common/AuthLayout"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { LoadingButton } from "@/components/ui/loading-button"
-import { PasswordInput } from "@/components/ui/password-input"
-import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-
-const formSchema = z.object({
-  username: z.email(),
-  password: z
+const schema = z.object({
+  email: z
     .string()
-    .min(1, { message: "Password is required" })
-    .min(8, { message: "Password must be at least 8 characters" }),
-}) satisfies z.ZodType<AccessToken>
-
-type FormData = z.infer<typeof formSchema>
+    .min(1, "El correo es requerido")
+    .email("Ingresa un correo electrónico válido"),
+  password: z.string().min(1, "La contraseña es requerida"),
+})
+type FormData = z.infer<typeof schema>
 
 export const Route = createFileRoute("/login")({
   component: Login,
   beforeLoad: async () => {
-    if (isLoggedIn()) {
-      throw redirect({
-        to: "/",
-      })
-    }
+    if (isLoggedIn()) throw redirect({ to: "/" })
   },
   head: () => ({
-    meta: [
-      {
-        title: "Log In - FastAPI Template",
-      },
-    ],
+    meta: [{ title: "Iniciar Sesión — PanamaCompliance SGDDR" }],
   }),
 })
 
+type LoginState =
+  | "idle"
+  | "loading"
+  | "error_credentials"
+  | "error_approaching_lock"
+  | "error_last_attempt"
+
 function Login() {
-  const { loginMutation } = useAuth()
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    mode: "onBlur",
-    criteriaMode: "all",
-    defaultValues: {
-      username: "",
-      password: "",
-    },
+  const navigate = useNavigate()
+  const [state, setState] = useState<LoginState>("idle")
+  const [attempts, setAttempts] = useState(0)
+  const [showPw, setShowPw] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "", password: "" },
   })
 
-  const onSubmit = (data: FormData) => {
-    if (loginMutation.isPending) return
-    loginMutation.mutate(data)
+  const onSubmit = async (data: FormData) => {
+    setState("loading")
+    await new Promise((r) => setTimeout(r, 850))
+
+    const result = authenticateMock(data.email, data.password)
+
+    if (result.success && result.role && result.name && result.email) {
+      if (result.requiresTwoFactor) {
+        sessionStorage.setItem(
+          "pre_auth",
+          JSON.stringify({
+            email: result.email,
+            role: result.role,
+            name: result.name,
+          }),
+        )
+        navigate({ to: "/two-factor" })
+      } else {
+        completeLogin(result.role, result.name, result.email)
+        navigate({ to: "/" })
+      }
+      return
+    }
+
+    const next = attempts + 1
+    setAttempts(next)
+
+    if (next >= 5) {
+      navigate({ to: "/account-locked" })
+      return
+    }
+
+    if (next <= 2) setState("error_credentials")
+    else if (next === 3) setState("error_approaching_lock")
+    else setState("error_last_attempt")
   }
 
+  const remaining = 5 - attempts
+
   return (
-    <AuthLayout>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-6"
-        >
-          <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-2xl font-bold">Login to your account</h1>
+    <div className="flex min-h-screen">
+      {/* ── Left: branding ───────────────────────────────────────────── */}
+      <div
+        className="relative hidden flex-col overflow-hidden lg:flex lg:w-[45%]"
+        style={{ backgroundColor: "#040d1c" }}
+      >
+        <div className="dot-grid absolute inset-0" />
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-14 text-center">
+          {/* Shield logo */}
+          <div className="mb-8">
+            <svg
+              width="76"
+              height="88"
+              viewBox="0 0 76 88"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M38 2L4 15v27c0 21.8 13.8 42.1 34 49.2C58.2 84.1 72 63.8 72 42V15L38 2z"
+                fill="#0a1628"
+                stroke="#c9a84c"
+                strokeWidth="1.8"
+              />
+              <path
+                d="M38 10L10 21v21c0 17 10.7 33 28 38.7C73.3 75 56 58 56 42V21L38 10z"
+                fill="#1b2e4a"
+              />
+              <text
+                x="38"
+                y="47"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fill="#c9a84c"
+                fontSize="17"
+                fontFamily="DM Serif Display, serif"
+              >
+                PC
+              </text>
+            </svg>
           </div>
 
-          <div className="grid gap-4">
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      data-testid="email-input"
-                      placeholder="user@example.com"
-                      type="email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
+          <h1
+            className="mb-3 text-[28px] leading-tight"
+            style={{
+              fontFamily: "DM Serif Display, serif",
+              color: "#f0ede8",
+            }}
+          >
+            PanamaCompliance
+          </h1>
 
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center">
-                    <FormLabel>Password</FormLabel>
-                    <RouterLink
-                      to="/recover-password"
-                      className="ml-auto text-sm underline-offset-4 hover:underline"
-                    >
-                      Forgot your password?
-                    </RouterLink>
-                  </div>
-                  <FormControl>
-                    <PasswordInput
-                      data-testid="password-input"
-                      placeholder="Password"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-xs" />
-                </FormItem>
-              )}
-            />
+          <p className="mb-8 text-base leading-relaxed" style={{ color: "#8a9bb5" }}>
+            Sistema de Gestión de
+            <br />
+            Debida Diligencia Reforzada
+          </p>
 
-            <LoadingButton type="submit" loading={loginMutation.isPending}>
-              Log In
-            </LoadingButton>
+          <div
+            className="rounded-xl px-5 py-4"
+            style={{
+              backgroundColor: "#0a1628",
+              border: "1px solid #1b2e4a",
+            }}
+          >
+            <p className="text-xs leading-relaxed" style={{ color: "#4a6080" }}>
+              Plataforma regulada bajo{" "}
+              <span style={{ color: "#8a9bb5" }}>Ley 23/2015</span> y{" "}
+              <span style={{ color: "#8a9bb5" }}>Ley 254/2021</span>
+            </p>
           </div>
 
-          <div className="text-center text-sm">
-            Don't have an account yet?{" "}
-            <RouterLink to="/signup" className="underline underline-offset-4">
-              Sign up
-            </RouterLink>
+          {/* Demo credentials hint */}
+          <div
+            className="mt-8 w-full rounded-xl px-5 py-4 text-left"
+            style={{
+              backgroundColor: "#0a1628",
+              border: "1px dashed #1b2e4a",
+            }}
+          >
+            <p
+              className="mb-2 text-xs font-semibold uppercase tracking-wide"
+              style={{ color: "#4a6080" }}
+            >
+              Credenciales demo
+            </p>
+            <div className="space-y-1">
+              {[
+                ["admin@panama.com", "Admin1234!", "Admin + 2FA"],
+                ["analista@panama.com", "Analista1!", "Analista DDR"],
+                ["auditor@panama.com", "Auditor1!", "Auditor"],
+              ].map(([email, pw, role]) => (
+                <div key={email} className="text-xs" style={{ color: "#4a6080" }}>
+                  <span
+                    className="font-mono"
+                    style={{ color: "#8a9bb5" }}
+                  >
+                    {email}
+                  </span>{" "}
+                  / <span className="font-mono" style={{ color: "#8a9bb5" }}>{pw}</span>{" "}
+                  <span style={{ color: "#4a6080" }}>({role})</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </form>
-      </Form>
-    </AuthLayout>
+        </div>
+      </div>
+
+      {/* ── Right: form ──────────────────────────────────────────────── */}
+      <div
+        className="flex flex-1 flex-col"
+        style={{ backgroundColor: "#0a1628" }}
+      >
+        <div className="flex flex-1 items-center justify-center px-6 py-12">
+          <div className="w-full max-w-md">
+            <p
+              className="mb-1.5 text-xs uppercase tracking-widest"
+              style={{ color: "#4a6080" }}
+            >
+              Sistema DDR
+            </p>
+            <h2
+              className="mb-8 text-[38px] leading-tight"
+              style={{
+                fontFamily: "DM Serif Display, serif",
+                color: "#f0ede8",
+              }}
+            >
+              Iniciar Sesión
+            </h2>
+
+            {/* ── Error banners ─────────────────────────────────────── */}
+            {state === "error_credentials" && (
+              <ErrorBanner variant="error">
+                Correo o contraseña incorrectos.
+              </ErrorBanner>
+            )}
+            {state === "error_approaching_lock" && (
+              <ErrorBanner variant="warning">
+                Tienes{" "}
+                <strong>
+                  {remaining} {remaining === 1 ? "intento" : "intentos"}
+                </strong>{" "}
+                restantes antes de que tu cuenta sea bloqueada.
+              </ErrorBanner>
+            )}
+            {state === "error_last_attempt" && (
+              <ErrorBanner variant="error">
+                <span className="font-semibold">Último intento disponible.</span>
+                <br />
+                <span className="opacity-80">
+                  Después de este intento tu cuenta será bloqueada temporalmente.
+                </span>
+              </ErrorBanner>
+            )}
+
+            {/* ── Form ─────────────────────────────────────────────── */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              {/* Email */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="mb-1.5 block text-sm"
+                  style={{ color: "#8a9bb5" }}
+                >
+                  Correo electrónico
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoFocus
+                  autoComplete="username"
+                  placeholder="correo@institución.com"
+                  disabled={state === "loading"}
+                  {...register("email")}
+                  className={cn(
+                    "h-11 w-full rounded-lg border px-4 text-sm text-[#f0ede8] placeholder:text-[#4a6080]",
+                    "outline-none transition-all focus:ring-[3px] focus:ring-[rgba(201,168,76,0.18)]",
+                    "disabled:opacity-50",
+                    errors.email
+                      ? "border-[#e05252] focus:border-[#e05252]"
+                      : "border-[#1b2e4a] focus:border-[#c9a84c]",
+                  )}
+                  style={{ backgroundColor: "#0f1f3a" }}
+                />
+                {errors.email && (
+                  <p
+                    role="alert"
+                    className="mt-1.5 text-xs"
+                    style={{ color: "#e05252" }}
+                  >
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <label
+                    htmlFor="password"
+                    className="text-sm"
+                    style={{ color: "#8a9bb5" }}
+                  >
+                    Contraseña
+                  </label>
+                  <RouterLink
+                    to="/recover-password"
+                    className="text-sm transition-colors hover:underline"
+                    style={{ color: "#c9a84c" }}
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </RouterLink>
+                </div>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPw ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    disabled={state === "loading"}
+                    {...register("password")}
+                    className={cn(
+                      "h-11 w-full rounded-lg border px-4 pr-11 text-sm text-[#f0ede8] placeholder:text-[#4a6080]",
+                      "outline-none transition-all focus:ring-[3px] focus:ring-[rgba(201,168,76,0.18)]",
+                      "disabled:opacity-50",
+                      errors.password
+                        ? "border-[#e05252] focus:border-[#e05252]"
+                        : "border-[#1b2e4a] focus:border-[#c9a84c]",
+                    )}
+                    style={{ backgroundColor: "#0f1f3a" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((p) => !p)}
+                    aria-label={showPw ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 transition-colors hover:text-[#c9a84c]"
+                    style={{ color: "#4a6080" }}
+                  >
+                    {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p
+                    role="alert"
+                    className="mt-1.5 text-xs"
+                    style={{ color: "#e05252" }}
+                  >
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={state === "loading"}
+                className={cn(
+                  "mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-lg",
+                  "text-sm font-semibold transition-all",
+                  "hover:brightness-110 active:scale-[0.99]",
+                  "disabled:cursor-not-allowed disabled:opacity-70",
+                )}
+                style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
+              >
+                {state === "loading" ? (
+                  <>
+                    <Loader2 size={15} className="animate-spin" />
+                    Verificando…
+                  </>
+                ) : (
+                  "Ingresar"
+                )}
+              </button>
+            </form>
+
+            <p
+              className="mt-8 text-center text-xs"
+              style={{ color: "#4a6080" }}
+            >
+              PanamaCompliance v1.0 — Sistema SGDDR
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Helper banner component ───────────────────────────────────────── */
+function ErrorBanner({
+  variant,
+  children,
+}: {
+  variant: "error" | "warning"
+  children: React.ReactNode
+}) {
+  const isError = variant === "error"
+  return (
+    <div
+      role="alert"
+      className="mb-6 flex items-start gap-3 rounded-lg p-4"
+      style={{
+        backgroundColor: isError
+          ? "rgba(224,82,82,0.10)"
+          : "rgba(217,119,6,0.10)",
+        border: `1px solid ${isError ? "rgba(224,82,82,0.35)" : "rgba(217,119,6,0.35)"}`,
+      }}
+    >
+      <AlertTriangle
+        size={16}
+        className="mt-0.5 flex-shrink-0"
+        style={{ color: isError ? "#e05252" : "#d97706" }}
+      />
+      <p
+        className="text-sm leading-relaxed"
+        style={{ color: isError ? "#e05252" : "#d97706" }}
+      >
+        {children}
+      </p>
+    </div>
   )
 }
