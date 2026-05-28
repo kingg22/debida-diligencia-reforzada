@@ -1,5 +1,5 @@
-import { Link as RouterLink } from "@tanstack/react-router"
-import { ChevronsUpDown, LogOut, Settings } from "lucide-react"
+import { useNavigate } from "@tanstack/react-router"
+import { ChevronsUpDown, LogOut } from "lucide-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -16,7 +16,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import useAuth from "@/hooks/useAuth"
+import { pcLogout } from "@/lib/mock-data"
 import { getInitials } from "@/utils"
 
 interface UserInfoProps {
@@ -28,7 +28,7 @@ function UserInfo({ fullName, email }: UserInfoProps) {
   return (
     <div className="flex items-center gap-2.5 w-full min-w-0">
       <Avatar className="size-8">
-        <AvatarFallback className="bg-zinc-600 text-white">
+        <AvatarFallback className="bg-zinc-600 text-white text-xs">
           {getInitials(fullName || "User")}
         </AvatarFallback>
       </Avatar>
@@ -40,19 +40,16 @@ function UserInfo({ fullName, email }: UserInfoProps) {
   )
 }
 
-export function User({ user }: { user: any }) {
-  const { logout } = useAuth()
+export function User({ user }: { user: { full_name?: string; email?: string } | null }) {
+  const navigate = useNavigate()
   const { isMobile, setOpenMobile } = useSidebar()
 
   if (!user) return null
 
-  const handleMenuClick = () => {
-    if (isMobile) {
-      setOpenMobile(false)
-    }
-  }
-  const handleLogout = async () => {
-    logout()
+  const handleLogout = () => {
+    if (isMobile) setOpenMobile(false)
+    pcLogout()
+    navigate({ to: "/login" })
   }
 
   return (
@@ -79,15 +76,9 @@ export function User({ user }: { user: any }) {
               <UserInfo fullName={user?.full_name} email={user?.email} />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <RouterLink to="/settings" onClick={handleMenuClick}>
-              <DropdownMenuItem>
-                <Settings />
-                User Settings
-              </DropdownMenuItem>
-            </RouterLink>
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
-              Log Out
+              Cerrar sesión
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

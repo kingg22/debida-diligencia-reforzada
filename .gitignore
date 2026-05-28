@@ -1,7 +1,22 @@
+# Editor
 .vscode/*
 !.vscode/extensions.json
+
+# Dependencies
 node_modules/
+
+# Environment variables (local secrets — never commit)
+.env
+.env.local
+.env.*.local
+
+# Playwright artifacts
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+.playwright-mcp/
+
+# OS
+.DS_Store
+Thumbs.db
