@@ -21,6 +21,8 @@ import { Route as LayoutUsuariosRouteImport } from './routes/_layout/usuarios'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutKycIndexRouteImport } from './routes/_layout/kyc/index'
+import { Route as LayoutKycNuevoRouteImport } from './routes/_layout/kyc/nuevo'
 
 const TwoFactorRoute = TwoFactorRouteImport.update({
   id: '/two-factor',
@@ -81,6 +83,16 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutKycIndexRoute = LayoutKycIndexRouteImport.update({
+  id: '/_layout/kyc/',
+  path: '/kyc',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutKycNuevoRoute = LayoutKycNuevoRouteImport.update({
+  id: '/_layout/kyc/nuevo',
+  path: '/kyc/nuevo',
+  getParentRoute: () => LayoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -94,6 +106,8 @@ export interface FileRoutesByFullPath {
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
+  '/kyc': typeof LayoutKycIndexRoute
+  '/kyc/nuevo': typeof LayoutKycNuevoRoute
 }
 export interface FileRoutesByTo {
   '/account-locked': typeof AccountLockedRoute
@@ -107,6 +121,8 @@ export interface FileRoutesByTo {
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
   '/': typeof LayoutIndexRoute
+  '/kyc': typeof LayoutKycIndexRoute
+  '/kyc/nuevo': typeof LayoutKycNuevoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,6 +138,8 @@ export interface FileRoutesById {
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/usuarios': typeof LayoutUsuariosRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/_layout/kyc/': typeof LayoutKycIndexRoute
+  '/_layout/kyc/nuevo': typeof LayoutKycNuevoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,6 +155,8 @@ export interface FileRouteTypes {
     | '/items'
     | '/settings'
     | '/usuarios'
+    | '/kyc'
+    | '/kyc/nuevo'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/account-locked'
@@ -150,6 +170,8 @@ export interface FileRouteTypes {
     | '/settings'
     | '/usuarios'
     | '/'
+    | '/kyc'
+    | '/kyc/nuevo'
   id:
     | '__root__'
     | '/_layout'
@@ -164,6 +186,8 @@ export interface FileRouteTypes {
     | '/_layout/settings'
     | '/_layout/usuarios'
     | '/_layout/'
+    | '/_layout/kyc/'
+    | '/_layout/kyc/nuevo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -262,6 +286,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/kyc/': {
+      id: '/_layout/kyc/'
+      path: '/kyc'
+      fullPath: '/kyc'
+      preLoaderRoute: typeof LayoutKycIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/kyc/nuevo': {
+      id: '/_layout/kyc/nuevo'
+      path: '/kyc/nuevo'
+      fullPath: '/kyc/nuevo'
+      preLoaderRoute: typeof LayoutKycNuevoRouteImport
+      parentRoute: typeof LayoutRoute
+    }
   }
 }
 
@@ -271,6 +309,8 @@ interface LayoutRouteChildren {
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutUsuariosRoute: typeof LayoutUsuariosRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
+  LayoutKycIndexRoute: typeof LayoutKycIndexRoute
+  LayoutKycNuevoRoute: typeof LayoutKycNuevoRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
@@ -279,6 +319,8 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutUsuariosRoute: LayoutUsuariosRoute,
   LayoutIndexRoute: LayoutIndexRoute,
+  LayoutKycIndexRoute: LayoutKycIndexRoute,
+  LayoutKycNuevoRoute: LayoutKycNuevoRoute,
 }
 
 const LayoutRouteWithChildren =

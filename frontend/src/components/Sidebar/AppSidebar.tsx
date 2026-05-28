@@ -1,4 +1,4 @@
-import { Home, Users, ShieldCheck } from "lucide-react"
+import { Home, Users, ShieldCheck, ClipboardList } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import {
@@ -13,6 +13,10 @@ import { User } from "./User"
 
 const baseItems: Item[] = [
   { icon: Home, title: "Inicio", path: "/" },
+]
+
+const kycItems: Item[] = [
+  { icon: ClipboardList, title: "Nuevo Cliente KYC", path: "/kyc/nuevo" },
 ]
 
 const adminItems: Item[] = [
@@ -48,8 +52,8 @@ export function AppSidebar() {
 
   const items =
     currentUser?.role === "ADMIN"
-      ? [...baseItems, ...adminItems]
-      : baseItems
+      ? [...baseItems, ...kycItems, ...adminItems]
+      : [...baseItems, ...kycItems]
 
   const sidebarUser = currentUser
     ? { full_name: currentUser.name, email: currentUser.email }
