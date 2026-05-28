@@ -26,11 +26,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -41,73 +36,66 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ─── PanamaCompliance dark navy theme (always-on) ────────────────── */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.5982 0.10687 182.4689);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.5982 0.10687 182.4689);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --radius: 0.5rem;
+
+  --background: #040d1c;
+  --foreground: #f0ede8;
+  --card: #0a1628;
+  --card-foreground: #f0ede8;
+  --popover: #0f1f3a;
+  --popover-foreground: #f0ede8;
+  --primary: #c9a84c;
+  --primary-foreground: #040d1c;
+  --secondary: #0f1f3a;
+  --secondary-foreground: #f0ede8;
+  --muted: #0f1f3a;
+  --muted-foreground: #8a9bb5;
+  --accent: #1b2e4a;
+  --accent-foreground: #f0ede8;
+  --destructive: #e05252;
+  --border: #1b2e4a;
+  --input: #1b2e4a;
+  --ring: #c9a84c;
+  --sidebar: #0a1628;
+  --sidebar-foreground: #f0ede8;
+  --sidebar-primary: #c9a84c;
+  --sidebar-primary-foreground: #040d1c;
+  --sidebar-accent: #1b2e4a;
+  --sidebar-accent-foreground: #f0ede8;
+  --sidebar-border: #1b2e4a;
+  --sidebar-ring: #c9a84c;
 }
 
+/* keep .dark identical so theme toggles don't flip colors */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.65 0.10687 182.4689);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.65 0.10687 182.4689);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #040d1c;
+  --foreground: #f0ede8;
+  --card: #0a1628;
+  --card-foreground: #f0ede8;
+  --popover: #0f1f3a;
+  --popover-foreground: #f0ede8;
+  --primary: #c9a84c;
+  --primary-foreground: #040d1c;
+  --secondary: #0f1f3a;
+  --secondary-foreground: #f0ede8;
+  --muted: #0f1f3a;
+  --muted-foreground: #8a9bb5;
+  --accent: #1b2e4a;
+  --accent-foreground: #f0ede8;
+  --destructive: #e05252;
+  --border: #1b2e4a;
+  --input: #1b2e4a;
+  --ring: #c9a84c;
+  --sidebar: #0a1628;
+  --sidebar-foreground: #f0ede8;
+  --sidebar-primary: #c9a84c;
+  --sidebar-primary-foreground: #040d1c;
+  --sidebar-accent: #1b2e4a;
+  --sidebar-accent-foreground: #f0ede8;
+  --sidebar-border: #1b2e4a;
+  --sidebar-ring: #c9a84c;
 }
 
 @layer base {
@@ -116,9 +104,85 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "IBM Plex Sans", sans-serif;
   }
   button,
   [role="button"] {
     cursor: pointer;
   }
+}
+
+/* ── Animated dot grid (login left panel) ─────────────────────────── */
+@keyframes dot-drift {
+  0%,
+  100% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 14px 14px;
+  }
+}
+.dot-grid {
+  background-image: radial-gradient(circle, #1b2e4a 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
+  animation: dot-drift 30s ease-in-out infinite;
+}
+
+/* ── OTP shake on error ───────────────────────────────────────────── */
+@keyframes otp-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15%,
+  45%,
+  75% {
+    transform: translateX(-6px);
+  }
+  30%,
+  60%,
+  90% {
+    transform: translateX(6px);
+  }
+}
+.animate-shake {
+  animation: otp-shake 0.45s ease-in-out;
+}
+
+/* ── Session timer warning pulse ──────────────────────────────────── */
+@keyframes pulse-warn {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+.animate-pulse-warn {
+  animation: pulse-warn 1.8s ease-in-out infinite;
+}
+
+/* ── Password strength bar smooth fill ────────────────────────────── */
+.strength-fill {
+  transition:
+    width 0.3s ease,
+    background-color 0.3s ease;
+}
+
+/* ── Lock icon gentle bounce ──────────────────────────────────────── */
+@keyframes lock-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-10px);
+  }
+  55% {
+    transform: translateY(-4px);
+  }
+}
+.animate-lock-bounce {
+  animation: lock-bounce 2s ease-in-out infinite;
 }

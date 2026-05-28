@@ -1,4 +1,6 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
+import { useState, useEffect } from "react"
+import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router"
+import { Clock } from "lucide-react"
 
 import { Footer } from "@/components/Common/Footer"
 import AppSidebar from "@/components/Sidebar/AppSidebar"
@@ -8,25 +10,86 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { isLoggedIn } from "@/hooks/useAuth"
+import { getSessionExpiry, pcLogout } from "@/lib/mock-data"
+import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/_layout")({
   component: Layout,
   beforeLoad: async () => {
     if (!isLoggedIn()) {
-      throw redirect({
-        to: "/login",
-      })
+      throw redirect({ to: "/login" })
     }
   },
 })
+
+function SessionTimer() {
+  const navigate = useNavigate()
+  const [secsLeft, setSecsLeft] = useState(() => {
+    const exp = getSessionExpiry()
+    if (!exp) return 0
+    return Math.max(0, Math.floor((exp.getTime() - Date.now()) / 1000))
+  })
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const exp = getSessionExpiry()
+      if (!exp) {
+        setSecsLeft(0)
+        return
+      }
+      const s = Math.max(0, Math.floor((exp.getTime() - Date.now()) / 1000))
+      setSecsLeft(s)
+      if (s <= 0) {
+        clearInterval(id)
+        pcLogout()
+        navigate({ to: "/login" })
+      }
+    }, 1000)
+    return () => clearInterval(id)
+  }, [navigate])
+
+  if (secsLeft <= 0) return null
+
+  const h = Math.floor(secsLeft / 3600)
+  const m = Math.floor((secsLeft % 3600) / 60)
+  const s = secsLeft % 60
+  const timeStr =
+    h > 0
+      ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
+      : `${m}:${s.toString().padStart(2, "0")}`
+
+  const isWarn = secsLeft <= 900
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-mono",
+        isWarn && "animate-pulse-warn",
+      )}
+      style={{
+        backgroundColor: isWarn
+          ? "rgba(201,168,76,0.12)"
+          : "rgba(201,168,76,0.07)",
+        border: `1px solid ${isWarn ? "rgba(201,168,76,0.40)" : "rgba(201,168,76,0.18)"}`,
+        color: isWarn ? "#c9a84c" : "#8a9bb5",
+      }}
+      title="Tiempo restante de sesión"
+    >
+      <Clock size={11} />
+      <span>{timeStr}</span>
+    </div>
+  )
+}
 
 function Layout() {
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b px-4">
+        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b px-4">
           <SidebarTrigger className="-ml-1 text-muted-foreground" />
+          <div className="flex-1" />
+          <SessionTimer />
         </header>
         <main className="flex-1 p-6 md:p-8">
           <div className="mx-auto max-w-7xl">
