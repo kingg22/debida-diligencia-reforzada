@@ -1,6 +1,11 @@
-import { useState, useEffect } from "react"
-import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router"
-import { Clock } from "lucide-react"
+import {
+  createFileRoute,
+  Outlet,
+  redirect,
+  useNavigate,
+} from "@tanstack/react-router"
+import { Clock, LogOut } from "lucide-react"
+import { useEffect, useState } from "react"
 
 import { Footer } from "@/components/Common/Footer"
 import AppSidebar from "@/components/Sidebar/AppSidebar"
@@ -82,6 +87,13 @@ function SessionTimer() {
 }
 
 function Layout() {
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    pcLogout()
+    navigate({ to: "/login" })
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -90,6 +102,18 @@ function Layout() {
           <SidebarTrigger className="-ml-1 text-muted-foreground" />
           <div className="flex-1" />
           <SessionTimer />
+          <button
+            onClick={handleLogout}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium",
+              "transition-colors hover:bg-red-500/10 hover:text-red-400",
+            )}
+            style={{ color: "#8a9bb5" }}
+            title="Cerrar sesión"
+          >
+            <LogOut size={14} />
+            <span className="hidden sm:inline">Salir</span>
+          </button>
         </header>
         <main className="flex-1 p-6 md:p-8">
           <div className="mx-auto max-w-7xl">
