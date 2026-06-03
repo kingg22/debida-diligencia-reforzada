@@ -1,17 +1,16 @@
-import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
 import {
   createFileRoute,
   Link as RouterLink,
   redirect,
   useNavigate,
 } from "@tanstack/react-router"
+import { AlertTriangle, Eye, EyeOff, Loader2 } from "lucide-react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Eye, EyeOff, AlertTriangle, Loader2 } from "lucide-react"
+import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
-import { authenticateMock, completeLogin } from "@/lib/mock-data"
-import { isLoggedIn } from "@/hooks/useAuth"
 
 const schema = z.object({
   email: z
@@ -44,6 +43,7 @@ function Login() {
   const [state, setState] = useState<LoginState>("idle")
   const [attempts, setAttempts] = useState(0)
   const [showPw, setShowPw] = useState(false)
+  const { loginMutation } = useAuth()
 
   const {
     register,
@@ -56,39 +56,31 @@ function Login() {
 
   const onSubmit = async (data: FormData) => {
     setState("loading")
-    await new Promise((r) => setTimeout(r, 850))
 
-    const result = authenticateMock(data.email, data.password)
+    loginMutation.mutate(
+      { username: data.email, password: data.password },
+      {
+        onSuccess: () => {
+          navigate({ to: "/" })
+        },
+        onError: () => {
+          const next = attempts + 1
+          setAttempts(next)
 
-    if (result.success && result.role && result.name && result.email) {
-      if (result.requiresTwoFactor) {
-        sessionStorage.setItem(
-          "pre_auth",
-          JSON.stringify({
-            email: result.email,
-            role: result.role,
-            name: result.name,
-          }),
-        )
-        navigate({ to: "/two-factor" })
-      } else {
-        completeLogin(result.role, result.name, result.email)
-        navigate({ to: "/" })
-      }
-      return
-    }
+          if (next >= 5) {
+            navigate({ to: "/account-locked" })
+            return
+          }
 
-    const next = attempts + 1
-    setAttempts(next)
-
-    if (next >= 5) {
-      navigate({ to: "/account-locked" })
-      return
-    }
-
-    if (next <= 2) setState("error_credentials")
-    else if (next === 3) setState("error_approaching_lock")
-    else setState("error_last_attempt")
+          if (next <= 2) setState("error_credentials")
+          else if (next === 3) setState("error_approaching_lock")
+          else setState("error_last_attempt")
+        },
+        onSettled: () => {
+          setState("idle")
+        },
+      },
+    )
   }
 
   const remaining = 5 - attempts
@@ -145,7 +137,10 @@ function Login() {
             PanamaCompliance
           </h1>
 
-          <p className="mb-8 text-base leading-relaxed" style={{ color: "#8a9bb5" }}>
+          <p
+            className="mb-8 text-base leading-relaxed"
+            style={{ color: "#8a9bb5" }}
+          >
             Sistema de Gestión de
             <br />
             Debida Diligencia Reforzada
@@ -185,14 +180,18 @@ function Login() {
                 ["analista@panama.com", "Analista1!", "Analista DDR"],
                 ["auditor@panama.com", "Auditor1!", "Auditor"],
               ].map(([email, pw, role]) => (
-                <div key={email} className="text-xs" style={{ color: "#4a6080" }}>
-                  <span
-                    className="font-mono"
-                    style={{ color: "#8a9bb5" }}
-                  >
+                <div
+                  key={email}
+                  className="text-xs"
+                  style={{ color: "#4a6080" }}
+                >
+                  <span className="font-mono" style={{ color: "#8a9bb5" }}>
                     {email}
                   </span>{" "}
-                  / <span className="font-mono" style={{ color: "#8a9bb5" }}>{pw}</span>{" "}
+                  /{" "}
+                  <span className="font-mono" style={{ color: "#8a9bb5" }}>
+                    {pw}
+                  </span>{" "}
                   <span style={{ color: "#4a6080" }}>({role})</span>
                 </div>
               ))}
@@ -241,10 +240,13 @@ function Login() {
             )}
             {state === "error_last_attempt" && (
               <ErrorBanner variant="error">
-                <span className="font-semibold">Último intento disponible.</span>
+                <span className="font-semibold">
+                  Último intento disponible.
+                </span>
                 <br />
                 <span className="opacity-80">
-                  Después de este intento tu cuenta será bloqueada temporalmente.
+                  Después de este intento tu cuenta será bloqueada
+                  temporalmente.
                 </span>
               </ErrorBanner>
             )}
@@ -263,10 +265,9 @@ function Login() {
                 <input
                   id="email"
                   type="email"
-                  autoFocus
                   autoComplete="username"
                   placeholder="correo@institución.com"
-                  disabled={state === "loading"}
+                  disabled={loginMutation.isPending}
                   {...register("email")}
                   className={cn(
                     "h-11 w-full rounded-lg border px-4 text-sm text-[#f0ede8] placeholder:text-[#4a6080]",
@@ -313,7 +314,7 @@ function Login() {
                     type={showPw ? "text" : "password"}
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    disabled={state === "loading"}
+                    disabled={loginMutation.isPending}
                     {...register("password")}
                     className={cn(
                       "h-11 w-full rounded-lg border px-4 pr-11 text-sm text-[#f0ede8] placeholder:text-[#4a6080]",
@@ -328,7 +329,9 @@ function Login() {
                   <button
                     type="button"
                     onClick={() => setShowPw((p) => !p)}
-                    aria-label={showPw ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    aria-label={
+                      showPw ? "Ocultar contraseña" : "Mostrar contraseña"
+                    }
                     className="absolute right-3 top-1/2 -translate-y-1/2 rounded p-1 transition-colors hover:text-[#c9a84c]"
                     style={{ color: "#4a6080" }}
                   >
@@ -349,7 +352,7 @@ function Login() {
               {/* Submit */}
               <button
                 type="submit"
-                disabled={state === "loading"}
+                disabled={loginMutation.isPending}
                 className={cn(
                   "mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-lg",
                   "text-sm font-semibold transition-all",
@@ -358,7 +361,7 @@ function Login() {
                 )}
                 style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
               >
-                {state === "loading" ? (
+                {loginMutation.isPending ? (
                   <>
                     <Loader2 size={15} className="animate-spin" />
                     Verificando…
