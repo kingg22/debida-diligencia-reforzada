@@ -1,10 +1,26 @@
 import uuid
+from datetime import datetime, timezone
 from typing import Any
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, func, select
 
 from app.core.security import get_password_hash, verify_password
-from app.models import Item, ItemCreate, User, UserCreate, UserUpdate
+from app.kyc_risk import calcular_riesgo
+from app.models import (
+    BeneficiarioFinal,
+    ClientType,
+    ExpedienteKYC,
+    ExpedienteKYCCreate,
+    Item,
+    ItemCreate,
+    KYCStatus,
+    PersonaJuridica,
+    PersonaNatural,
+    RiskLevel,
+    User,
+    UserCreate,
+    UserUpdate,
+)
 
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
@@ -66,3 +82,92 @@ def create_item(*, session: Session, item_in: ItemCreate, owner_id: uuid.UUID) -
     session.commit()
     session.refresh(db_item)
     return db_item
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# KYC — Expedientes de clientes
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def generar_codigo_expediente(*, session: Session) -> str:
+    """Genera un código secuencial por año: KYC-2026-0001."""
+    year = datetime.now(timezone.utc).year
+    prefijo = f"KYC-{year}-"
+    count = session.exec(
+        select(func.count())
+        .select_from(ExpedienteKYC)
+        .where(col(ExpedienteKYC.codigo).startswith(prefijo))
+    ).one()
+    return f"{prefijo}{count + 1:04d}"
+
+
+def create_expediente(
+    *,
+    session: Session,
+    expediente_in: ExpedienteKYCCreate,
+    analista_id: uuid.UUID,
+) -> ExpedienteKYC:
+    expediente = ExpedienteKYC(
+        codigo=generar_codigo_expediente(session=session),
+        tipo_cliente=expediente_in.tipo_cliente.value,
+        analista_id=analista_id,
+        status=KYCStatus.BORRADOR.value,
+    )
+
+    if (
+        expediente_in.tipo_cliente == ClientType.NATURAL
+        and expediente_in.persona_natural is not None
+    ):
+        expediente.persona_natural = PersonaNatural(
+            **expediente_in.persona_natural.model_dump(),
+            expediente_id=expediente.id,
+        )
+
+    if (
+        expediente_in.tipo_cliente == ClientType.JURIDICA
+        and expediente_in.persona_juridica is not None
+    ):
+        expediente.persona_juridica = PersonaJuridica(
+            **expediente_in.persona_juridica.model_dump(),
+            expediente_id=expediente.id,
+        )
+        expediente.beneficiarios_final = [
+            BeneficiarioFinal(**bf.model_dump(), expediente_id=expediente.id)
+            for bf in expediente_in.beneficiarios_final
+        ]
+
+    # Evaluación de riesgo automática.
+    resultado = calcular_riesgo(expediente)
+    expediente.nivel_riesgo = resultado.nivel.value
+    expediente.puntaje_riesgo = resultado.puntaje
+
+    # Estado inicial: borrador o enviado a revisión (con DDR si el riesgo es alto).
+    if expediente_in.enviar_a_revision:
+        if resultado.nivel in (RiskLevel.ALTO, RiskLevel.MUY_ALTO):
+            expediente.status = KYCStatus.DDR_INICIADO.value
+        else:
+            expediente.status = KYCStatus.PENDIENTE.value
+
+    session.add(expediente)
+    session.commit()
+    session.refresh(expediente)
+    return expediente
+
+
+def get_expediente(
+    *, session: Session, expediente_id: uuid.UUID
+) -> ExpedienteKYC | None:
+    return session.get(ExpedienteKYC, expediente_id)
+
+
+def recalcular_riesgo_expediente(
+    *, session: Session, expediente: ExpedienteKYC
+) -> ExpedienteKYC:
+    resultado = calcular_riesgo(expediente)
+    expediente.nivel_riesgo = resultado.nivel.value
+    expediente.puntaje_riesgo = resultado.puntaje
+    expediente.updated_at = datetime.now(timezone.utc)
+    session.add(expediente)
+    session.commit()
+    session.refresh(expediente)
+    return expediente
