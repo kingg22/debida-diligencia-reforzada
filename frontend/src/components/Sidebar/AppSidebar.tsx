@@ -7,7 +7,7 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar"
-import { getCurrentUser } from "@/lib/mock-data"
+import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
 
@@ -48,15 +48,23 @@ function PanamaComplianceLogo() {
 }
 
 export function AppSidebar() {
-  const currentUser = getCurrentUser()
+  const { user } = useAuth()
+  const role = user?.role
 
-  const items =
-    currentUser?.role === "ADMIN"
-      ? [...baseItems, ...kycItems, ...adminItems]
-      : [...baseItems, ...kycItems]
+  const canKyc =
+    role === "ADMIN" ||
+    role === "ANALISTA_DDR" ||
+    role === "OFICIAL_CUMPLIMIENTO"
+  const isAdmin = role === "ADMIN"
 
-  const sidebarUser = currentUser
-    ? { full_name: currentUser.name, email: currentUser.email }
+  const items = [
+    ...baseItems,
+    ...(canKyc ? kycItems : []),
+    ...(isAdmin ? adminItems : []),
+  ]
+
+  const sidebarUser = user
+    ? { full_name: user.full_name ?? user.email, email: user.email }
     : null
 
   return (

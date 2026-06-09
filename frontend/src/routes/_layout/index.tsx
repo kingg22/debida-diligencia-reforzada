@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { ShieldCheck, Users, FileText, AlertTriangle } from "lucide-react"
-import { getCurrentUser, ROLE_LABELS } from "@/lib/mock-data"
+import useAuth from "@/hooks/useAuth"
+import { ROLE_LABELS, type Role } from "@/lib/mock-data"
 
 export const Route = createFileRoute("/_layout/")({
   component: Dashboard,
@@ -44,7 +45,9 @@ function StatCard({
 }
 
 function Dashboard() {
-  const currentUser = getCurrentUser()
+  const { user } = useAuth()
+  const displayName = user?.full_name || user?.email || "Usuario"
+  const roleLabel = user?.role ? ROLE_LABELS[user.role as Role] : ""
 
   return (
     <div className="space-y-8">
@@ -54,11 +57,11 @@ function Dashboard() {
           className="mb-1 text-[28px]"
           style={{ fontFamily: "DM Serif Display, serif", color: "#f0ede8" }}
         >
-          Bienvenido, {currentUser?.name ?? "Usuario"}
+          Bienvenido, {displayName}
         </h1>
         <p className="text-sm" style={{ color: "#8a9bb5" }}>
-          {currentUser ? ROLE_LABELS[currentUser.role] : ""}
-          {" · "}
+          {roleLabel}
+          {roleLabel && " · "}
           Sistema de Gestión de Debida Diligencia Reforzada
         </p>
       </div>

@@ -1,13 +1,24 @@
 import uuid
 from datetime import datetime, timezone
+from enum import Enum
 
 from pydantic import EmailStr
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime, String
 from sqlmodel import Field, Relationship, SQLModel
 
 
 def get_datetime_utc() -> datetime:
     return datetime.now(timezone.utc)
+
+
+# Roles del sistema SGDDR (Ley 23/2015, Ley 254/2021)
+class UserRole(str, Enum):
+    ADMIN = "ADMIN"
+    OFICIAL_CUMPLIMIENTO = "OFICIAL_CUMPLIMIENTO"
+    ANALISTA_DDR = "ANALISTA_DDR"
+    GERENTE_CUMPLIMIENTO = "GERENTE_CUMPLIMIENTO"
+    COMITE_CUMPLIMIENTO = "COMITE_CUMPLIMIENTO"
+    AUDITOR = "AUDITOR"
 
 
 # Shared properties
@@ -16,6 +27,12 @@ class UserBase(SQLModel):
     is_active: bool = True
     is_superuser: bool = False
     full_name: str | None = Field(default=None, max_length=255)
+    # Guardado como VARCHAR(50) para evitar el ENUM nativo de Postgres
+    # (más simple de migrar); el valor se valida con UserRole en la capa API.
+    role: UserRole = Field(
+        default=UserRole.ANALISTA_DDR,
+        sa_type=String(length=50),  # type: ignore
+    )
 
 
 # Properties to receive via API on creation
@@ -33,6 +50,7 @@ class UserRegister(SQLModel):
 class UserUpdate(UserBase):
     email: EmailStr | None = Field(default=None, max_length=255)  # type: ignore[assignment]
     password: str | None = Field(default=None, min_length=8, max_length=128)
+    role: UserRole | None = Field(default=None)  # type: ignore[assignment]
 
 
 class UserUpdateMe(SQLModel):

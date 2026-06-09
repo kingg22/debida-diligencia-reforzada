@@ -1,9 +1,4 @@
-import {
-  createFileRoute,
-  Outlet,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router"
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 import { Clock, LogOut } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -14,8 +9,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { isLoggedIn } from "@/hooks/useAuth"
-import { getSessionExpiry, pcLogout } from "@/lib/mock-data"
+import useAuth, { isLoggedIn } from "@/hooks/useAuth"
+import { getTokenExpiry } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/_layout")({
@@ -28,16 +23,16 @@ export const Route = createFileRoute("/_layout")({
 })
 
 function SessionTimer() {
-  const navigate = useNavigate()
+  const { logout } = useAuth()
   const [secsLeft, setSecsLeft] = useState(() => {
-    const exp = getSessionExpiry()
+    const exp = getTokenExpiry()
     if (!exp) return 0
     return Math.max(0, Math.floor((exp.getTime() - Date.now()) / 1000))
   })
 
   useEffect(() => {
     const id = setInterval(() => {
-      const exp = getSessionExpiry()
+      const exp = getTokenExpiry()
       if (!exp) {
         setSecsLeft(0)
         return
@@ -46,12 +41,11 @@ function SessionTimer() {
       setSecsLeft(s)
       if (s <= 0) {
         clearInterval(id)
-        pcLogout()
-        navigate({ to: "/login" })
+        logout()
       }
     }, 1000)
     return () => clearInterval(id)
-  }, [navigate])
+  }, [logout])
 
   if (secsLeft <= 0) return null
 
@@ -87,12 +81,7 @@ function SessionTimer() {
 }
 
 function Layout() {
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    pcLogout()
-    navigate({ to: "/login" })
-  }
+  const { logout } = useAuth()
 
   return (
     <SidebarProvider>
@@ -103,7 +92,7 @@ function Layout() {
           <div className="flex-1" />
           <SessionTimer />
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className={cn(
               "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium",
               "transition-colors hover:bg-red-500/10 hover:text-red-400",
