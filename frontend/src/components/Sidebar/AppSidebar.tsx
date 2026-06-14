@@ -7,7 +7,8 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar"
-import { getCurrentUser } from "@/lib/mock-data"
+import useAuth from "@/hooks/useAuth"
+import { type AppUser, puedeRegistrarCliente } from "@/lib/sgddr"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
 
@@ -48,15 +49,22 @@ function PanamaComplianceLogo() {
 }
 
 export function AppSidebar() {
-  const currentUser = getCurrentUser()
+  const { user } = useAuth()
+  const rol = (user as AppUser | null | undefined)?.role
 
-  const items =
-    currentUser?.role === "ADMIN"
-      ? [...baseItems, ...kycItems, ...adminItems]
-      : [...baseItems, ...kycItems]
+  // Registro de clientes: Oficial de Cumplimiento, Admin (spec) y Analista DDR
+  // (el backend actual permite que el analista cree expedientes).
+  const puedeKyc = puedeRegistrarCliente(rol) || rol === "ANALISTA_DDR"
+  const esAdmin = rol === "ADMIN"
 
-  const sidebarUser = currentUser
-    ? { full_name: currentUser.name, email: currentUser.email }
+  const items: Item[] = [
+    ...baseItems,
+    ...(puedeKyc ? kycItems : []),
+    ...(esAdmin ? adminItems : []),
+  ]
+
+  const sidebarUser = user
+    ? { full_name: user.full_name ?? user.email, email: user.email }
     : null
 
   return (
