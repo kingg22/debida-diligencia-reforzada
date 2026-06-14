@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router"
 import { ChevronsUpDown, LogOut } from "lucide-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -16,7 +15,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { pcLogout } from "@/lib/mock-data"
+import useAuth from "@/hooks/useAuth"
 import { getInitials } from "@/utils"
 
 interface UserInfoProps {
@@ -41,15 +40,14 @@ function UserInfo({ fullName, email }: UserInfoProps) {
 }
 
 export function User({ user }: { user: { full_name?: string; email?: string } | null }) {
-  const navigate = useNavigate()
   const { isMobile, setOpenMobile } = useSidebar()
+  const { logout } = useAuth()
 
   if (!user) return null
 
   const handleLogout = () => {
     if (isMobile) setOpenMobile(false)
-    pcLogout()
-    navigate({ to: "/login" })
+    logout()
   }
 
   return (
