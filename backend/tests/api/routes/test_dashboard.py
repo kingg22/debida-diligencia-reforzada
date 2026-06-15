@@ -49,10 +49,7 @@ def test_dashboard_oficial_retorna_kpis_oficial(
 ) -> None:
     """OFICIAL_CUMPLIMIENTO recibe los 4 KPIs que le corresponden."""
     password = random_lower_string()
-    _make_user(db, UserRole.OFICIAL_CUMPLIMIENTO, password)
-    user = db.exec(
-        User.__table__.select().where(User.role == UserRole.OFICIAL_CUMPLIMIENTO)
-    ).first()
+    user = _make_user(db, UserRole.OFICIAL_CUMPLIMIENTO, password)
     # Crear un expediente hoy
     db.add(
         ExpedienteKYC(
