@@ -1,7 +1,9 @@
 import {
   ESTADO_CASO,
+  ESTADO_CLIENTE,
   ESTADO_KYC,
   type EstadoCaso,
+  type EstadoCliente,
   type EstadoKYC,
 } from "@/lib/sgddr"
 
@@ -11,7 +13,16 @@ export function EstadoCasoBadge({ estado }: { estado?: string | null }) {
   return <BadgePill cfg={cfg} fallback={estado} />
 }
 
-// Badge de estado del expediente KYC (lista y detalle de clientes).
+// Badge de estado del cliente (lista y detalle de clientes).
+export function EstadoClienteBadge({ estado }: { estado?: string | null }) {
+  const cfg =
+    estado && estado in ESTADO_CLIENTE
+      ? ESTADO_CLIENTE[estado as EstadoCliente]
+      : null
+  return <BadgePill cfg={cfg} fallback={estado} />
+}
+
+// Badge de estado del expediente KYC (compatibilidad con el modelo ExpedienteKYC).
 export function EstadoKYCBadge({ estado }: { estado?: string | null }) {
   const cfg = estado && estado in ESTADO_KYC ? ESTADO_KYC[estado as EstadoKYC] : null
   return <BadgePill cfg={cfg} fallback={estado} />

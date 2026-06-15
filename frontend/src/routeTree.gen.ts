@@ -23,6 +23,11 @@ import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutKycIndexRouteImport } from './routes/_layout/kyc/index'
 import { Route as LayoutKycNuevoRouteImport } from './routes/_layout/kyc/nuevo'
+import { Route as LayoutClientesIndexRouteImport } from './routes/_layout/clientes/index'
+import { Route as LayoutClientesIdRouteImport } from './routes/_layout/clientes/$id'
+import { Route as LayoutCasosDdrIndexRouteImport } from './routes/_layout/casos-ddr/index'
+import { Route as LayoutCasosDdrIdRouteImport } from './routes/_layout/casos-ddr/$id'
+import { Route as LayoutCasosDdrIdEvaluacionRouteImport } from './routes/_layout/casos-ddr/$id.evaluacion'
 
 const TwoFactorRoute = TwoFactorRouteImport.update({
   id: '/two-factor',
@@ -93,6 +98,32 @@ const LayoutKycNuevoRoute = LayoutKycNuevoRouteImport.update({
   path: '/kyc/nuevo',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutClientesIndexRoute = LayoutClientesIndexRouteImport.update({
+  id: '/clientes/',
+  path: '/clientes/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutClientesIdRoute = LayoutClientesIdRouteImport.update({
+  id: '/clientes/$id',
+  path: '/clientes/$id',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutCasosDdrIndexRoute = LayoutCasosDdrIndexRouteImport.update({
+  id: '/casos-ddr/',
+  path: '/casos-ddr/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutCasosDdrIdRoute = LayoutCasosDdrIdRouteImport.update({
+  id: '/casos-ddr/$id',
+  path: '/casos-ddr/$id',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutCasosDdrIdEvaluacionRoute =
+  LayoutCasosDdrIdEvaluacionRouteImport.update({
+    id: '/casos-ddr/$id/evaluacion',
+    path: '/casos-ddr/$id/evaluacion',
+    getParentRoute: () => LayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof LayoutIndexRoute
@@ -108,6 +139,11 @@ export interface FileRoutesByFullPath {
   '/usuarios': typeof LayoutUsuariosRoute
   '/kyc/nuevo': typeof LayoutKycNuevoRoute
   '/kyc/': typeof LayoutKycIndexRoute
+  '/clientes/$id': typeof LayoutClientesIdRoute
+  '/casos-ddr/$id': typeof LayoutCasosDdrIdRoute
+  '/casos-ddr/$id/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
+  '/clientes/': typeof LayoutClientesIndexRoute
+  '/casos-ddr/': typeof LayoutCasosDdrIndexRoute
 }
 export interface FileRoutesByTo {
   '/account-locked': typeof AccountLockedRoute
@@ -123,6 +159,11 @@ export interface FileRoutesByTo {
   '/': typeof LayoutIndexRoute
   '/kyc/nuevo': typeof LayoutKycNuevoRoute
   '/kyc': typeof LayoutKycIndexRoute
+  '/clientes/$id': typeof LayoutClientesIdRoute
+  '/casos-ddr/$id': typeof LayoutCasosDdrIdRoute
+  '/casos-ddr/$id/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
+  '/clientes': typeof LayoutClientesIndexRoute
+  '/casos-ddr': typeof LayoutCasosDdrIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -140,6 +181,11 @@ export interface FileRoutesById {
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/kyc/nuevo': typeof LayoutKycNuevoRoute
   '/_layout/kyc/': typeof LayoutKycIndexRoute
+  '/_layout/clientes/$id': typeof LayoutClientesIdRoute
+  '/_layout/casos-ddr/$id': typeof LayoutCasosDdrIdRoute
+  '/_layout/casos-ddr/$id/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
+  '/_layout/clientes/': typeof LayoutClientesIndexRoute
+  '/_layout/casos-ddr/': typeof LayoutCasosDdrIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -157,6 +203,11 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/kyc/nuevo'
     | '/kyc/'
+    | '/clientes/$id'
+    | '/casos-ddr/$id'
+    | '/casos-ddr/$id/evaluacion'
+    | '/clientes/'
+    | '/casos-ddr/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/account-locked'
@@ -172,6 +223,11 @@ export interface FileRouteTypes {
     | '/'
     | '/kyc/nuevo'
     | '/kyc'
+    | '/clientes/$id'
+    | '/casos-ddr/$id'
+    | '/casos-ddr/$id/evaluacion'
+    | '/clientes'
+    | '/casos-ddr'
   id:
     | '__root__'
     | '/_layout'
@@ -188,6 +244,11 @@ export interface FileRouteTypes {
     | '/_layout/'
     | '/_layout/kyc/nuevo'
     | '/_layout/kyc/'
+    | '/_layout/clientes/$id'
+    | '/_layout/casos-ddr/$id'
+    | '/_layout/casos-ddr/$id/evaluacion'
+    | '/_layout/clientes/'
+    | '/_layout/casos-ddr/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -300,6 +361,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutKycNuevoRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/clientes/': {
+      id: '/_layout/clientes/'
+      path: '/clientes'
+      fullPath: '/clientes/'
+      preLoaderRoute: typeof LayoutClientesIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/clientes/$id': {
+      id: '/_layout/clientes/$id'
+      path: '/clientes/$id'
+      fullPath: '/clientes/$id'
+      preLoaderRoute: typeof LayoutClientesIdRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/casos-ddr/': {
+      id: '/_layout/casos-ddr/'
+      path: '/casos-ddr'
+      fullPath: '/casos-ddr/'
+      preLoaderRoute: typeof LayoutCasosDdrIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/casos-ddr/$id': {
+      id: '/_layout/casos-ddr/$id'
+      path: '/casos-ddr/$id'
+      fullPath: '/casos-ddr/$id'
+      preLoaderRoute: typeof LayoutCasosDdrIdRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/casos-ddr/$id/evaluacion': {
+      id: '/_layout/casos-ddr/$id/evaluacion'
+      path: '/casos-ddr/$id/evaluacion'
+      fullPath: '/casos-ddr/$id/evaluacion'
+      preLoaderRoute: typeof LayoutCasosDdrIdEvaluacionRouteImport
+      parentRoute: typeof LayoutRoute
+    }
   }
 }
 
@@ -311,6 +407,11 @@ interface LayoutRouteChildren {
   LayoutIndexRoute: typeof LayoutIndexRoute
   LayoutKycNuevoRoute: typeof LayoutKycNuevoRoute
   LayoutKycIndexRoute: typeof LayoutKycIndexRoute
+  LayoutClientesIndexRoute: typeof LayoutClientesIndexRoute
+  LayoutClientesIdRoute: typeof LayoutClientesIdRoute
+  LayoutCasosDdrIndexRoute: typeof LayoutCasosDdrIndexRoute
+  LayoutCasosDdrIdRoute: typeof LayoutCasosDdrIdRoute
+  LayoutCasosDdrIdEvaluacionRoute: typeof LayoutCasosDdrIdEvaluacionRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
@@ -321,6 +422,11 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutIndexRoute: LayoutIndexRoute,
   LayoutKycNuevoRoute: LayoutKycNuevoRoute,
   LayoutKycIndexRoute: LayoutKycIndexRoute,
+  LayoutClientesIndexRoute: LayoutClientesIndexRoute,
+  LayoutClientesIdRoute: LayoutClientesIdRoute,
+  LayoutCasosDdrIndexRoute: LayoutCasosDdrIndexRoute,
+  LayoutCasosDdrIdRoute: LayoutCasosDdrIdRoute,
+  LayoutCasosDdrIdEvaluacionRoute: LayoutCasosDdrIdEvaluacionRoute,
 }
 
 const LayoutRouteWithChildren =

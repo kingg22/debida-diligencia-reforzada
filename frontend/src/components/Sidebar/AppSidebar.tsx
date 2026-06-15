@@ -1,4 +1,11 @@
-import { Home, Users, ShieldCheck, ClipboardList } from "lucide-react"
+import {
+  Briefcase,
+  ClipboardList,
+  FolderOpen,
+  Home,
+  ShieldCheck,
+  Users,
+} from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import {
@@ -8,17 +15,19 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar"
 import useAuth from "@/hooks/useAuth"
-import { type AppUser, puedeRegistrarCliente } from "@/lib/sgddr"
+import { type AppUser, puedeRegistrarCliente, tieneAccesoDDR } from "@/lib/sgddr"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
 
-const baseItems: Item[] = [
-  { icon: Home, title: "Inicio", path: "/" },
-]
+const baseItems: Item[] = [{ icon: Home, title: "Inicio", path: "/" }]
+
+const clientesItem: Item = { icon: Briefcase, title: "Clientes", path: "/clientes" }
 
 const kycItems: Item[] = [
   { icon: ClipboardList, title: "Nuevo Cliente KYC", path: "/kyc/nuevo" },
 ]
+
+const casosItem: Item = { icon: FolderOpen, title: "Casos DDR", path: "/casos-ddr" }
 
 const adminItems: Item[] = [
   { icon: Users, title: "Usuarios", path: "/usuarios" },
@@ -59,7 +68,9 @@ export function AppSidebar() {
 
   const items: Item[] = [
     ...baseItems,
+    clientesItem,
     ...(puedeKyc ? kycItems : []),
+    ...(tieneAccesoDDR(rol) ? [casosItem] : []),
     ...(esAdmin ? adminItems : []),
   ]
 
