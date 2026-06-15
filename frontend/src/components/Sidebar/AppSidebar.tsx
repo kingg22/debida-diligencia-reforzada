@@ -7,7 +7,6 @@ import {
   Users,
 } from "lucide-react"
 
-import { SidebarAppearance } from "@/components/Common/Appearance"
 import {
   Sidebar,
   SidebarContent,
@@ -87,7 +86,6 @@ export function AppSidebar() {
         <Main items={items} />
       </SidebarContent>
       <SidebarFooter>
-        <SidebarAppearance />
         <User user={sidebarUser} />
       </SidebarFooter>
     </Sidebar>
