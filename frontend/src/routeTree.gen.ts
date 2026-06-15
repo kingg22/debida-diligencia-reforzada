@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TwoFactorRouteImport } from './routes/two-factor'
-import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
 import { Route as LoginRouteImport } from './routes/login'
@@ -19,24 +18,18 @@ import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutUsuariosRouteImport } from './routes/_layout/usuarios'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
-import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutKycIndexRouteImport } from './routes/_layout/kyc/index'
-import { Route as LayoutKycNuevoRouteImport } from './routes/_layout/kyc/nuevo'
 import { Route as LayoutClientesIndexRouteImport } from './routes/_layout/clientes/index'
-import { Route as LayoutClientesIdRouteImport } from './routes/_layout/clientes/$id'
 import { Route as LayoutCasosDdrIndexRouteImport } from './routes/_layout/casos-ddr/index'
+import { Route as LayoutKycNuevoRouteImport } from './routes/_layout/kyc/nuevo'
+import { Route as LayoutClientesIdRouteImport } from './routes/_layout/clientes/$id'
 import { Route as LayoutCasosDdrIdRouteImport } from './routes/_layout/casos-ddr/$id'
 import { Route as LayoutCasosDdrIdEvaluacionRouteImport } from './routes/_layout/casos-ddr/$id.evaluacion'
 
 const TwoFactorRoute = TwoFactorRouteImport.update({
   id: '/two-factor',
   path: '/two-factor',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -78,11 +71,6 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutItemsRoute = LayoutItemsRouteImport.update({
-  id: '/items',
-  path: '/items',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const LayoutAdminRoute = LayoutAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -93,24 +81,24 @@ const LayoutKycIndexRoute = LayoutKycIndexRouteImport.update({
   path: '/kyc/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutKycNuevoRoute = LayoutKycNuevoRouteImport.update({
-  id: '/kyc/nuevo',
-  path: '/kyc/nuevo',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const LayoutClientesIndexRoute = LayoutClientesIndexRouteImport.update({
   id: '/clientes/',
   path: '/clientes/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutClientesIdRoute = LayoutClientesIdRouteImport.update({
-  id: '/clientes/$id',
-  path: '/clientes/$id',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const LayoutCasosDdrIndexRoute = LayoutCasosDdrIndexRouteImport.update({
   id: '/casos-ddr/',
   path: '/casos-ddr/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutKycNuevoRoute = LayoutKycNuevoRouteImport.update({
+  id: '/kyc/nuevo',
+  path: '/kyc/nuevo',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutClientesIdRoute = LayoutClientesIdRouteImport.update({
+  id: '/clientes/$id',
+  path: '/clientes/$id',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutCasosDdrIdRoute = LayoutCasosDdrIdRouteImport.update({
@@ -120,9 +108,9 @@ const LayoutCasosDdrIdRoute = LayoutCasosDdrIdRouteImport.update({
 } as any)
 const LayoutCasosDdrIdEvaluacionRoute =
   LayoutCasosDdrIdEvaluacionRouteImport.update({
-    id: '/casos-ddr/$id/evaluacion',
-    path: '/casos-ddr/$id/evaluacion',
-    getParentRoute: () => LayoutRoute,
+    id: '/evaluacion',
+    path: '/evaluacion',
+    getParentRoute: () => LayoutCasosDdrIdRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -131,39 +119,35 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/signup': typeof SignupRoute
   '/two-factor': typeof TwoFactorRoute
   '/admin': typeof LayoutAdminRoute
-  '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
-  '/kyc/nuevo': typeof LayoutKycNuevoRoute
-  '/kyc/': typeof LayoutKycIndexRoute
+  '/casos-ddr/$id': typeof LayoutCasosDdrIdRouteWithChildren
   '/clientes/$id': typeof LayoutClientesIdRoute
-  '/casos-ddr/$id': typeof LayoutCasosDdrIdRoute
-  '/casos-ddr/$id/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
-  '/clientes/': typeof LayoutClientesIndexRoute
+  '/kyc/nuevo': typeof LayoutKycNuevoRoute
   '/casos-ddr/': typeof LayoutCasosDdrIndexRoute
+  '/clientes/': typeof LayoutClientesIndexRoute
+  '/kyc/': typeof LayoutKycIndexRoute
+  '/casos-ddr/$id/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
 }
 export interface FileRoutesByTo {
   '/account-locked': typeof AccountLockedRoute
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/signup': typeof SignupRoute
   '/two-factor': typeof TwoFactorRoute
   '/admin': typeof LayoutAdminRoute
-  '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
   '/': typeof LayoutIndexRoute
-  '/kyc/nuevo': typeof LayoutKycNuevoRoute
-  '/kyc': typeof LayoutKycIndexRoute
+  '/casos-ddr/$id': typeof LayoutCasosDdrIdRouteWithChildren
   '/clientes/$id': typeof LayoutClientesIdRoute
-  '/casos-ddr/$id': typeof LayoutCasosDdrIdRoute
-  '/casos-ddr/$id/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
-  '/clientes': typeof LayoutClientesIndexRoute
+  '/kyc/nuevo': typeof LayoutKycNuevoRoute
   '/casos-ddr': typeof LayoutCasosDdrIndexRoute
+  '/clientes': typeof LayoutClientesIndexRoute
+  '/kyc': typeof LayoutKycIndexRoute
+  '/casos-ddr/$id/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -172,20 +156,18 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/signup': typeof SignupRoute
   '/two-factor': typeof TwoFactorRoute
   '/_layout/admin': typeof LayoutAdminRoute
-  '/_layout/items': typeof LayoutItemsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/usuarios': typeof LayoutUsuariosRoute
   '/_layout/': typeof LayoutIndexRoute
-  '/_layout/kyc/nuevo': typeof LayoutKycNuevoRoute
-  '/_layout/kyc/': typeof LayoutKycIndexRoute
+  '/_layout/casos-ddr/$id': typeof LayoutCasosDdrIdRouteWithChildren
   '/_layout/clientes/$id': typeof LayoutClientesIdRoute
-  '/_layout/casos-ddr/$id': typeof LayoutCasosDdrIdRoute
-  '/_layout/casos-ddr/$id/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
-  '/_layout/clientes/': typeof LayoutClientesIndexRoute
+  '/_layout/kyc/nuevo': typeof LayoutKycNuevoRoute
   '/_layout/casos-ddr/': typeof LayoutCasosDdrIndexRoute
+  '/_layout/clientes/': typeof LayoutClientesIndexRoute
+  '/_layout/kyc/': typeof LayoutKycIndexRoute
+  '/_layout/casos-ddr/$id/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -195,39 +177,35 @@ export interface FileRouteTypes {
     | '/login'
     | '/recover-password'
     | '/reset-password'
-    | '/signup'
     | '/two-factor'
     | '/admin'
-    | '/items'
     | '/settings'
     | '/usuarios'
-    | '/kyc/nuevo'
-    | '/kyc/'
-    | '/clientes/$id'
     | '/casos-ddr/$id'
-    | '/casos-ddr/$id/evaluacion'
-    | '/clientes/'
+    | '/clientes/$id'
+    | '/kyc/nuevo'
     | '/casos-ddr/'
+    | '/clientes/'
+    | '/kyc/'
+    | '/casos-ddr/$id/evaluacion'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/account-locked'
     | '/login'
     | '/recover-password'
     | '/reset-password'
-    | '/signup'
     | '/two-factor'
     | '/admin'
-    | '/items'
     | '/settings'
     | '/usuarios'
     | '/'
-    | '/kyc/nuevo'
-    | '/kyc'
-    | '/clientes/$id'
     | '/casos-ddr/$id'
-    | '/casos-ddr/$id/evaluacion'
-    | '/clientes'
+    | '/clientes/$id'
+    | '/kyc/nuevo'
     | '/casos-ddr'
+    | '/clientes'
+    | '/kyc'
+    | '/casos-ddr/$id/evaluacion'
   id:
     | '__root__'
     | '/_layout'
@@ -235,20 +213,18 @@ export interface FileRouteTypes {
     | '/login'
     | '/recover-password'
     | '/reset-password'
-    | '/signup'
     | '/two-factor'
     | '/_layout/admin'
-    | '/_layout/items'
     | '/_layout/settings'
     | '/_layout/usuarios'
     | '/_layout/'
-    | '/_layout/kyc/nuevo'
-    | '/_layout/kyc/'
-    | '/_layout/clientes/$id'
     | '/_layout/casos-ddr/$id'
-    | '/_layout/casos-ddr/$id/evaluacion'
-    | '/_layout/clientes/'
+    | '/_layout/clientes/$id'
+    | '/_layout/kyc/nuevo'
     | '/_layout/casos-ddr/'
+    | '/_layout/clientes/'
+    | '/_layout/kyc/'
+    | '/_layout/casos-ddr/$id/evaluacion'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -257,7 +233,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  SignupRoute: typeof SignupRoute
   TwoFactorRoute: typeof TwoFactorRoute
 }
 
@@ -268,13 +243,6 @@ declare module '@tanstack/react-router' {
       path: '/two-factor'
       fullPath: '/two-factor'
       preLoaderRoute: typeof TwoFactorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -333,13 +301,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/items': {
-      id: '/_layout/items'
-      path: '/items'
-      fullPath: '/items'
-      preLoaderRoute: typeof LayoutItemsRouteImport
-      parentRoute: typeof LayoutRoute
-    }
     '/_layout/admin': {
       id: '/_layout/admin'
       path: '/admin'
@@ -354,13 +315,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutKycIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/kyc/nuevo': {
-      id: '/_layout/kyc/nuevo'
-      path: '/kyc/nuevo'
-      fullPath: '/kyc/nuevo'
-      preLoaderRoute: typeof LayoutKycNuevoRouteImport
-      parentRoute: typeof LayoutRoute
-    }
     '/_layout/clientes/': {
       id: '/_layout/clientes/'
       path: '/clientes'
@@ -368,18 +322,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutClientesIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/clientes/$id': {
-      id: '/_layout/clientes/$id'
-      path: '/clientes/$id'
-      fullPath: '/clientes/$id'
-      preLoaderRoute: typeof LayoutClientesIdRouteImport
-      parentRoute: typeof LayoutRoute
-    }
     '/_layout/casos-ddr/': {
       id: '/_layout/casos-ddr/'
       path: '/casos-ddr'
       fullPath: '/casos-ddr/'
       preLoaderRoute: typeof LayoutCasosDdrIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/kyc/nuevo': {
+      id: '/_layout/kyc/nuevo'
+      path: '/kyc/nuevo'
+      fullPath: '/kyc/nuevo'
+      preLoaderRoute: typeof LayoutKycNuevoRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/clientes/$id': {
+      id: '/_layout/clientes/$id'
+      path: '/clientes/$id'
+      fullPath: '/clientes/$id'
+      preLoaderRoute: typeof LayoutClientesIdRouteImport
       parentRoute: typeof LayoutRoute
     }
     '/_layout/casos-ddr/$id': {
@@ -391,42 +352,49 @@ declare module '@tanstack/react-router' {
     }
     '/_layout/casos-ddr/$id/evaluacion': {
       id: '/_layout/casos-ddr/$id/evaluacion'
-      path: '/casos-ddr/$id/evaluacion'
+      path: '/evaluacion'
       fullPath: '/casos-ddr/$id/evaluacion'
       preLoaderRoute: typeof LayoutCasosDdrIdEvaluacionRouteImport
-      parentRoute: typeof LayoutRoute
+      parentRoute: typeof LayoutCasosDdrIdRoute
     }
   }
 }
 
+interface LayoutCasosDdrIdRouteChildren {
+  LayoutCasosDdrIdEvaluacionRoute: typeof LayoutCasosDdrIdEvaluacionRoute
+}
+
+const LayoutCasosDdrIdRouteChildren: LayoutCasosDdrIdRouteChildren = {
+  LayoutCasosDdrIdEvaluacionRoute: LayoutCasosDdrIdEvaluacionRoute,
+}
+
+const LayoutCasosDdrIdRouteWithChildren =
+  LayoutCasosDdrIdRoute._addFileChildren(LayoutCasosDdrIdRouteChildren)
+
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
-  LayoutItemsRoute: typeof LayoutItemsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutUsuariosRoute: typeof LayoutUsuariosRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
-  LayoutKycNuevoRoute: typeof LayoutKycNuevoRoute
-  LayoutKycIndexRoute: typeof LayoutKycIndexRoute
-  LayoutClientesIndexRoute: typeof LayoutClientesIndexRoute
+  LayoutCasosDdrIdRoute: typeof LayoutCasosDdrIdRouteWithChildren
   LayoutClientesIdRoute: typeof LayoutClientesIdRoute
+  LayoutKycNuevoRoute: typeof LayoutKycNuevoRoute
   LayoutCasosDdrIndexRoute: typeof LayoutCasosDdrIndexRoute
-  LayoutCasosDdrIdRoute: typeof LayoutCasosDdrIdRoute
-  LayoutCasosDdrIdEvaluacionRoute: typeof LayoutCasosDdrIdEvaluacionRoute
+  LayoutClientesIndexRoute: typeof LayoutClientesIndexRoute
+  LayoutKycIndexRoute: typeof LayoutKycIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
-  LayoutItemsRoute: LayoutItemsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutUsuariosRoute: LayoutUsuariosRoute,
   LayoutIndexRoute: LayoutIndexRoute,
-  LayoutKycNuevoRoute: LayoutKycNuevoRoute,
-  LayoutKycIndexRoute: LayoutKycIndexRoute,
-  LayoutClientesIndexRoute: LayoutClientesIndexRoute,
+  LayoutCasosDdrIdRoute: LayoutCasosDdrIdRouteWithChildren,
   LayoutClientesIdRoute: LayoutClientesIdRoute,
+  LayoutKycNuevoRoute: LayoutKycNuevoRoute,
   LayoutCasosDdrIndexRoute: LayoutCasosDdrIndexRoute,
-  LayoutCasosDdrIdRoute: LayoutCasosDdrIdRoute,
-  LayoutCasosDdrIdEvaluacionRoute: LayoutCasosDdrIdEvaluacionRoute,
+  LayoutClientesIndexRoute: LayoutClientesIndexRoute,
+  LayoutKycIndexRoute: LayoutKycIndexRoute,
 }
 
 const LayoutRouteWithChildren =
@@ -438,7 +406,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  SignupRoute: SignupRoute,
   TwoFactorRoute: TwoFactorRoute,
 }
 export const routeTree = rootRouteImport
