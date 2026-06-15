@@ -83,10 +83,6 @@ function SessionTimer() {
 function Layout() {
   const { logout } = useAuth()
 
-  const handleLogout = () => {
-    logout()
-  }
-
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -96,7 +92,7 @@ function Layout() {
           <div className="flex-1" />
           <SessionTimer />
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className={cn(
               "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium",
               "transition-colors hover:bg-red-500/10 hover:text-red-400",

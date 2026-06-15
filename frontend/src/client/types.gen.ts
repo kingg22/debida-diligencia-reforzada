@@ -67,6 +67,7 @@ export type UserCreate = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    role?: UserRole;
     password: string;
 };
 
@@ -75,6 +76,7 @@ export type UserPublic = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    role?: UserRole;
     id: string;
     created_at?: (string | null);
 };
@@ -84,6 +86,8 @@ export type UserRegister = {
     password: string;
     full_name?: (string | null);
 };
+
+export type UserRole = 'ADMIN' | 'OFICIAL_CUMPLIMIENTO' | 'ANALISTA_DDR' | 'GERENTE_CUMPLIMIENTO' | 'COMITE_CUMPLIMIENTO' | 'AUDITOR';
 
 export type UsersPublic = {
     data: Array<UserPublic>;
@@ -95,6 +99,7 @@ export type UserUpdate = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    role?: (UserRole | null);
     password?: (string | null);
 };
 

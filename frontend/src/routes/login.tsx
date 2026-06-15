@@ -176,9 +176,9 @@ function Login() {
             </p>
             <div className="space-y-1">
               {[
-                ["admin@panama.com", "Admin1234!", "Admin + 2FA"],
-                ["analista@panama.com", "Analista1!", "Analista DDR"],
-                ["auditor@panama.com", "Auditor1!", "Auditor"],
+                ["admin@example.com", "changethis", "Admin"],
+                ["analista@example.com", "changethis", "Analista DDR"],
+                ["oficial@example.com", "changethis", "Oficial Cumpl."],
               ].map(([email, pw, role]) => (
                 <div
                   key={email}

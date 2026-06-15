@@ -318,6 +318,10 @@ export const UserCreateSchema = {
             ],
             title: 'Full Name'
         },
+        role: {
+            '$ref': '#/components/schemas/UserRole',
+            default: 'ANALISTA_DDR'
+        },
         password: {
             type: 'string',
             maxLength: 128,
@@ -359,6 +363,10 @@ export const UserPublicSchema = {
                 }
             ],
             title: 'Full Name'
+        },
+        role: {
+            '$ref': '#/components/schemas/UserRole',
+            default: 'ANALISTA_DDR'
         },
         id: {
             type: 'string',
@@ -415,6 +423,12 @@ export const UserRegisterSchema = {
     title: 'UserRegister'
 } as const;
 
+export const UserRoleSchema = {
+    type: 'string',
+    enum: ['ADMIN', 'OFICIAL_CUMPLIMIENTO', 'ANALISTA_DDR', 'GERENTE_CUMPLIMIENTO', 'COMITE_CUMPLIMIENTO', 'AUDITOR'],
+    title: 'UserRole'
+} as const;
+
 export const UserUpdateSchema = {
     properties: {
         email: {
@@ -451,6 +465,16 @@ export const UserUpdateSchema = {
                 }
             ],
             title: 'Full Name'
+        },
+        role: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/UserRole'
+                },
+                {
+                    type: 'null'
+                }
+            ]
         },
         password: {
             anyOf: [
