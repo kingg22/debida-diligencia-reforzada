@@ -1,3 +1,4 @@
+import hashlib
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -234,6 +235,8 @@ def upload_documento(
             status_code=400, detail="El archivo supera el límite de 10 MB"
         )
 
+    hash_sha256 = hashlib.sha256(content).hexdigest()
+
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     doc_id = uuid.uuid4()
     extension = Path(file.filename or "").suffix
@@ -249,6 +252,7 @@ def upload_documento(
         mime_type=file.content_type or "application/octet-stream",
         estado=DocumentoEstado.PENDIENTE.value,
         ruta_archivo=str(destino),
+        hash_sha256=hash_sha256,
     )
     session.add(documento)
     session.commit()
