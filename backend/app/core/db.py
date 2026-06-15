@@ -1,8 +1,15 @@
+import uuid
+
 from sqlmodel import Session, create_engine, select
 
-from app import crud
 from app.core.config import settings
-from app.models import User, UserCreate
+from app.core.security import get_password_hash
+from app.models import (
+    ListaRestrictivaSimulada,
+    PepSimulado,
+    User,
+    UserRole,
+)
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
@@ -11,23 +18,254 @@ engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 # otherwise, SQLModel might fail to initialize relationships properly
 # for more details: https://github.com/fastapi/full-stack-fastapi-template/issues/28
 
+USUARIOS_DEMO = [
+    ("admin@sgddr.pa", "Admin SGDDR", "Admin123!", UserRole.ADMIN, True),
+    ("rosa@sgddr.pa", "Rosa Méndez", "Demo123!", UserRole.OFICIAL_CUMPLIMIENTO, False),
+    ("carlos@sgddr.pa", "Carlos Ruiz", "Demo123!", UserRole.ANALISTA_DDR, False),
+    ("luis@sgddr.pa", "Luis Pérez", "Demo123!", UserRole.GERENTE_CUMPLIMIENTO, False),
+    ("comite@sgddr.pa", "Comité SGDDR", "Demo123!", UserRole.COMITE_CUMPLIMIENTO, False),
+    ("ana@sgddr.pa", "Ana Castillo", "Demo123!", UserRole.AUDITOR, False),
+]
 
-def init_db(session: Session) -> None:
-    # Tables should be created with Alembic migrations
-    # But if you don't want to use migrations, create
-    # the tables un-commenting the next lines
-    # from sqlmodel import SQLModel
+PEPS_DEMO = [
+    (
+        "Marco Aurelio Fonseca",
+        "8-742-3891",
+        "CEDULA_PA",
+        "Panamá",
+        "Exministro de Economía",
+        "Ministerio de Economía y Finanzas",
+    ),
+    (
+        "Elena Vásquez Torres",
+        "PE-2847361",
+        "PASAPORTE",
+        "Perú",
+        "Diputada Nacional",
+        "Congreso de la República del Perú",
+    ),
+    (
+        "Roberto Cifuentes",
+        "8-123-4567",
+        "CEDULA_PA",
+        "Panamá",
+        "Alcalde Municipal",
+        "Municipio de Panamá",
+    ),
+    (
+        "Adriana Moreno Leal",
+        "CO-9182736",
+        "PASAPORTE",
+        "Colombia",
+        "Exfiscal General",
+        "Fiscalía General de la Nación",
+    ),
+    (
+        "José Manuel Herrera",
+        "VE-4729183",
+        "PASAPORTE",
+        "Venezuela",
+        "Exgobernador Estado Bolívar",
+        "Gobernación Estado Bolívar",
+    ),
+    (
+        "Carmen Lucía Delgado",
+        "8-891-2347",
+        "CEDULA_PA",
+        "Panamá",
+        "Magistrada Tribunal Electoral",
+        "Tribunal Electoral de Panamá",
+    ),
+    (
+        "Fernando Augusto Ríos",
+        "AR-3847291",
+        "PASAPORTE",
+        "Argentina",
+        "Exsecretario de Hacienda",
+        "Ministerio de Economía Argentina",
+    ),
+    (
+        "Patricia Solano Vega",
+        "9-234-5678",
+        "CEDULA_PA",
+        "Panamá",
+        "Directora Autoridad Canal",
+        "Autoridad del Canal de Panamá",
+    ),
+    (
+        "Miguel Ángel Castillo",
+        "MX-8273649",
+        "PASAPORTE",
+        "México",
+        "Exsenador República",
+        "Senado de la República de México",
+    ),
+    (
+        "Diana Carolina Flores",
+        "8-456-7890",
+        "CEDULA_PA",
+        "Panamá",
+        "Viceministra de Salud",
+        "Ministerio de Salud de Panamá",
+    ),
+]
 
-    # This works because the models are already imported and registered from app.models
-    # SQLModel.metadata.create_all(engine)
+LISTA_RESTRICTIVA_DEMO = [
+    (
+        "OFAC",
+        "Carlos Eduardo Mendoza",
+        "CO-1234567",
+        "Colombia",
+        "Narcotráfico y lavado de activos",
+    ),
+    (
+        "OFAC",
+        "Viktor Petrov",
+        "RU-9876543",
+        "Rusia",
+        "Lavado de activos internacionales",
+    ),
+    (
+        "ONU",
+        "Al-Rashid Trading LLC",
+        None,
+        "EAU",
+        "Financiamiento del terrorismo",
+    ),
+    (
+        "ONU",
+        "Ibrahim Hassan Al-Farsi",
+        None,
+        "Libia",
+        "Proliferación de armas",
+    ),
+    (
+        "UE",
+        "Dimitri Volkov",
+        "RU-5647382",
+        "Rusia",
+        "Evasión de sanciones internacionales",
+    ),
+    (
+        "OFAC",
+        "Luisa Fernanda Ospina",
+        "CO-7382910",
+        "Colombia",
+        "Lavado de activos",
+    ),
+    (
+        "ONU",
+        "Pacific Shell Corp",
+        None,
+        "Panamá",
+        "Empresa pantalla identificada",
+    ),
+    (
+        "UE",
+        "Hassan Al-Mansouri",
+        None,
+        "Irán",
+        "Financiamiento del terrorismo",
+    ),
+]
 
-    user = session.exec(
+
+def _seed_usuarios(session: Session) -> None:
+    """Crea el superusuario inicial y los 6 usuarios demo si no existen."""
+    superuser = session.exec(
         select(User).where(User.email == settings.FIRST_SUPERUSER)
     ).first()
-    if not user:
-        user_in = UserCreate(
+    if not superuser:
+        superuser = User(
             email=settings.FIRST_SUPERUSER,
-            password=settings.FIRST_SUPERUSER_PASSWORD,
+            hashed_password=get_password_hash(settings.FIRST_SUPERUSER_PASSWORD),
             is_superuser=True,
+            is_active=True,
+            full_name="Superusuario",
+            role=UserRole.ADMIN,
         )
-        user = crud.create_user(session=session, user_create=user_in)
+        session.add(superuser)
+        session.commit()
+
+    for email, nombre, password, role, is_superuser in USUARIOS_DEMO:
+        existing = session.exec(select(User).where(User.email == email)).first()
+        if existing:
+            continue
+        user = User(
+            email=email,
+            hashed_password=get_password_hash(password),
+            full_name=nombre,
+            role=role,
+            is_superuser=is_superuser,
+            is_active=True,
+        )
+        session.add(user)
+    session.commit()
+
+
+def _seed_peps(session: Session) -> None:
+    """Sembrado idempotente de PEPs simulados."""
+    for (
+        nombre_completo,
+        numero_documento,
+        tipo_documento,
+        pais,
+        cargo,
+        institucion,
+    ) in PEPS_DEMO:
+        existing = session.exec(
+            select(PepSimulado).where(
+                PepSimulado.numero_documento == numero_documento
+            )
+        ).first()
+        if existing:
+            continue
+        session.add(
+            PepSimulado(
+                nombre_completo=nombre_completo,
+                numero_documento=numero_documento,
+                tipo_documento=tipo_documento,
+                pais=pais,
+                cargo=cargo,
+                institucion=institucion,
+                activo=True,
+            )
+        )
+    session.commit()
+
+
+def _seed_lista_restrictiva(session: Session) -> None:
+    """Sembrado idempotente de la lista restrictiva simulada."""
+    for (
+        fuente,
+        nombre_completo,
+        numero_documento,
+        pais,
+        motivo,
+    ) in LISTA_RESTRICTIVA_DEMO:
+        existing = session.exec(
+            select(ListaRestrictivaSimulada).where(
+                ListaRestrictivaSimulada.fuente == fuente,
+                ListaRestrictivaSimulada.nombre_completo == nombre_completo,
+            )
+        ).first()
+        if existing:
+            continue
+        session.add(
+            ListaRestrictivaSimulada(
+                fuente=fuente,
+                nombre_completo=nombre_completo,
+                numero_documento=numero_documento,
+                pais=pais,
+                motivo=motivo,
+                activo=True,
+            )
+        )
+    session.commit()
+
+
+def init_db(session: Session) -> None:
+    """Inicializa la base de datos con datos demo (idempotente)."""
+    _seed_usuarios(session)
+    _seed_peps(session)
+    _seed_lista_restrictiva(session)
