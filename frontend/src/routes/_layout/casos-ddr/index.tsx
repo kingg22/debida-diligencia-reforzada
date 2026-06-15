@@ -46,7 +46,7 @@ function CasosDdrPage() {
     retry: false,
   })
 
-  const total = data?.total ?? 0
+  const total = data?.count ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
   return (
@@ -91,7 +91,7 @@ function CasosDdrPage() {
         <LoadingState label="Cargando casos…" />
       ) : isError ? (
         <ErrorState message={(error as Error)?.message} onRetry={() => refetch()} />
-      ) : data && data.items.length === 0 ? (
+      ) : data && data.data.length === 0 ? (
         <EmptyState message="No hay casos DDR para mostrar." />
       ) : (
         <div className="overflow-hidden rounded-xl" style={{ border: "1px solid #1b2e4a" }}>
@@ -111,7 +111,7 @@ function CasosDdrPage() {
                 </tr>
               </thead>
               <tbody>
-                {data?.items.map((caso) => (
+                {data?.data.map((caso) => (
                   <tr
                     key={caso.id}
                     onClick={() => navigate({ to: "/casos-ddr/$id", params: { id: caso.id } })}

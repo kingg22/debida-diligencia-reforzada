@@ -1,4 +1,4 @@
-import { Home, Users, ShieldCheck, ClipboardList } from "lucide-react"
+import { Home, Users, ShieldCheck, ClipboardList, FolderOpen, Briefcase } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import {
@@ -17,6 +17,11 @@ const baseItems: Item[] = [
 
 const kycItems: Item[] = [
   { icon: ClipboardList, title: "Nuevo Cliente KYC", path: "/kyc/nuevo" },
+  { icon: FolderOpen, title: "Clientes", path: "/clientes" },
+]
+
+const ddrItems: Item[] = [
+  { icon: Briefcase, title: "Casos DDR", path: "/casos-ddr" },
 ]
 
 const adminItems: Item[] = [
@@ -55,11 +60,18 @@ export function AppSidebar() {
     role === "ADMIN" ||
     role === "ANALISTA_DDR" ||
     role === "OFICIAL_CUMPLIMIENTO"
+  const canDdr =
+    role === "ADMIN" ||
+    role === "ANALISTA_DDR" ||
+    role === "OFICIAL_CUMPLIMIENTO" ||
+    role === "GERENTE_CUMPLIMIENTO" ||
+    role === "COMITE_CUMPLIMIENTO"
   const isAdmin = role === "ADMIN"
 
   const items = [
     ...baseItems,
     ...(canKyc ? kycItems : []),
+    ...(canDdr ? ddrItems : []),
     ...(isAdmin ? adminItems : []),
   ]
 

@@ -76,9 +76,6 @@ function Login() {
           else if (next === 3) setState("error_approaching_lock")
           else setState("error_last_attempt")
         },
-        onSettled: () => {
-          setState("idle")
-        },
       },
     )
   }
