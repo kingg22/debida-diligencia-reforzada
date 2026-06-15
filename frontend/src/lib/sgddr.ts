@@ -127,6 +127,47 @@ export const TIPO_CLIENTE_LABELS: Record<TipoCliente, string> = {
   JURIDICA: "Persona Jurídica",
 }
 
+// ── Estado del cliente (spec: cliente.estado) ───────────────────────────────────
+export type EstadoCliente = "ACTIVO" | "PENDIENTE" | "RECHAZADO" | "BLOQUEADO"
+
+export const ESTADO_CLIENTE: Record<
+  EstadoCliente,
+  { label: string; color: string; bg: string }
+> = {
+  ACTIVO: { label: "Activo", color: "#22c55e", bg: "rgba(34,197,94,0.14)" },
+  PENDIENTE: {
+    label: "Pendiente",
+    color: "#eab308",
+    bg: "rgba(234,179,8,0.14)",
+  },
+  RECHAZADO: {
+    label: "Rechazado",
+    color: "#e05252",
+    bg: "rgba(224,82,82,0.14)",
+  },
+  BLOQUEADO: {
+    label: "Bloqueado",
+    color: "#B71C1C",
+    bg: "rgba(183,28,28,0.14)",
+  },
+}
+
+// Catálogos para filtros y formularios (alineados al documento consolidado).
+export const NIVELES_RIESGO: NivelRiesgo[] = ["BAJO", "MEDIO", "ALTO", "MUY_ALTO"]
+export const ESTADOS_CLIENTE: EstadoCliente[] = [
+  "ACTIVO",
+  "PENDIENTE",
+  "RECHAZADO",
+  "BLOQUEADO",
+]
+export const ESTADOS_CASO: EstadoCaso[] = [
+  "ABIERTO",
+  "EN_REVISION",
+  "EN_APROBACION",
+  "APROBADO",
+  "RECHAZADO",
+]
+
 // ── Helpers de formato ─────────────────────────────────────────────────────────
 export function formatFecha(iso?: string | null): string {
   if (!iso) return "—"
