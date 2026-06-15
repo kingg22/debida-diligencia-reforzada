@@ -11,7 +11,9 @@ def get_datetime_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
-# Roles del sistema SGDDR (Ley 23/2015, Ley 254/2021)
+# ── Roles ────────────────────────────────────────────────────────────────────
+
+
 class UserRole(str, Enum):
     ADMIN = "ADMIN"
     OFICIAL_CUMPLIMIENTO = "OFICIAL_CUMPLIMIENTO"
@@ -21,21 +23,20 @@ class UserRole(str, Enum):
     AUDITOR = "AUDITOR"
 
 
-# Shared properties
+# ── User ─────────────────────────────────────────────────────────────────────
+
+
 class UserBase(SQLModel):
     email: EmailStr = Field(unique=True, index=True, max_length=255)
     is_active: bool = True
     is_superuser: bool = False
     full_name: str | None = Field(default=None, max_length=255)
-    # Guardado como VARCHAR(50) para evitar el ENUM nativo de Postgres
-    # (más simple de migrar); el valor se valida con UserRole en la capa API.
     role: UserRole = Field(
         default=UserRole.ANALISTA_DDR,
         sa_type=String(length=50),  # type: ignore
     )
 
 
-# Properties to receive via API on creation
 class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=128)
 
@@ -46,7 +47,6 @@ class UserRegister(SQLModel):
     full_name: str | None = Field(default=None, max_length=255)
 
 
-# Properties to receive via API on update, all are optional
 class UserUpdate(UserBase):
     email: EmailStr | None = Field(default=None, max_length=255)  # type: ignore[assignment]
     password: str | None = Field(default=None, min_length=8, max_length=128)
@@ -63,7 +63,6 @@ class UpdatePassword(SQLModel):
     new_password: str = Field(min_length=8, max_length=128)
 
 
-# Database model, database table inferred from class name
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
@@ -74,7 +73,6 @@ class User(UserBase, table=True):
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
-# Properties to return via API, id is always required
 class UserPublic(UserBase):
     id: uuid.UUID
     created_at: datetime | None = None
@@ -85,23 +83,22 @@ class UsersPublic(SQLModel):
     count: int
 
 
-# Shared properties
+# ── Item ─────────────────────────────────────────────────────────────────────
+
+
 class ItemBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
 
 
-# Properties to receive on item creation
 class ItemCreate(ItemBase):
     pass
 
 
-# Properties to receive on item update
 class ItemUpdate(ItemBase):
     title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore[assignment]
 
 
-# Database model, database table inferred from class name
 class Item(ItemBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime | None = Field(
@@ -114,7 +111,6 @@ class Item(ItemBase, table=True):
     owner: User | None = Relationship(back_populates="items")
 
 
-# Properties to return via API, id is always required
 class ItemPublic(ItemBase):
     id: uuid.UUID
     owner_id: uuid.UUID
@@ -126,18 +122,18 @@ class ItemsPublic(SQLModel):
     count: int
 
 
-# Generic message
+# ── Generic ──────────────────────────────────────────────────────────────────
+
+
 class Message(SQLModel):
     message: str
 
 
-# JSON payload containing access token
 class Token(SQLModel):
     access_token: str
     token_type: str = "bearer"
 
 
-# Contents of JWT token
 class TokenPayload(SQLModel):
     sub: str | None = None
 
@@ -148,11 +144,8 @@ class NewPassword(SQLModel):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# KYC — Registro de Clientes (Ley 23/2015, Ley 254/2021)
+# KYC — Enums
 # ─────────────────────────────────────────────────────────────────────────────
-# Nota de diseño: los campos tipo-enum se guardan como VARCHAR en las tablas
-# (migración simple, sin ENUM nativo de Postgres) y se exponen como enums en los
-# esquemas de la API para dar tipos fuertes al cliente del frontend.
 
 
 class ClientType(str, Enum):
@@ -195,32 +188,39 @@ class DocumentoEstado(str, Enum):
     RECHAZADO = "RECHAZADO"
 
 
-# ── Persona Natural ──────────────────────────────────────────────────────────
+class EstadoCasoDDR(str, Enum):
+    ABIERTO = "ABIERTO"
+    EN_REVISION = "EN_REVISION"
+    EN_APROBACION = "EN_APROBACION"
+    APROBADO = "APROBADO"
+    RECHAZADO = "RECHAZADO"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# KYC — Persona Natural
+# ─────────────────────────────────────────────────────────────────────────────
+
+
 class PersonaNaturalBase(SQLModel):
-    # Identificación
     tipo_documento: str = Field(max_length=30)
     numero_documento: str = Field(max_length=50)
     fecha_expiracion_doc: str = Field(max_length=20)
     nacionalidad: str = Field(max_length=80)
     pais_nacimiento: str = Field(max_length=80)
-    # Datos personales
     nombre: str = Field(max_length=100)
     apellido: str = Field(max_length=100)
     fecha_nacimiento: str = Field(max_length=20)
     genero: str = Field(max_length=20)
     estado_civil: str = Field(max_length=20)
-    # Contacto
     telefono: str = Field(max_length=30)
     email: str = Field(max_length=255)
     direccion: str = Field(max_length=255)
     ciudad: str = Field(max_length=100)
     pais: str = Field(max_length=80)
-    # Perfil económico
     ocupacion: str = Field(max_length=120)
     empleador: str = Field(max_length=120)
     ingreso_mensual_aproximado: float = 0
     fuente_ingresos: str = Field(max_length=60)
-    # Indicadores de riesgo
     es_pep: bool = False
     es_pep_familiar: bool = False
     tiene_antecedentes: bool = False
@@ -231,9 +231,7 @@ class PersonaNatural(PersonaNaturalBase, table=True):
     expediente_id: uuid.UUID = Field(
         foreign_key="expedientekyc.id", nullable=False, ondelete="CASCADE"
     )
-    expediente: "ExpedienteKYC" = Relationship(
-        back_populates="persona_natural"
-    )
+    expediente: "ExpedienteKYC" = Relationship(back_populates="persona_natural")
 
 
 class PersonaNaturalCreate(PersonaNaturalBase):
@@ -244,30 +242,29 @@ class PersonaNaturalPublic(PersonaNaturalBase):
     id: uuid.UUID
 
 
-# ── Persona Jurídica ─────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# KYC — Persona Jurídica
+# ─────────────────────────────────────────────────────────────────────────────
+
+
 class PersonaJuridicaBase(SQLModel):
-    # Identificación legal
     razon_social: str = Field(max_length=200)
     ruc: str = Field(max_length=50)
     tipo_sociedad: str = Field(max_length=30)
     fecha_constitucion: str = Field(max_length=20)
     pais_constitucion: str = Field(max_length=80)
     numero_registro_mercantil: str = Field(max_length=80)
-    # Representante legal
     nombre_representante: str = Field(max_length=150)
     cedula_representante: str = Field(max_length=50)
     cargo_representante: str = Field(max_length=80)
-    # Contacto
     telefono_empresa: str = Field(max_length=30)
     email_empresa: str = Field(max_length=255)
     direccion_fiscal: str = Field(max_length=255)
     ciudad: str = Field(max_length=100)
     pais: str = Field(max_length=80)
-    # Perfil económico
     actividad_economica: str = Field(max_length=200)
     ingreso_anual_aproximado: float = 0
     cantidad_empleados: int = 0
-    # Indicadores de riesgo
     tiene_accionistas_anonimos: bool = False
     opera_en_paises_alto_riesgo: bool = False
 
@@ -277,9 +274,7 @@ class PersonaJuridica(PersonaJuridicaBase, table=True):
     expediente_id: uuid.UUID = Field(
         foreign_key="expedientekyc.id", nullable=False, ondelete="CASCADE"
     )
-    expediente: "ExpedienteKYC" = Relationship(
-        back_populates="persona_juridica"
-    )
+    expediente: "ExpedienteKYC" = Relationship(back_populates="persona_juridica")
 
 
 class PersonaJuridicaCreate(PersonaJuridicaBase):
@@ -290,7 +285,11 @@ class PersonaJuridicaPublic(PersonaJuridicaBase):
     id: uuid.UUID
 
 
-# ── Beneficiario Final ───────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# KYC — Beneficiario Final
+# ─────────────────────────────────────────────────────────────────────────────
+
+
 class BeneficiarioFinalBase(SQLModel):
     nombre: str = Field(max_length=100)
     apellido: str = Field(max_length=100)
@@ -307,9 +306,7 @@ class BeneficiarioFinal(BeneficiarioFinalBase, table=True):
     expediente_id: uuid.UUID = Field(
         foreign_key="expedientekyc.id", nullable=False, ondelete="CASCADE"
     )
-    expediente: "ExpedienteKYC" = Relationship(
-        back_populates="beneficiarios_final"
-    )
+    expediente: "ExpedienteKYC" = Relationship(back_populates="beneficiarios_final")
 
 
 class BeneficiarioFinalCreate(BeneficiarioFinalBase):
@@ -320,18 +317,109 @@ class BeneficiarioFinalPublic(BeneficiarioFinalBase):
     id: uuid.UUID
 
 
-# ── Documento KYC ────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# DDR — Caso DDR y Cuestionario EBR
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class CuestionarioEBR(SQLModel, table=True):
+    __tablename__ = "cuestionario_ebr"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    caso_ddr_id: uuid.UUID = Field(
+        foreign_key="caso_ddr.id", unique=True, ondelete="CASCADE"
+    )
+    origen_fondos: str | None = Field(default=None, max_length=2000)
+    proposito_relacion: str | None = Field(default=None, max_length=2000)
+    patrimonio_estimado: str | None = Field(default=None, max_length=20)
+    pais_origen_patrimonio: str | None = Field(default=None, max_length=60)
+    tiene_estructura_societaria: bool | None = Field(default=None)
+    familiar_pep: bool | None = Field(default=None)
+    completado: bool = Field(default=False)
+    completado_por: uuid.UUID | None = Field(default=None, foreign_key="user.id")
+    completado_en: datetime | None = Field(
+        default=None, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+
+
+class CuestionarioEBRPublic(SQLModel):
+    id: uuid.UUID
+    caso_ddr_id: uuid.UUID
+    origen_fondos: str | None = None
+    proposito_relacion: str | None = None
+    patrimonio_estimado: str | None = None
+    pais_origen_patrimonio: str | None = None
+    tiene_estructura_societaria: bool | None = None
+    familiar_pep: bool | None = None
+    completado: bool = False
+    completado_por: uuid.UUID | None = None
+    completado_en: datetime | None = None
+
+
+class CasoDDR(SQLModel, table=True):
+    __tablename__ = "caso_ddr"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    expediente_id: uuid.UUID = Field(
+        foreign_key="expedientekyc.id", unique=True, ondelete="CASCADE"
+    )
+    nivel_riesgo: str = Field(max_length=20)
+    status: str = Field(default=EstadoCasoDDR.ABIERTO.value, max_length=20)
+    analista_id: uuid.UUID | None = Field(default=None, foreign_key="user.id")
+    aprobado_por_id: uuid.UUID | None = Field(default=None, foreign_key="user.id")
+    observaciones_rechazo: str | None = Field(default=None, max_length=1000)
+    fecha_apertura: datetime = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    fecha_cierre: datetime | None = Field(
+        default=None, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+    updated_at: datetime | None = Field(
+        default=None, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+
+    cuestionario: CuestionarioEBR | None = Relationship()
+
+
+class CasoDDRPublic(SQLModel):
+    id: uuid.UUID
+    expediente_id: uuid.UUID
+    nivel_riesgo: str
+    status: str
+    analista_id: uuid.UUID | None = None
+    aprobado_por_id: uuid.UUID | None = None
+    observaciones_rechazo: str | None = None
+    fecha_apertura: datetime | None = None
+    fecha_cierre: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class CasosDDRPublic(SQLModel):
+    data: list[CasoDDRPublic]
+    count: int
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# KYC — Documento
+# ─────────────────────────────────────────────────────────────────────────────
+
+
 class DocumentoKYC(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     expediente_id: uuid.UUID = Field(
         foreign_key="expedientekyc.id", nullable=False, ondelete="CASCADE"
     )
+    caso_ddr_id: uuid.UUID | None = Field(default=None, foreign_key="caso_ddr.id")
     tipo: str = Field(max_length=40)
     nombre: str = Field(max_length=255)
     tamanio: int = 0
     mime_type: str = Field(max_length=80)
     estado: str = Field(default=DocumentoEstado.PENDIENTE.value, max_length=20)
     ruta_archivo: str | None = Field(default=None, max_length=500)
+    hash_sha256: str | None = Field(default=None, max_length=64)
     fecha_carga: datetime | None = Field(
         default_factory=get_datetime_utc,
         sa_type=DateTime(timezone=True),  # type: ignore
@@ -342,15 +430,21 @@ class DocumentoKYC(SQLModel, table=True):
 class DocumentoKYCPublic(SQLModel):
     id: uuid.UUID
     expediente_id: uuid.UUID
+    caso_ddr_id: uuid.UUID | None = None
     tipo: DocumentoTipo
     nombre: str
     tamanio: int
     mime_type: str
     estado: DocumentoEstado
+    hash_sha256: str | None = None
     fecha_carga: datetime | None = None
 
 
-# ── Expediente KYC ───────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# KYC — Expediente
+# ─────────────────────────────────────────────────────────────────────────────
+
+
 class ExpedienteKYC(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     codigo: str = Field(unique=True, index=True, max_length=20)
@@ -385,19 +479,17 @@ class ExpedienteKYC(SQLModel, table=True):
     documentos: list[DocumentoKYC] = Relationship(
         back_populates="expediente", cascade_delete=True
     )
+    caso_ddr: CasoDDR | None = Relationship()
 
 
-# Payload de creación (wizard): persona según tipo + beneficiarios.
 class ExpedienteKYCCreate(SQLModel):
     tipo_cliente: ClientType
     persona_natural: PersonaNaturalCreate | None = None
     persona_juridica: PersonaJuridicaCreate | None = None
     beneficiarios_final: list[BeneficiarioFinalCreate] = Field(default_factory=list)
-    # Si es True el expediente se envía a revisión; si no, queda como BORRADOR.
     enviar_a_revision: bool = False
 
 
-# Cambios de estado (enviar a revisión, aprobar, rechazar).
 class ExpedienteKYCUpdate(SQLModel):
     status: KYCStatus | None = None
     comentario_rechazo: str | None = Field(default=None, max_length=1000)
@@ -425,7 +517,9 @@ class ExpedientesKYCPublic(SQLModel):
     count: int
 
 
-# ── Riesgo y listas restrictivas (resultado, no persistido en detalle) ───────
+# ── Riesgo (schemas, no tablas) ─────────────────────────────────────────────
+
+
 class FactorRiesgo(SQLModel):
     factor: str
     peso: int
