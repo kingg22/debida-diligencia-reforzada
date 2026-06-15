@@ -82,7 +82,23 @@ def get_dashboard(session: SessionDep, current_user: CurrentUser) -> Any:
     rol = current_user.role
     is_admin = current_user.is_superuser
 
-    if rol == UserRole.OFICIAL_CUMPLIMIENTO or is_admin:
+    if rol == UserRole.ADMIN or is_admin:
+        return {
+            "total_usuarios": session.exec(
+                select(func.count()).select_from(User)
+            ).one(),
+            "usuarios_activos": session.exec(
+                select(func.count()).select_from(User).where(User.is_active == True)  # noqa: E712
+            ).one(),
+            "total_clientes": session.exec(
+                select(func.count()).select_from(ExpedienteKYC)
+            ).one(),
+            "total_casos_ddr": session.exec(
+                select(func.count()).select_from(CasoDDR)
+            ).one(),
+        }
+
+    if rol == UserRole.OFICIAL_CUMPLIMIENTO:
         return {
             "clientes_registrados_hoy": _count_expedientes_hoy(session),
             "clientes_pendientes_revision": _count_expedientes_por_estado(
@@ -123,22 +139,6 @@ def get_dashboard(session: SessionDep, current_user: CurrentUser) -> Any:
 
     if rol == UserRole.AUDITOR:
         return {
-            "total_clientes": session.exec(
-                select(func.count()).select_from(ExpedienteKYC)
-            ).one(),
-            "total_casos_ddr": session.exec(
-                select(func.count()).select_from(CasoDDR)
-            ).one(),
-        }
-
-    if rol == UserRole.ADMIN:
-        return {
-            "total_usuarios": session.exec(
-                select(func.count()).select_from(User)
-            ).one(),
-            "usuarios_activos": session.exec(
-                select(func.count()).select_from(User).where(User.is_active == True)  # noqa: E712
-            ).one(),
             "total_clientes": session.exec(
                 select(func.count()).select_from(ExpedienteKYC)
             ).one(),
