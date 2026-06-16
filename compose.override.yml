@@ -97,6 +97,8 @@ services:
     restart: "no"
     ports:
       - "5173:80"
+    depends_on:
+      - backend
     build:
       context: .
       dockerfile: frontend/Dockerfile

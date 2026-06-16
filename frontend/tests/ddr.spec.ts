@@ -185,8 +185,8 @@ test.describe("Validación de Roles", () => {
 
   test("analista puede ver sus casos", async ({ page }) => {
     await page.goto("/login")
-    await page.getByPlaceholder("correo@institución.com").fill("analista@example.com")
-    await page.getByPlaceholder("••••••••").fill("changethis")
+    await page.getByPlaceholder("correo@institución.com").fill("carlos@sgddr.pa")
+    await page.getByPlaceholder("••••••••").fill("Demo123!")
     await page.getByRole("button", { name: "Ingresar" }).click()
     await page.waitForURL("/")
     await page.getByRole("link", { name: "Casos DDR" }).click()
@@ -195,8 +195,8 @@ test.describe("Validación de Roles", () => {
 
   test("oficial puede ver clientes", async ({ page }) => {
     await page.goto("/login")
-    await page.getByPlaceholder("correo@institución.com").fill("oficial@example.com")
-    await page.getByPlaceholder("••••••••").fill("changethis")
+    await page.getByPlaceholder("correo@institución.com").fill("rosa@sgddr.pa")
+    await page.getByPlaceholder("••••••••").fill("Demo123!")
     await page.getByRole("button", { name: "Ingresar" }).click()
     await page.waitForURL("/")
     await page.getByRole("link", { name: "Clientes" }).click()
