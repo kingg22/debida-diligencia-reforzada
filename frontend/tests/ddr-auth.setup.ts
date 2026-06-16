@@ -9,9 +9,9 @@ const BASE = process.env.API_BASE_URL || "http://backend:8000"
 
 const users = {
   admin: { email: "admin@example.com", password: "changethis" },
-  analista: { email: "analista@example.com", password: "changethis" },
-  oficial: { email: "oficial@example.com", password: "changethis" },
-  gerente: { email: "gerente@example.com", password: "changethis" },
+  analista: { email: "carlos@sgddr.pa", password: "Demo123!" },
+  oficial: { email: "rosa@sgddr.pa", password: "Demo123!" },
+  gerente: { email: "luis@sgddr.pa", password: "Demo123!" },
 }
 
 async function loginAPI(user: { email: string; password: string }) {
