@@ -57,17 +57,18 @@ def get_current_active_superuser(current_user: CurrentUser) -> User:
     return current_user
 
 
-def require_roles(*roles: UserRole) -> Callable[[User], User]:
-    """Dependencia: exige que el usuario tenga uno de los roles dados.
+def require_roles(*roles: UserRole):
+    """Devuelve una dependencia FastAPI que valida que el usuario actual
+    tenga alguno de los roles indicados (o sea superusuario)."""
 
-    El superusuario (ADMIN) siempre pasa.
-    """
-
-    def checker(current_user: CurrentUser) -> User:
-        if current_user.is_superuser or current_user.role in roles:
+    def _check(current_user: CurrentUser) -> User:
+        if current_user.is_superuser:
             return current_user
-        raise HTTPException(
-            status_code=403, detail="The user doesn't have enough privileges"
-        )
+        if current_user.role not in roles:
+            raise HTTPException(
+                status_code=403,
+                detail="No tiene permisos para realizar esta acción",
+            )
+        return current_user
 
-    return checker
+    return _check

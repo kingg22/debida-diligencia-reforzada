@@ -11,7 +11,7 @@ def get_datetime_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
-# ── Roles ────────────────────────────────────────────────────────────────────
+# ── Roles del sistema (SGDDR) ──────────────────────────────────────────────
 
 
 class UserRole(str, Enum):
@@ -39,6 +39,7 @@ class UserBase(SQLModel):
 
 class UserCreate(UserBase):
     password: str = Field(min_length=8, max_length=128)
+    role: UserRole = Field(default=UserRole.OFICIAL_CUMPLIMIENTO)
 
 
 class UserRegister(SQLModel):
@@ -50,7 +51,7 @@ class UserRegister(SQLModel):
 class UserUpdate(UserBase):
     email: EmailStr | None = Field(default=None, max_length=255)  # type: ignore[assignment]
     password: str | None = Field(default=None, min_length=8, max_length=128)
-    role: UserRole | None = Field(default=None)  # type: ignore[assignment]
+    role: UserRole | None = Field(default=None)
 
 
 class UserUpdateMe(SQLModel):
@@ -66,6 +67,12 @@ class UpdatePassword(SQLModel):
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
+    role: UserRole = Field(default=UserRole.OFICIAL_CUMPLIMIENTO)
+    intentos_fallidos: int = Field(default=0)
+    bloqueado_hasta: datetime | None = Field(
+        default=None,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
     created_at: datetime | None = Field(
         default_factory=get_datetime_utc,
         sa_type=DateTime(timezone=True),  # type: ignore
@@ -75,6 +82,7 @@ class User(UserBase, table=True):
 
 class UserPublic(UserBase):
     id: uuid.UUID
+    role: UserRole
     created_at: datetime | None = None
 
 
@@ -143,9 +151,82 @@ class NewPassword(SQLModel):
     new_password: str = Field(min_length=8, max_length=128)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# KYC — Enums
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Auditoría (append-only) ────────────────────────────────────────────────
+
+
+class ModuloAuditoria(str, Enum):
+    AUTH = "AUTH"
+    USUARIOS = "USUARIOS"
+    KYC = "KYC"
+    DDR = "DDR"
+    SISTEMA = "SISTEMA"
+
+
+class Auditoria(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    usuario_id: uuid.UUID | None = Field(default=None, foreign_key="user.id")
+    modulo: str = Field(max_length=20, index=True)
+    accion: str = Field(max_length=100, index=True)
+    entidad_tipo: str | None = Field(default=None, max_length=50)
+    entidad_id: uuid.UUID | None = Field(default=None, index=True)
+    descripcion: str | None = Field(default=None, max_length=500)
+    ip_origen: str | None = Field(default=None, max_length=45)
+    creado_en: datetime = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+
+
+class AuditoriaPublic(SQLModel):
+    id: uuid.UUID
+    usuario_id: uuid.UUID | None
+    usuario_nombre: str | None = None
+    modulo: str
+    accion: str
+    entidad_tipo: str | None
+    entidad_id: uuid.UUID | None
+    descripcion: str | None
+    ip_origen: str | None
+    creado_en: datetime
+
+
+class AuditoriasPublic(SQLModel):
+    data: list[AuditoriaPublic]
+    count: int
+
+
+# ── Tablas de simulación (consultadas por Dev 2) ───────────────────────────
+
+
+class PepSimulado(SQLModel, table=True):
+    __tablename__ = "pep_simulado"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    nombre_completo: str = Field(max_length=200)
+    numero_documento: str = Field(max_length=20, index=True)
+    tipo_documento: str = Field(max_length=20)
+    pais: str = Field(max_length=60)
+    cargo: str = Field(max_length=150)
+    institucion: str = Field(max_length=150)
+    activo: bool = Field(default=True)
+
+
+class ListaRestrictivaSimulada(SQLModel, table=True):
+    __tablename__ = "lista_restrictiva_simulada"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    fuente: str = Field(max_length=20, index=True)  # OFAC | ONU | UE | INTERNA
+    nombre_completo: str = Field(max_length=200)
+    alias: str | None = Field(default=None, max_length=200)
+    numero_documento: str | None = Field(default=None, max_length=20, index=True)
+    pais: str | None = Field(default=None, max_length=60)
+    motivo: str | None = Field(default=None, max_length=200)
+    fecha_inclusion: datetime = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    activo: bool = Field(default=True)
+
+
+# ── KYC — Enums ─────────────────────────────────────────────────────────────
 
 
 class ClientType(str, Enum):
@@ -196,9 +277,10 @@ class EstadoCasoDDR(str, Enum):
     RECHAZADO = "RECHAZADO"
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# KYC — Persona Natural
-# ─────────────────────────────────────────────────────────────────────────────
+EstadoCaso = EstadoCasoDDR
+
+
+# ── KYC — Persona Natural ───────────────────────────────────────────────────
 
 
 class PersonaNaturalBase(SQLModel):
@@ -242,9 +324,7 @@ class PersonaNaturalPublic(PersonaNaturalBase):
     id: uuid.UUID
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# KYC — Persona Jurídica
-# ─────────────────────────────────────────────────────────────────────────────
+# ── KYC — Persona Jurídica ─────────────────────────────────────────────────
 
 
 class PersonaJuridicaBase(SQLModel):
@@ -285,9 +365,7 @@ class PersonaJuridicaPublic(PersonaJuridicaBase):
     id: uuid.UUID
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# KYC — Beneficiario Final
-# ─────────────────────────────────────────────────────────────────────────────
+# ── KYC — Beneficiario Final ───────────────────────────────────────────────
 
 
 class BeneficiarioFinalBase(SQLModel):
@@ -317,9 +395,7 @@ class BeneficiarioFinalPublic(BeneficiarioFinalBase):
     id: uuid.UUID
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# DDR — Caso DDR y Cuestionario EBR
-# ─────────────────────────────────────────────────────────────────────────────
+# ── DDR — Caso DDR y Cuestionario EBR ──────────────────────────────────────
 
 
 class CuestionarioEBR(SQLModel, table=True):
@@ -402,9 +478,7 @@ class CasosDDRPublic(SQLModel):
     count: int
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# KYC — Documento
-# ─────────────────────────────────────────────────────────────────────────────
+# ── KYC — Documento ────────────────────────────────────────────────────────
 
 
 class DocumentoKYC(SQLModel, table=True):
@@ -440,12 +514,11 @@ class DocumentoKYCPublic(SQLModel):
     fecha_carga: datetime | None = None
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# KYC — Expediente
-# ─────────────────────────────────────────────────────────────────────────────
+# ── KYC — Expediente ───────────────────────────────────────────────────────
 
 
 class ExpedienteKYC(SQLModel, table=True):
+    __tablename__ = "expedientekyc"
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     codigo: str = Field(unique=True, index=True, max_length=20)
     tipo_cliente: str = Field(max_length=20)
