@@ -14,6 +14,14 @@ from app.models import (
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
+# Usuarios demo sembrados para probar el control de acceso por rol.
+# La contraseña es la misma del superusuario (entorno local).
+DEMO_USERS: list[tuple[str, str, UserRole]] = [
+    ("analista@example.com", "Analista DDR", UserRole.ANALISTA_DDR),
+    ("oficial@example.com", "Oficial de Cumplimiento", UserRole.OFICIAL_CUMPLIMIENTO),
+]
+
+
 # make sure all SQLModel models are imported (app.models) before initializing DB
 # otherwise, SQLModel might fail to initialize relationships properly
 # for more details: https://github.com/fastapi/full-stack-fastapi-template/issues/28

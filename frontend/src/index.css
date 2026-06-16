@@ -36,8 +36,8 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* ─── PanamaCompliance dark navy theme (always-on) ────────────────── */
-:root {
+/* ─── PanamaCompliance dark navy theme ──────────────────────────── */
+.dark {
   --radius: 0.5rem;
 
   --background: #040d1c;
@@ -68,34 +68,36 @@
   --sidebar-ring: #c9a84c;
 }
 
-/* keep .dark identical so theme toggles don't flip colors */
-.dark {
-  --background: #040d1c;
-  --foreground: #f0ede8;
-  --card: #0a1628;
-  --card-foreground: #f0ede8;
-  --popover: #0f1f3a;
-  --popover-foreground: #f0ede8;
-  --primary: #c9a84c;
-  --primary-foreground: #040d1c;
-  --secondary: #0f1f3a;
-  --secondary-foreground: #f0ede8;
-  --muted: #0f1f3a;
-  --muted-foreground: #8a9bb5;
-  --accent: #1b2e4a;
-  --accent-foreground: #f0ede8;
-  --destructive: #e05252;
-  --border: #1b2e4a;
-  --input: #1b2e4a;
-  --ring: #c9a84c;
-  --sidebar: #0a1628;
-  --sidebar-foreground: #f0ede8;
-  --sidebar-primary: #c9a84c;
-  --sidebar-primary-foreground: #040d1c;
-  --sidebar-accent: #1b2e4a;
-  --sidebar-accent-foreground: #f0ede8;
-  --sidebar-border: #1b2e4a;
-  --sidebar-ring: #c9a84c;
+/* ─── PanamaCompliance light theme ──────────────────────────────── */
+:root {
+  --radius: 0.5rem;
+
+  --background: #f8f7f4;
+  --foreground: #1a1a2e;
+  --card: #ffffff;
+  --card-foreground: #1a1a2e;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a2e;
+  --primary: #b8942e;
+  --primary-foreground: #ffffff;
+  --secondary: #f0ede8;
+  --secondary-foreground: #1a1a2e;
+  --muted: #f0ede8;
+  --muted-foreground: #6b7280;
+  --accent: #e8e4dc;
+  --accent-foreground: #1a1a2e;
+  --destructive: #dc2626;
+  --border: #e0ddd6;
+  --input: #e0ddd6;
+  --ring: #b8942e;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1a2e;
+  --sidebar-primary: #b8942e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0ede8;
+  --sidebar-accent-foreground: #1a1a2e;
+  --sidebar-border: #e0ddd6;
+  --sidebar-ring: #b8942e;
 }
 
 @layer base {

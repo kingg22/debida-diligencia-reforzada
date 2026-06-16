@@ -29,7 +29,7 @@ def _count_expedientes_por_estado(session, estado: KYCStatus) -> int:
 
 
 def _count_casos_por_estado(session, estado: EstadoCaso) -> int:
-    statement = select(func.count()).select_from(CasoDDR).where(CasoDDR.estado == estado)
+    statement = select(func.count()).select_from(CasoDDR).where(CasoDDR.status == estado)
     return session.exec(statement).one()
 
 
@@ -39,7 +39,7 @@ def _count_casos_analista_estado(
     statement = (
         select(func.count())
         .select_from(CasoDDR)
-        .where(CasoDDR.analista_id == analista_id, CasoDDR.estado == estado)
+        .where(CasoDDR.analista_id == analista_id, CasoDDR.status == estado)
     )
     return session.exec(statement).one()
 
@@ -57,7 +57,7 @@ def _count_casos_por_nivel_y_estado(
     statement = (
         select(func.count())
         .select_from(CasoDDR)
-        .where(CasoDDR.nivel_riesgo == nivel, CasoDDR.estado == estado)
+        .where(CasoDDR.nivel_riesgo == nivel, CasoDDR.status == estado)
     )
     return session.exec(statement).one()
 
@@ -67,7 +67,7 @@ def _dias_promedio_espera(session, nivel: RiskLevel) -> float:
     del nivel indicado."""
     ahora = datetime.now(timezone.utc)
     statement = select(CasoDDR.fecha_apertura).where(
-        CasoDDR.estado == EstadoCaso.EN_APROBACION,
+        CasoDDR.status == EstadoCaso.EN_APROBACION,
         CasoDDR.nivel_riesgo == nivel,
     )
     fechas = session.exec(statement).all()

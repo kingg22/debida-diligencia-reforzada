@@ -40,8 +40,8 @@ function UserInfo({ fullName, email }: UserInfoProps) {
 }
 
 export function User({ user }: { user: { full_name?: string; email?: string } | null }) {
-  const { isMobile, setOpenMobile } = useSidebar()
   const { logout } = useAuth()
+  const { isMobile, setOpenMobile } = useSidebar()
 
   if (!user) return null
 

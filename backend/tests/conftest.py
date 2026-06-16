@@ -10,6 +10,7 @@ from app.main import app
 from app.models import (
     Auditoria,
     CasoDDR,
+    DocumentoKYC,
     ExpedienteKYC,
     Item,
     ListaRestrictivaSimulada,
@@ -25,8 +26,7 @@ def db() -> Generator[Session, None, None]:
     with Session(engine) as session:
         init_db(session)
         yield session
-        # Limpieza: borrar primero las tablas con FKs hacia user / expediente_kyc
-        for model in (Auditoria, CasoDDR, ExpedienteKYC, Item):
+        for model in (DocumentoKYC, CasoDDR, Auditoria, ExpedienteKYC, Item):
             session.execute(delete(model))
         session.execute(delete(ListaRestrictivaSimulada))
         session.execute(delete(PepSimulado))

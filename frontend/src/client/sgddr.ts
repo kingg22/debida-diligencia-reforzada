@@ -71,10 +71,8 @@ function qs(params: Record<string, string | number | undefined>): string {
 
 // ── Tipos del contrato ─────────────────────────────────────────────────────────
 export interface Paginated<T> {
-  items: T[]
-  total: number
-  pagina: number
-  por_pagina: number
+  data: T[]
+  count: number
 }
 
 export interface Cliente {

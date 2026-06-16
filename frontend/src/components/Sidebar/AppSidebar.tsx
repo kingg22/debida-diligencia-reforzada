@@ -1,12 +1,6 @@
-import {
-  Briefcase,
-  ClipboardList,
-  FolderOpen,
-  Home,
-  ShieldCheck,
-  Users,
-} from "lucide-react"
+import { Home, Users, ShieldCheck, ClipboardList, FolderOpen, Briefcase } from "lucide-react"
 
+import { SidebarAppearance } from "@/components/Common/Appearance"
 import {
   Sidebar,
   SidebarContent,
@@ -14,19 +8,21 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar"
 import useAuth from "@/hooks/useAuth"
-import { type AppUser, puedeRegistrarCliente, tieneAccesoDDR } from "@/lib/sgddr"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
 
-const baseItems: Item[] = [{ icon: Home, title: "Inicio", path: "/" }]
-
-const clientesItem: Item = { icon: Briefcase, title: "Clientes", path: "/clientes" }
+const baseItems: Item[] = [
+  { icon: Home, title: "Inicio", path: "/" },
+]
 
 const kycItems: Item[] = [
   { icon: ClipboardList, title: "Nuevo Cliente KYC", path: "/kyc/nuevo" },
+  { icon: FolderOpen, title: "Clientes", path: "/clientes" },
 ]
 
-const casosItem: Item = { icon: FolderOpen, title: "Casos DDR", path: "/casos-ddr" }
+const ddrItems: Item[] = [
+  { icon: Briefcase, title: "Casos DDR", path: "/casos-ddr" },
+]
 
 const adminItems: Item[] = [
   { icon: Users, title: "Usuarios", path: "/usuarios" },
@@ -58,19 +54,25 @@ function PanamaComplianceLogo() {
 
 export function AppSidebar() {
   const { user } = useAuth()
-  const rol = (user as AppUser | null | undefined)?.role
+  const role = user?.role
 
-  // Registro de clientes: Oficial de Cumplimiento, Admin (spec) y Analista DDR
-  // (el backend actual permite que el analista cree expedientes).
-  const puedeKyc = puedeRegistrarCliente(rol) || rol === "ANALISTA_DDR"
-  const esAdmin = rol === "ADMIN"
+  const canKyc =
+    role === "ADMIN" ||
+    role === "ANALISTA_DDR" ||
+    role === "OFICIAL_CUMPLIMIENTO"
+  const canDdr =
+    role === "ADMIN" ||
+    role === "ANALISTA_DDR" ||
+    role === "OFICIAL_CUMPLIMIENTO" ||
+    role === "GERENTE_CUMPLIMIENTO" ||
+    role === "COMITE_CUMPLIMIENTO"
+  const isAdmin = role === "ADMIN"
 
-  const items: Item[] = [
+  const items = [
     ...baseItems,
-    clientesItem,
-    ...(puedeKyc ? kycItems : []),
-    ...(tieneAccesoDDR(rol) ? [casosItem] : []),
-    ...(esAdmin ? adminItems : []),
+    ...(canKyc ? kycItems : []),
+    ...(canDdr ? ddrItems : []),
+    ...(isAdmin ? adminItems : []),
   ]
 
   const sidebarUser = user
@@ -86,6 +88,7 @@ export function AppSidebar() {
         <Main items={items} />
       </SidebarContent>
       <SidebarFooter>
+        <SidebarAppearance />
         <User user={sidebarUser} />
       </SidebarFooter>
     </Sidebar>

@@ -62,7 +62,7 @@ function ClientesPage() {
     retry: false,
   })
 
-  const total = data?.total ?? 0
+  const total = data?.count ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const tieneFiltros = !!(searchInput || nivel || estado)
 
@@ -156,7 +156,7 @@ function ClientesPage() {
           message={(error as Error)?.message}
           onRetry={() => refetch()}
         />
-      ) : data && data.items.length === 0 ? (
+      ) : data && data.data.length === 0 ? (
         <EmptyState
           message={
             tieneFiltros
@@ -185,7 +185,7 @@ function ClientesPage() {
                 </tr>
               </thead>
               <tbody>
-                {data?.items.map((c) => (
+                {data?.data.map((c) => (
                   <tr
                     key={c.id}
                     onClick={() => navigate({ to: "/clientes/$id", params: { id: c.id } })}
