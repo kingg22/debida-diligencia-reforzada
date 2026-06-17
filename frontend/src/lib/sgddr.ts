@@ -83,7 +83,11 @@ export const ESTADO_CASO: Record<
     bg: "rgba(245,124,0,0.14)",
   },
   APROBADO: { label: "Aprobado", color: "#22c55e", bg: "rgba(34,197,94,0.14)" },
-  RECHAZADO: { label: "Rechazado", color: "#e05252", bg: "rgba(224,82,82,0.14)" },
+  RECHAZADO: {
+    label: "Rechazado",
+    color: "#e05252",
+    bg: "rgba(224,82,82,0.14)",
+  },
 }
 
 // ── Estado del expediente KYC ──────────────────────────────────────────────────
@@ -99,7 +103,11 @@ export const ESTADO_KYC: Record<
   EstadoKYC,
   { label: string; color: string; bg: string }
 > = {
-  BORRADOR: { label: "Borrador", color: "#8a9bb5", bg: "rgba(138,155,181,0.14)" },
+  BORRADOR: {
+    label: "Borrador",
+    color: "#8a9bb5",
+    bg: "rgba(138,155,181,0.14)",
+  },
   PENDIENTE: {
     label: "Pendiente",
     color: "#eab308",
@@ -111,7 +119,11 @@ export const ESTADO_KYC: Record<
     bg: "rgba(96,165,250,0.14)",
   },
   APROBADO: { label: "Aprobado", color: "#22c55e", bg: "rgba(34,197,94,0.14)" },
-  RECHAZADO: { label: "Rechazado", color: "#e05252", bg: "rgba(224,82,82,0.14)" },
+  RECHAZADO: {
+    label: "Rechazado",
+    color: "#e05252",
+    bg: "rgba(224,82,82,0.14)",
+  },
   DDR_INICIADO: {
     label: "DDR iniciado",
     color: "#F57C00",
@@ -153,7 +165,12 @@ export const ESTADO_CLIENTE: Record<
 }
 
 // Catálogos para filtros y formularios (alineados al documento consolidado).
-export const NIVELES_RIESGO: NivelRiesgo[] = ["BAJO", "MEDIO", "ALTO", "MUY_ALTO"]
+export const NIVELES_RIESGO: NivelRiesgo[] = [
+  "BAJO",
+  "MEDIO",
+  "ALTO",
+  "MUY_ALTO",
+]
 export const ESTADOS_CLIENTE: EstadoCliente[] = [
   "ACTIVO",
   "PENDIENTE",
@@ -166,6 +183,14 @@ export const ESTADOS_CASO: EstadoCaso[] = [
   "EN_APROBACION",
   "APROBADO",
   "RECHAZADO",
+]
+export const ESTADOS_KYC: EstadoKYC[] = [
+  "BORRADOR",
+  "PENDIENTE",
+  "EN_REVISION",
+  "APROBADO",
+  "RECHAZADO",
+  "DDR_INICIADO",
 ]
 
 // ── Helpers de formato ─────────────────────────────────────────────────────────

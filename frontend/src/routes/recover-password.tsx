@@ -1,13 +1,13 @@
-import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
 import {
   createFileRoute,
   Link as RouterLink,
   redirect,
 } from "@tanstack/react-router"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 import { isLoggedIn } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
 
@@ -69,7 +69,10 @@ function RecoverPassword() {
         >
           Recuperar contraseña
         </h1>
-        <p className="mb-8 text-sm leading-relaxed" style={{ color: "#8a9bb5" }}>
+        <p
+          className="mb-8 text-sm leading-relaxed"
+          style={{ color: "#8a9bb5" }}
+        >
           Ingresa tu correo institucional y te enviaremos instrucciones para
           restablecer tu contraseña.
         </p>
@@ -87,7 +90,6 @@ function RecoverPassword() {
               <input
                 id="rec-email"
                 type="email"
-                autoFocus
                 autoComplete="email"
                 placeholder="correo@institución.com"
                 disabled={loading}
@@ -154,7 +156,10 @@ function RecoverPassword() {
               >
                 Instrucciones enviadas
               </p>
-              <p className="text-sm leading-relaxed" style={{ color: "#8a9bb5" }}>
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: "#8a9bb5" }}
+              >
                 Si el correo está registrado en el sistema, recibirás las
                 instrucciones en breve. Revisa también tu carpeta de spam.
               </p>

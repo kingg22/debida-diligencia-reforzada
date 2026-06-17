@@ -1,6 +1,6 @@
-import { test as setup, expect } from "@playwright/test"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { test as setup } from "@playwright/test"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename)
 const BASE = process.env.API_BASE_URL || "http://backend:8000"
 
 const users = {
-  admin: { email: "admin@example.com", password: "changethis" },
+  admin: { email: "admin@sgddr.pa", password: "Admin123!" },
   analista: { email: "carlos@sgddr.pa", password: "Demo123!" },
   oficial: { email: "rosa@sgddr.pa", password: "Demo123!" },
   gerente: { email: "luis@sgddr.pa", password: "Demo123!" },
@@ -18,7 +18,10 @@ async function loginAPI(user: { email: string; password: string }) {
   const res = await fetch(`${BASE}/api/v1/login/access-token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ username: user.email, password: user.password }),
+    body: new URLSearchParams({
+      username: user.email,
+      password: user.password,
+    }),
   })
   const data = await res.json()
   return data.access_token as string

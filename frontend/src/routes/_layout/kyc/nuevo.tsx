@@ -1,11 +1,27 @@
-import { useState, useRef } from "react"
+import { useMutation } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import {
-  User, Building2, ShieldAlert, Upload, CheckCircle,
-  AlertTriangle, Info, ChevronRight, ChevronLeft,
-  Plus, Trash2, FileText, Loader2,
+  AlertTriangle,
+  Building2,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Info,
+  Loader2,
+  Plus,
+  ShieldAlert,
+  Trash2,
+  Upload,
+  User,
 } from "lucide-react"
+import { useRef, useState } from "react"
 import { toast } from "sonner"
+import {
+  ClientesService,
+  type CreateExpedienteInput,
+  SgddrApiError,
+} from "@/client/sgddr"
 import { cn } from "@/lib/utils"
 
 // ─── Route ────────────────────────────────────────────────────────────────────
@@ -34,12 +50,36 @@ interface BeneficiarioFinalForm {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const PAISES = [
-  "Panamá", "Estados Unidos", "Colombia", "México", "Venezuela", "España",
-  "Argentina", "Brasil", "Chile", "Perú", "Ecuador", "Costa Rica",
-  "Guatemala", "Honduras", "El Salvador", "Nicaragua", "Cuba",
-  "República Dominicana", "China", "Reino Unido", "Francia", "Alemania",
-  "Italia", "Canadá", "Rusia", "Israel", "Arabia Saudita",
-  "Emiratos Árabes Unidos", "Japón", "Otro",
+  "Panamá",
+  "Estados Unidos",
+  "Colombia",
+  "México",
+  "Venezuela",
+  "España",
+  "Argentina",
+  "Brasil",
+  "Chile",
+  "Perú",
+  "Ecuador",
+  "Costa Rica",
+  "Guatemala",
+  "Honduras",
+  "El Salvador",
+  "Nicaragua",
+  "Cuba",
+  "República Dominicana",
+  "China",
+  "Reino Unido",
+  "Francia",
+  "Alemania",
+  "Italia",
+  "Canadá",
+  "Rusia",
+  "Israel",
+  "Arabia Saudita",
+  "Emiratos Árabes Unidos",
+  "Japón",
+  "Otro",
 ]
 
 const ACTIVIDADES_CIIU = [
@@ -77,8 +117,10 @@ function calcularNivelRiesgo(params: {
 }): NivelRiesgo {
   if (params.esPep) return "ALTO"
   if (params.beneficiarios.some((b) => b.es_pep)) return "ALTO"
-  if (params.tipoPersona === "NATURAL" && params.nacionalidad !== "Panamá") return "MEDIO"
-  if (params.tipoPersona === "JURIDICA" && params.beneficiarios.length > 2) return "MEDIO"
+  if (params.tipoPersona === "NATURAL" && params.nacionalidad !== "Panamá")
+    return "MEDIO"
+  if (params.tipoPersona === "JURIDICA" && params.beneficiarios.length > 2)
+    return "MEDIO"
   return "BAJO"
 }
 
@@ -101,6 +143,24 @@ function maxFechaNac() {
   return d.toISOString().split("T")[0]
 }
 
+// Mapea el "rol" de documento del formulario al enum `DocumentoTipo` del
+// backend. Mantener este mapping en un único punto evita typos y facilita
+// añadir nuevos tipos en el futuro.
+function tipoDocumentoBackend(
+  rol: "identidad" | "domicilio" | "constitucion" | "poder",
+  tipoPersona: TipoPersona,
+  tipoIdNatural: "CEDULA_PA" | "PASAPORTE",
+): string {
+  if (rol === "identidad") {
+    if (tipoPersona === "JURIDICA") return "RUC"
+    return tipoIdNatural === "CEDULA_PA" ? "CEDULA_FRONTAL" : "PASAPORTE"
+  }
+  if (rol === "domicilio") return "OTRO"
+  if (rol === "constitucion") return "ESCRITURA_CONSTITUCION"
+  if (rol === "poder") return "PODER_REPRESENTANTE"
+  return "OTRO"
+}
+
 // ─── Shared UI atoms ──────────────────────────────────────────────────────────
 function Field({
   label,
@@ -117,9 +177,11 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium" style={{ color: "#8a9bb5" }}>
-        {label}{" "}
-        {required && <span style={{ color: "#e05252" }}>*</span>}
+      <label
+        className="mb-1.5 block text-sm font-medium"
+        style={{ color: "#8a9bb5" }}
+      >
+        {label} {required && <span style={{ color: "#e05252" }}>*</span>}
       </label>
       {children}
       {hint && !error && (
@@ -227,11 +289,7 @@ function Toggle({
       onClick={onChange}
       className="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors"
       style={{
-        backgroundColor: checked
-          ? danger
-            ? "#e05252"
-            : "#c9a84c"
-          : "#1b2e4a",
+        backgroundColor: checked ? (danger ? "#e05252" : "#c9a84c") : "#1b2e4a",
       }}
     >
       <span
@@ -253,7 +311,10 @@ function RiskBadge({ nivel }: { nivel: NivelRiesgo }) {
       className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
       style={{ backgroundColor: cfg.bg, color: cfg.c }}
     >
-      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: cfg.c }} />
+      <span
+        className="h-1.5 w-1.5 rounded-full"
+        style={{ backgroundColor: cfg.c }}
+      />
       {cfg.label}
     </span>
   )
@@ -377,8 +438,7 @@ function StepIndicator({ current }: { current: number }) {
                     : s.num === current
                       ? "#c9a84c"
                       : "#0a1628",
-                color:
-                  s.num <= current ? "#040d1c" : "#4a6080",
+                color: s.num <= current ? "#040d1c" : "#4a6080",
                 border: s.num > current ? "1px solid #1b2e4a" : "none",
               }}
             >
@@ -401,7 +461,9 @@ function StepIndicator({ current }: { current: number }) {
           {i < STEPS.length - 1 && (
             <div
               className="mx-3 mb-5 h-px flex-1 transition-all"
-              style={{ backgroundColor: s.num < current ? "#22c55e" : "#1b2e4a" }}
+              style={{
+                backgroundColor: s.num < current ? "#22c55e" : "#1b2e4a",
+              }}
             />
           )}
         </div>
@@ -415,13 +477,14 @@ function KYCNuevoCliente() {
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [errors, setErrors] = useState<FormErrors>({})
-  const [submitting, setSubmitting] = useState(false)
 
   // ── Tipo de persona ──
   const [tipoPersona, setTipoPersona] = useState<TipoPersona | null>(null)
 
   // ── Paso 1 — Persona Natural ──
-  const [tipoIdNatural, setTipoIdNatural] = useState<"CEDULA_PA" | "PASAPORTE">("CEDULA_PA")
+  const [tipoIdNatural, setTipoIdNatural] = useState<"CEDULA_PA" | "PASAPORTE">(
+    "CEDULA_PA",
+  )
   const [numIdNatural, setNumIdNatural] = useState("")
   const [nombres, setNombres] = useState("")
   const [apellidos, setApellidos] = useState("")
@@ -446,7 +509,9 @@ function KYCNuevoCliente() {
   const [representanteLegal, setRepresentanteLegal] = useState("")
   const [idRepresentante, setIdRepresentante] = useState("")
   const [tieneBeneficiarioFinal, setTieneBeneficiarioFinal] = useState(false)
-  const [beneficiarios, setBeneficiarios] = useState<BeneficiarioFinalForm[]>([])
+  const [beneficiarios, setBeneficiarios] = useState<BeneficiarioFinalForm[]>(
+    [],
+  )
 
   // ── Paso 3 — Documentos ──
   const [docIdentidad, setDocIdentidad] = useState<File | null>(null)
@@ -486,7 +551,11 @@ function KYCNuevoCliente() {
   const removeBeneficiario = (id: string) =>
     setBeneficiarios((prev) => prev.filter((b) => b.id !== id))
 
-  const updateBF = (id: string, key: keyof BeneficiarioFinalForm, val: string | boolean) =>
+  const updateBF = (
+    id: string,
+    key: keyof BeneficiarioFinalForm,
+    val: string | boolean,
+  ) =>
     setBeneficiarios((prev) =>
       prev.map((b) => (b.id === id ? { ...b, [key]: val } : b)),
     )
@@ -494,9 +563,11 @@ function KYCNuevoCliente() {
   // ── Validation ──
   const validateStep1 = (): boolean => {
     const e: FormErrors = {}
-    if (!tipoPersona) { e.tipoPersona = "Selecciona el tipo de persona" }
-    else if (tipoPersona === "NATURAL") {
-      if (!numIdNatural.trim()) e.numIdNatural = "El número de identificación es requerido"
+    if (!tipoPersona) {
+      e.tipoPersona = "Selecciona el tipo de persona"
+    } else if (tipoPersona === "NATURAL") {
+      if (!numIdNatural.trim())
+        e.numIdNatural = "El número de identificación es requerido"
       else if (tipoIdNatural === "CEDULA_PA" && !validarCedulaPA(numIdNatural))
         e.numIdNatural = "Formato inválido. Ejemplo: 8-123-4567"
       if (!nombres.trim()) e.nombres = "El nombre es requerido"
@@ -505,13 +576,15 @@ function KYCNuevoCliente() {
       if (!apellidos.trim()) e.apellidos = "Los apellidos son requeridos"
       else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(apellidos.trim()))
         e.apellidos = "Solo letras y espacios"
-      if (!fechaNacimiento) e.fechaNacimiento = "La fecha de nacimiento es requerida"
+      if (!fechaNacimiento)
+        e.fechaNacimiento = "La fecha de nacimiento es requerida"
       else if (calcularEdad(fechaNacimiento) < 18)
         e.fechaNacimiento = "El cliente debe ser mayor de 18 años"
     } else {
       if (!razonSocial.trim()) e.razonSocial = "La razón social es requerida"
       if (!ruc.trim()) e.ruc = "El RUC es requerido"
-      if (!fechaConstitucion) e.fechaConstitucion = "La fecha de constitución es requerida"
+      if (!fechaConstitucion)
+        e.fechaConstitucion = "La fecha de constitución es requerida"
       else if (new Date(fechaConstitucion) > new Date())
         e.fechaConstitucion = "La fecha no puede ser futura"
     }
@@ -525,10 +598,12 @@ function KYCNuevoCliente() {
       if (!correo.trim()) e.correo = "El correo es requerido"
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo))
         e.correo = "Formato de correo inválido"
-      if (!telefono.trim() || telefono === "+507-") e.telefono = "El teléfono es requerido"
+      if (!telefono.trim() || telefono === "+507-")
+        e.telefono = "El teléfono es requerido"
       if (!ocupacion.trim()) e.ocupacion = "La ocupación es requerida"
     } else {
-      if (!actividadEconomica) e.actividadEconomica = "La actividad económica es requerida"
+      if (!actividadEconomica)
+        e.actividadEconomica = "La actividad económica es requerida"
       if (!representanteLegal.trim())
         e.representanteLegal = "El nombre del representante es requerido"
       if (!idRepresentante.trim())
@@ -539,7 +614,7 @@ function KYCNuevoCliente() {
         if (!bf.nombre_completo.trim()) e[`bf_${i}_nom`] = "Requerido"
         if (!bf.numero_identificacion.trim()) e[`bf_${i}_id`] = "Requerido"
         const pct = parseFloat(bf.porcentaje_participacion)
-        if (isNaN(pct) || pct < 25 || pct > 100)
+        if (Number.isNaN(pct) || pct < 25 || pct > 100)
           e[`bf_${i}_pct`] = "Valor entre 25% y 100%"
       })
       if (totalPorcentajeBF > 100)
@@ -551,7 +626,8 @@ function KYCNuevoCliente() {
 
   const validateStep3 = (): boolean => {
     const e: FormErrors = {}
-    if (!docIdentidad) e.docIdentidad = "El documento de identidad es obligatorio (RV-07)"
+    if (!docIdentidad)
+      e.docIdentidad = "El documento de identidad es obligatorio (RV-07)"
     if (tipoPersona === "NATURAL" && !docDomicilio)
       e.docDomicilio = "El comprobante de domicilio es obligatorio (RV-07)"
     if (tipoPersona === "JURIDICA" && !docConstitucion)
@@ -562,24 +638,173 @@ function KYCNuevoCliente() {
 
   const handleNext = () => {
     const ok =
-      step === 1 ? validateStep1()
-      : step === 2 ? validateStep2()
-      : step === 3 ? validateStep3()
-      : true
-    if (ok) { setStep((s) => s + 1); setErrors({}) }
+      step === 1
+        ? validateStep1()
+        : step === 2
+          ? validateStep2()
+          : step === 3
+            ? validateStep3()
+            : true
+    if (ok) {
+      setStep((s) => s + 1)
+      setErrors({})
+    }
   }
 
-  const handleBack = () => { setStep((s) => s - 1); setErrors({}) }
+  const handleBack = () => {
+    setStep((s) => s - 1)
+    setErrors({})
+  }
 
-  const handleSubmit = async () => {
-    setSubmitting(true)
-    await new Promise((r) => setTimeout(r, 1500))
-    setSubmitting(false)
-    const nombre = tipoPersona === "NATURAL" ? `${nombres} ${apellidos}` : razonSocial
-    toast.success(
-      `Expediente KYC creado para ${nombre}. Pendiente de revisión por el Oficial de Cumplimiento.`,
-    )
-    navigate({ to: "/" })
+  // ── Submit real contra la API ────────────────────────────────────────────
+  // Crea el expediente KYC (POST /api/v1/clientes) y, si el backend lo
+  // aceptó, sube los documentos asociados (POST /api/v1/clientes/{id}/documentos).
+  const crearExpediente = useMutation({
+    mutationFn: async () => {
+      if (!tipoPersona) throw new Error("Tipo de persona no seleccionado")
+
+      const baseBeneficiarios = tieneBeneficiarioFinal
+        ? beneficiarios.map((b) => ({
+            nombre: b.nombre_completo.split(" ")[0] ?? "",
+            apellido: b.nombre_completo.split(" ").slice(1).join(" ") || "—",
+            cedula: b.numero_identificacion,
+            nacionalidad: b.pais_residencia,
+            pais: b.pais_residencia,
+            fecha_nacimiento: "1970-01-01",
+            porcentaje_participacion:
+              parseFloat(b.porcentaje_participacion) || 0,
+            es_pep: b.es_pep,
+          }))
+        : []
+
+      let payload: CreateExpedienteInput
+
+      if (tipoPersona === "NATURAL") {
+        payload = {
+          tipo_cliente: "NATURAL",
+          enviar_a_revision: true,
+          persona_natural: {
+            tipo_documento: tipoIdNatural,
+            numero_documento: numIdNatural,
+            fecha_expiracion_doc: "",
+            nacionalidad,
+            pais_nacimiento: paisResidencia,
+            nombre: nombres,
+            apellido: apellidos,
+            fecha_nacimiento: fechaNacimiento,
+            genero: "OTRO",
+            estado_civil: "SOLTERO",
+            telefono,
+            email: correo,
+            direccion: "—",
+            ciudad: "—",
+            pais: paisResidencia,
+            ocupacion,
+            empleador: "—",
+            ingreso_mensual_aproximado: 0,
+            fuente_ingresos: "OTRO",
+            es_pep: esPep,
+            es_pep_familiar: false,
+            tiene_antecedentes: false,
+          },
+          beneficiarios_final: [],
+        }
+      } else {
+        payload = {
+          tipo_cliente: "JURIDICA",
+          enviar_a_revision: true,
+          persona_juridica: {
+            razon_social: razonSocial,
+            ruc,
+            tipo_sociedad: "SOCIEDAD_ANONIMA",
+            fecha_constitucion: fechaConstitucion,
+            pais_constitucion: paisConstitucion,
+            numero_registro_mercantil: "—",
+            nombre_representante: representanteLegal,
+            cedula_representante: idRepresentante,
+            cargo_representante: "REPRESENTANTE_LEGAL",
+            telefono_empresa: telefono,
+            email_empresa: correo,
+            direccion_fiscal: "—",
+            ciudad: "—",
+            pais: paisConstitucion,
+            actividad_economica: actividadEconomica,
+            ingreso_anual_aproximado: 0,
+            cantidad_empleados: 0,
+            tiene_accionistas_anonimos: false,
+            opera_en_paises_alto_riesgo: false,
+          },
+          beneficiarios_final: baseBeneficiarios,
+        }
+      }
+
+      // 1) Crear expediente
+      const expediente = await ClientesService.create(payload)
+
+      // 2) Subir documentos (no abortamos si alguno falla: el expediente ya
+      // existe; el analista podrá reintentar desde el detalle).
+      const uploads: Array<Promise<unknown>> = []
+      if (docIdentidad) {
+        uploads.push(
+          ClientesService.subirDocumento(
+            expediente.id,
+            tipoDocumentoBackend("identidad", tipoPersona, tipoIdNatural),
+            docIdentidad,
+          ),
+        )
+      }
+      if (tipoPersona === "NATURAL" && docDomicilio) {
+        uploads.push(
+          ClientesService.subirDocumento(expediente.id, "OTRO", docDomicilio),
+        )
+      }
+      if (tipoPersona === "JURIDICA" && docConstitucion) {
+        uploads.push(
+          ClientesService.subirDocumento(
+            expediente.id,
+            tipoDocumentoBackend("constitucion", tipoPersona, tipoIdNatural),
+            docConstitucion,
+          ),
+        )
+      }
+      if (tipoPersona === "JURIDICA" && docPoder) {
+        uploads.push(
+          ClientesService.subirDocumento(
+            expediente.id,
+            tipoDocumentoBackend("poder", tipoPersona, tipoIdNatural),
+            docPoder,
+          ),
+        )
+      }
+      await Promise.all(uploads)
+
+      return expediente
+    },
+    onSuccess: (expediente) => {
+      const nombre =
+        tipoPersona === "NATURAL" ? `${nombres} ${apellidos}` : razonSocial
+      toast.success(
+        `Expediente ${expediente.codigo} creado para ${nombre}. ` +
+          "Pendiente de revisión por el Oficial de Cumplimiento.",
+      )
+      navigate({
+        to: "/clientes/$id",
+        params: { id: expediente.id },
+      })
+    },
+    onError: (e: Error) => {
+      const msg =
+        e instanceof SgddrApiError
+          ? e.detail
+          : e.message || "No se pudo crear el expediente"
+      toast.error(msg)
+    },
+  })
+
+  const submitting = crearExpediente.isPending
+
+  const handleSubmit = () => {
+    crearExpediente.mutate()
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -595,8 +820,18 @@ function KYCNuevoCliente() {
         <div className="grid grid-cols-2 gap-4">
           {(
             [
-              { value: "NATURAL", icon: User, label: "Persona Natural", desc: "Cliente individual" },
-              { value: "JURIDICA", icon: Building2, label: "Persona Jurídica", desc: "Empresa o entidad legal" },
+              {
+                value: "NATURAL",
+                icon: User,
+                label: "Persona Natural",
+                desc: "Cliente individual",
+              },
+              {
+                value: "JURIDICA",
+                icon: Building2,
+                label: "Persona Jurídica",
+                desc: "Empresa o entidad legal",
+              },
             ] as const
           ).map((opt) => (
             <button
@@ -614,7 +849,9 @@ function KYCNuevoCliente() {
               )}
               style={{
                 backgroundColor:
-                  tipoPersona === opt.value ? "rgba(201,168,76,0.07)" : "#0a1628",
+                  tipoPersona === opt.value
+                    ? "rgba(201,168,76,0.07)"
+                    : "#0a1628",
               }}
             >
               <div
@@ -658,7 +895,10 @@ function KYCNuevoCliente() {
 
       {/* ── Persona Natural ── */}
       {tipoPersona === "NATURAL" && (
-        <div className="space-y-4 border-t pt-6" style={{ borderColor: "#1b2e4a" }}>
+        <div
+          className="space-y-4 border-t pt-6"
+          style={{ borderColor: "#1b2e4a" }}
+        >
           <SectionHeader
             icon={User}
             title="Datos de identificación"
@@ -682,12 +922,18 @@ function KYCNuevoCliente() {
               label="Número de identificación"
               required
               error={errors.numIdNatural}
-              hint={tipoIdNatural === "CEDULA_PA" ? "Formato: 8-123-4567" : "Número de pasaporte"}
+              hint={
+                tipoIdNatural === "CEDULA_PA"
+                  ? "Formato: 8-123-4567"
+                  : "Número de pasaporte"
+              }
             >
               <StyledInput
                 value={numIdNatural}
                 onChange={(e) => setNumIdNatural(e.target.value)}
-                placeholder={tipoIdNatural === "CEDULA_PA" ? "8-123-4567" : "A1234567"}
+                placeholder={
+                  tipoIdNatural === "CEDULA_PA" ? "8-123-4567" : "A1234567"
+                }
                 error={errors.numIdNatural}
               />
             </Field>
@@ -731,7 +977,10 @@ function KYCNuevoCliente() {
 
       {/* ── Persona Jurídica ── */}
       {tipoPersona === "JURIDICA" && (
-        <div className="space-y-4 border-t pt-6" style={{ borderColor: "#1b2e4a" }}>
+        <div
+          className="space-y-4 border-t pt-6"
+          style={{ borderColor: "#1b2e4a" }}
+        >
           <SectionHeader
             icon={Building2}
             title="Datos de la empresa"
@@ -799,7 +1048,9 @@ function KYCNuevoCliente() {
                 value={nacionalidad}
                 onChange={(e) => setNacionalidad(e.target.value)}
               >
-                {PAISES.map((p) => <option key={p}>{p}</option>)}
+                {PAISES.map((p) => (
+                  <option key={p}>{p}</option>
+                ))}
               </StyledSelect>
             </Field>
             <Field label="País de residencia" required>
@@ -807,7 +1058,9 @@ function KYCNuevoCliente() {
                 value={paisResidencia}
                 onChange={(e) => setPaisResidencia(e.target.value)}
               >
-                {PAISES.map((p) => <option key={p}>{p}</option>)}
+                {PAISES.map((p) => (
+                  <option key={p}>{p}</option>
+                ))}
               </StyledSelect>
             </Field>
           </div>
@@ -836,7 +1089,11 @@ function KYCNuevoCliente() {
                 error={errors.telefono}
               />
             </Field>
-            <Field label="Ocupación / Profesión" required error={errors.ocupacion}>
+            <Field
+              label="Ocupación / Profesión"
+              required
+              error={errors.ocupacion}
+            >
               <StyledInput
                 value={ocupacion}
                 onChange={(e) => setOcupacion(e.target.value)}
@@ -874,7 +1131,9 @@ function KYCNuevoCliente() {
                   >
                     Desempeña o ha desempeñado funciones públicas prominentes.
                     Activa DDR obligatoria —{" "}
-                    <span style={{ color: "#c9a84c" }}>Ley 23/2015 Art. 24</span>
+                    <span style={{ color: "#c9a84c" }}>
+                      Ley 23/2015 Art. 24
+                    </span>
                   </p>
                 </div>
               </div>
@@ -911,7 +1170,9 @@ function KYCNuevoCliente() {
                 value={paisConstitucion}
                 onChange={(e) => setPaisConstitucion(e.target.value)}
               >
-                {PAISES.map((p) => <option key={p}>{p}</option>)}
+                {PAISES.map((p) => (
+                  <option key={p}>{p}</option>
+                ))}
               </StyledSelect>
             </Field>
             <Field
@@ -925,7 +1186,9 @@ function KYCNuevoCliente() {
                 error={errors.actividadEconomica}
               >
                 <option value="">Selecciona una actividad</option>
-                {ACTIVIDADES_CIIU.map((a) => <option key={a}>{a}</option>)}
+                {ACTIVIDADES_CIIU.map((a) => (
+                  <option key={a}>{a}</option>
+                ))}
               </StyledSelect>
             </Field>
           </div>
@@ -1012,7 +1275,10 @@ function KYCNuevoCliente() {
                   <div
                     key={bf.id}
                     className="rounded-xl p-4"
-                    style={{ backgroundColor: "#040d1c", border: "1px solid #1b2e4a" }}
+                    style={{
+                      backgroundColor: "#040d1c",
+                      border: "1px solid #1b2e4a",
+                    }}
                   >
                     <div className="mb-3 flex items-center justify-between">
                       <p
@@ -1052,7 +1318,11 @@ function KYCNuevoCliente() {
                           <StyledSelect
                             value={bf.tipo_identificacion}
                             onChange={(e) =>
-                              updateBF(bf.id, "tipo_identificacion", e.target.value)
+                              updateBF(
+                                bf.id,
+                                "tipo_identificacion",
+                                e.target.value,
+                              )
                             }
                           >
                             <option value="CEDULA_PA">Cédula PA</option>
@@ -1067,7 +1337,11 @@ function KYCNuevoCliente() {
                           <StyledInput
                             value={bf.numero_identificacion}
                             onChange={(e) =>
-                              updateBF(bf.id, "numero_identificacion", e.target.value)
+                              updateBF(
+                                bf.id,
+                                "numero_identificacion",
+                                e.target.value,
+                              )
                             }
                             placeholder="8-123-4567"
                             error={errors[`bf_${i}_id`]}
@@ -1088,7 +1362,11 @@ function KYCNuevoCliente() {
                             max="100"
                             value={bf.porcentaje_participacion}
                             onChange={(e) =>
-                              updateBF(bf.id, "porcentaje_participacion", e.target.value)
+                              updateBF(
+                                bf.id,
+                                "porcentaje_participacion",
+                                e.target.value,
+                              )
                             }
                             placeholder="25"
                             error={errors[`bf_${i}_pct`]}
@@ -1113,7 +1391,9 @@ function KYCNuevoCliente() {
                               updateBF(bf.id, "pais_residencia", e.target.value)
                             }
                           >
-                            {PAISES.map((p) => <option key={p}>{p}</option>)}
+                            {PAISES.map((p) => (
+                              <option key={p}>{p}</option>
+                            ))}
                           </StyledSelect>
                         </Field>
                       </div>
@@ -1139,7 +1419,10 @@ function KYCNuevoCliente() {
                 {beneficiarios.length > 0 && (
                   <div
                     className="flex items-center justify-between rounded-lg px-4 py-2.5"
-                    style={{ backgroundColor: "#040d1c", border: "1px solid #1b2e4a" }}
+                    style={{
+                      backgroundColor: "#040d1c",
+                      border: "1px solid #1b2e4a",
+                    }}
                   >
                     <span className="text-xs" style={{ color: "#8a9bb5" }}>
                       Total participación directa
@@ -1200,7 +1483,8 @@ function KYCNuevoCliente() {
           style={{ color: "#c9a84c" }}
         />
         <p className="text-xs leading-relaxed" style={{ color: "#8a9bb5" }}>
-          Los documentos deben estar <strong style={{ color: "#f0ede8" }}>vigentes</strong>. El comprobante
+          Los documentos deben estar{" "}
+          <strong style={{ color: "#f0ede8" }}>vigentes</strong>. El comprobante
           de domicilio no puede tener más de{" "}
           <strong style={{ color: "#f0ede8" }}>90 días</strong> de antigüedad —
           RV-07.
@@ -1322,10 +1606,7 @@ function KYCNuevoCliente() {
               style={{ color: "#e05252" }}
             />
             <div>
-              <p
-                className="text-sm font-semibold"
-                style={{ color: "#e05252" }}
-              >
+              <p className="text-sm font-semibold" style={{ color: "#e05252" }}>
                 DDR Obligatoria activada
               </p>
               <p className="mt-0.5 text-xs" style={{ color: "#8a9bb5" }}>
@@ -1426,8 +1707,8 @@ function KYCNuevoCliente() {
 
         <p className="text-xs leading-relaxed" style={{ color: "#4a6080" }}>
           Al confirmar, el expediente quedará en estado{" "}
-          <strong style={{ color: "#c9a84c" }}>Pendiente de Revisión</strong> y se
-          notificará al Oficial de Cumplimiento. Ref. Ley 23/2015 Art. 18.
+          <strong style={{ color: "#c9a84c" }}>Pendiente de Revisión</strong> y
+          se notificará al Oficial de Cumplimiento. Ref. Ley 23/2015 Art. 18.
         </p>
       </div>
     )

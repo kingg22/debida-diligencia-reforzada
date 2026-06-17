@@ -63,7 +63,11 @@ export function DropZone({
             style={{ backgroundColor: "rgba(34,197,94,0.12)" }}
           >
             {uploading ? (
-              <Loader2 size={16} className="animate-spin" style={{ color: "#c9a84c" }} />
+              <Loader2
+                size={16}
+                className="animate-spin"
+                style={{ color: "#c9a84c" }}
+              />
             ) : (
               <Check size={16} style={{ color: "#22c55e" }} />
             )}
@@ -72,7 +76,10 @@ export function DropZone({
             <p className="truncate text-sm" style={{ color: "#f0ede8" }}>
               {file?.name ?? "Documento cargado"}
             </p>
-            <p className="truncate text-xs font-mono" style={{ color: "#4a6080" }}>
+            <p
+              className="truncate text-xs font-mono"
+              style={{ color: "#4a6080" }}
+            >
               {file ? formatTamano(file.size) : ""}
               {hash ? ` · ${hash.slice(0, 16)}…` : ""}
             </p>

@@ -7,8 +7,8 @@ test.describe("Login", () => {
 
   test("login exitoso con admin", async ({ page }) => {
     await page.goto("/login")
-    await page.getByPlaceholder("correo@institución.com").fill("admin@example.com")
-    await page.getByPlaceholder("••••••••").fill("changethis")
+    await page.getByPlaceholder("correo@institución.com").fill("admin@sgddr.pa")
+    await page.getByPlaceholder("••••••••").fill("Admin123!")
     await page.getByRole("button", { name: "Ingresar" }).click()
     await page.waitForURL("/")
     await expect(page.getByText("Bienvenido")).toBeVisible()
@@ -16,7 +16,7 @@ test.describe("Login", () => {
 
   test("login fallido con contraseña incorrecta", async ({ page }) => {
     await page.goto("/login")
-    await page.getByPlaceholder("correo@institución.com").fill("admin@example.com")
+    await page.getByPlaceholder("correo@institución.com").fill("admin@sgddr.pa")
     await page.getByPlaceholder("••••••••").fill("wrongpassword")
     await page.getByRole("button", { name: "Ingresar" }).click()
     await expect(page.getByText("incorrectos")).toBeVisible()
@@ -28,8 +28,14 @@ test.describe("Dashboard", () => {
 
   test("dashboard muestra bienvenida", async ({ page }) => {
     await page.goto("/")
-    await expect(page.getByRole("heading", { name: /Bienvenido/ })).toBeVisible()
-    await expect(page.getByText("Sistema de Gestión de Debida Diligencia Reforzada").first()).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: /Bienvenido/ }),
+    ).toBeVisible()
+    await expect(
+      page
+        .getByText("Sistema de Gestión de Debida Diligencia Reforzada")
+        .first(),
+    ).toBeVisible()
   })
 })
 
@@ -55,7 +61,9 @@ test.describe("Navegación Sidebar", () => {
   test("navegar a Casos DDR", async ({ page }) => {
     await page.goto("/")
     await page.getByRole("link", { name: "Casos DDR" }).click()
-    await expect(page.getByText("Expedientes en proceso de Debida Diligencia Reforzada")).toBeVisible()
+    await expect(
+      page.getByText("Expedientes en proceso de Debida Diligencia Reforzada"),
+    ).toBeVisible()
   })
 })
 
@@ -65,8 +73,12 @@ test.describe("Crear Cliente — Casos de Uso", () => {
   test("formulario nuevo cliente se abre correctamente", async ({ page }) => {
     await page.goto("/clientes")
     await page.waitForLoadState("networkidle")
-    await page.getByRole("button", { name: "Nuevo cliente" }).click({ timeout: 10000 })
-    await expect(page.getByRole("heading", { name: "Nuevo Cliente KYC" })).toBeVisible()
+    await page
+      .getByRole("button", { name: "Nuevo cliente" })
+      .click({ timeout: 10000 })
+    await expect(
+      page.getByRole("heading", { name: "Nuevo Cliente KYC" }),
+    ).toBeVisible()
     await expect(page.getByText("Identificación")).toBeVisible()
   })
 
@@ -124,7 +136,9 @@ test.describe("Crear Cliente — Casos de Uso", () => {
     await page.getByRole("button", { name: "Siguiente" }).click()
 
     // Paso 2 - verificar que sección PEP existe
-    await expect(page.getByText("Persona Expuesta Políticamente (PEP)")).toBeVisible()
+    await expect(
+      page.getByText("Persona Expuesta Políticamente (PEP)"),
+    ).toBeVisible()
   })
 })
 
@@ -134,7 +148,9 @@ test.describe("Listado de Clientes", () => {
   test("página de clientes carga", async ({ page }) => {
     await page.goto("/clientes")
     await expect(page.getByText("Expedientes KYC registrados")).toBeVisible()
-    await expect(page.getByRole("button", { name: "Nuevo cliente" })).toBeVisible()
+    await expect(
+      page.getByRole("button", { name: "Nuevo cliente" }),
+    ).toBeVisible()
   })
 
   test("filtro por nivel de riesgo", async ({ page }) => {
@@ -149,7 +165,9 @@ test.describe("Casos DDR", () => {
 
   test("página de casos DDR carga", async ({ page }) => {
     await page.goto("/casos-ddr")
-    await expect(page.getByText("Expedientes en proceso de Debida Diligencia Reforzada")).toBeVisible()
+    await expect(
+      page.getByText("Expedientes en proceso de Debida Diligencia Reforzada"),
+    ).toBeVisible()
   })
 
   test("detalle de caso se abre al hacer clic", async ({ page }) => {
@@ -185,7 +203,9 @@ test.describe("Validación de Roles", () => {
 
   test("analista puede ver sus casos", async ({ page }) => {
     await page.goto("/login")
-    await page.getByPlaceholder("correo@institución.com").fill("carlos@sgddr.pa")
+    await page
+      .getByPlaceholder("correo@institución.com")
+      .fill("carlos@sgddr.pa")
     await page.getByPlaceholder("••••••••").fill("Demo123!")
     await page.getByRole("button", { name: "Ingresar" }).click()
     await page.waitForURL("/")
@@ -212,7 +232,7 @@ test.describe("Health Check API", () => {
 
   test("endpoints DDR responden", async ({ request }) => {
     const loginRes = await request.post(`${BASE}/api/v1/login/access-token`, {
-      form: { username: "admin@example.com", password: "changethis" },
+      form: { username: "admin@sgddr.pa", password: "Admin123!" },
     })
     expect(loginRes.ok()).toBeTruthy()
     const { access_token } = await loginRes.json()

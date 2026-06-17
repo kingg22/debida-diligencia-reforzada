@@ -1,17 +1,20 @@
-import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
 import {
   createFileRoute,
   Link as RouterLink,
   redirect,
   useNavigate,
 } from "@tanstack/react-router"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { isLoggedIn } from "@/hooks/useAuth"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import {
+  PasswordChecklist,
+  passwordIsValid,
+} from "@/components/auth/PasswordChecklist"
 import { PasswordStrengthBar } from "@/components/auth/PasswordStrengthBar"
-import { PasswordChecklist, passwordIsValid } from "@/components/auth/PasswordChecklist"
+import { isLoggedIn } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
 
 const searchSchema = z.object({ token: z.string().catch("") })
@@ -95,7 +98,6 @@ function ResetPassword() {
               <input
                 id="new_pw"
                 type={showNew ? "text" : "password"}
-                autoFocus
                 placeholder="••••••••"
                 {...register("new_password")}
                 className={cn(

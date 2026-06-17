@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlmodel import SQLModel, col, func, select
 
 from app.api.deps import CurrentUser, SessionDep, require_roles
@@ -158,6 +158,100 @@ def enviar_aprobacion(
 
     caso.status = EstadoCasoDDR.EN_APROBACION.value
     caso.updated_at = datetime.now(timezone.utc)
+    session.add(caso)
+    session.commit()
+    session.refresh(caso)
+    return caso
+
+
+# ── Aprobación / rechazo (cierre del flujo DDR) ──────────────────────────
+
+
+class AprobacionInput(BaseModel):
+    observaciones: str | None = None
+
+
+class RechazoInput(BaseModel):
+    observaciones: str = Field(min_length=20, max_length=1000)
+
+
+def _check_aprobador(caso: CasoDDR, user: User) -> None:
+    """Verifica que el usuario puede decidir sobre el caso según su rol y
+    el nivel de riesgo:
+    - Riesgo ALTO     → GERENTE_CUMPLIMIENTO (o ADMIN)
+    - Riesgo MUY_ALTO → COMITE_CUMPLIMIENTO (o ADMIN)
+    """
+    if user.is_superuser or user.role == UserRole.ADMIN:
+        return
+    if caso.nivel_riesgo == "ALTO":
+        if user.role != UserRole.GERENTE_CUMPLIMIENTO:
+            raise HTTPException(
+                status_code=403,
+                detail="Solo el Gerente de Cumplimiento puede aprobar casos ALTO",
+            )
+    elif caso.nivel_riesgo == "MUY_ALTO":
+        if user.role != UserRole.COMITE_CUMPLIMIENTO:
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Solo el Comité de Cumplimiento puede aprobar "
+                    "casos MUY_ALTO"
+                ),
+            )
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="El nivel de riesgo del caso no es aprobable",
+        )
+
+
+@router.post("/{id}/aprobar", response_model=CasoDDRPublic)
+def aprobar_caso(
+    id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+    body: AprobacionInput | None = None,
+) -> Any:
+    caso = _get_caso_o_404(session, id)
+    _check_aprobador(caso, current_user)
+
+    if caso.status != EstadoCasoDDR.EN_APROBACION.value:
+        raise HTTPException(
+            status_code=409,
+            detail="El caso debe estar en EN_APROBACION para aprobarse",
+        )
+
+    caso.status = EstadoCasoDDR.APROBADO.value
+    caso.aprobado_por_id = current_user.id
+    caso.fecha_cierre = datetime.now(timezone.utc)
+    caso.updated_at = caso.fecha_cierre
+    session.add(caso)
+    session.commit()
+    session.refresh(caso)
+    return caso
+
+
+@router.post("/{id}/rechazar", response_model=CasoDDRPublic)
+def rechazar_caso(
+    id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+    body: RechazoInput,
+) -> Any:
+    caso = _get_caso_o_404(session, id)
+    _check_aprobador(caso, current_user)
+
+    if caso.status != EstadoCasoDDR.EN_APROBACION.value:
+        raise HTTPException(
+            status_code=409,
+            detail="El caso debe estar en EN_APROBACION para rechazarse",
+        )
+
+    caso.status = EstadoCasoDDR.RECHAZADO.value
+    caso.aprobado_por_id = current_user.id
+    caso.observaciones_rechazo = body.observaciones
+    caso.fecha_cierre = datetime.now(timezone.utc)
+    caso.updated_at = caso.fecha_cierre
     session.add(caso)
     session.commit()
     session.refresh(caso)

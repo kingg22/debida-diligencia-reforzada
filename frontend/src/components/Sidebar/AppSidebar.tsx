@@ -1,4 +1,11 @@
-import { Home, Users, ShieldCheck, ClipboardList, FolderOpen, Briefcase } from "lucide-react"
+import {
+  Briefcase,
+  ClipboardList,
+  FolderOpen,
+  Home,
+  ShieldCheck,
+  Users,
+} from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
 import {
@@ -11,9 +18,7 @@ import useAuth from "@/hooks/useAuth"
 import { type Item, Main } from "./Main"
 import { User } from "./User"
 
-const baseItems: Item[] = [
-  { icon: Home, title: "Inicio", path: "/" },
-]
+const baseItems: Item[] = [{ icon: Home, title: "Inicio", path: "/" }]
 
 const kycItems: Item[] = [
   { icon: ClipboardList, title: "Nuevo Cliente KYC", path: "/kyc/nuevo" },
@@ -33,7 +38,10 @@ function PanamaComplianceLogo() {
     <div className="flex items-center gap-2.5 group-data-[collapsible=icon]:justify-center">
       <div
         className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
-        style={{ backgroundColor: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.30)" }}
+        style={{
+          backgroundColor: "rgba(201,168,76,0.15)",
+          border: "1px solid rgba(201,168,76,0.30)",
+        }}
       >
         <ShieldCheck size={16} style={{ color: "#c9a84c" }} />
       </div>

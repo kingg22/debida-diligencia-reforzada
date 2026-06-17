@@ -249,13 +249,9 @@ export interface AuthResult {
   email?: string
 }
 
-export function authenticateMock(
-  email: string,
-  password: string,
-): AuthResult {
+export function authenticateMock(email: string, password: string): AuthResult {
   const match = DEMO_CREDENTIALS.find(
-    (u) =>
-      u.email === email.toLowerCase().trim() && u.password === password,
+    (u) => u.email === email.toLowerCase().trim() && u.password === password,
   )
   if (match) {
     return {

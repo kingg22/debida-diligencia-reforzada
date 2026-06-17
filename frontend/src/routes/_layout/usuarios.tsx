@@ -1,50 +1,47 @@
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  type ReactNode,
-} from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { createFileRoute } from "@tanstack/react-router"
 import {
-  Plus,
-  Search,
-  Pencil,
-  Lock,
-  Unlock,
-  Eye,
-  EyeOff,
-  Copy,
   Check,
-  ChevronLeft,
-  ChevronRight,
-  Shuffle,
-  ShieldCheck,
-  Users,
-  UserCheck,
-  ShieldAlert,
   ChevronDown,
   ChevronRight as ChevronExpand,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  Eye,
+  EyeOff,
+  Lock,
+  Pencil,
+  Plus,
+  Search,
+  ShieldAlert,
+  ShieldCheck,
+  Shuffle,
+  Unlock,
+  UserCheck,
+  Users,
   X,
 } from "lucide-react"
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+import { z } from "zod"
 import {
-  MOCK_USERS_INITIAL,
-  ROLE_LABELS,
-  ROLE_DESCRIPTIONS,
-  ROLE_REQUIRES_2FA,
-  ROLE_BADGE,
+  PasswordChecklist,
+  passwordIsValid,
+} from "@/components/auth/PasswordChecklist"
+import { PasswordStrengthBar } from "@/components/auth/PasswordStrengthBar"
+import {
   generateSecurePassword,
+  MOCK_USERS_INITIAL,
   type MockUser,
+  ROLE_BADGE,
+  ROLE_DESCRIPTIONS,
+  ROLE_LABELS,
+  ROLE_REQUIRES_2FA,
   type Role,
   type UserStatus,
 } from "@/lib/mock-data"
-import { PasswordStrengthBar } from "@/components/auth/PasswordStrengthBar"
-import { PasswordChecklist, passwordIsValid } from "@/components/auth/PasswordChecklist"
+import { cn } from "@/lib/utils"
 
 // ─── Route ────────────────────────────────────────────────────────────────────
 export const Route = createFileRoute("/_layout/usuarios")({
@@ -238,8 +235,7 @@ function RoleSelectField({
 
   useEffect(() => {
     const fn = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false)
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener("mousedown", fn)
     return () => document.removeEventListener("mousedown", fn)
@@ -459,7 +455,9 @@ function CreateUserModal({
       lastAccess: null,
     }
     onCreated(newUser)
-    toast.success(`Usuario ${newUser.firstName} ${newUser.lastName} creado exitosamente.`)
+    toast.success(
+      `Usuario ${newUser.firstName} ${newUser.lastName} creado exitosamente.`,
+    )
     onClose()
   }
 
@@ -687,7 +685,9 @@ function EditUserModal({
   onSaved: (u: MockUser) => void
 }) {
   const [role, setRole] = useState<Role>(user.role)
-  const [status, setStatus] = useState<UserStatus>(user.status === "BLOCKED" ? "BLOCKED" : user.status)
+  const [status, setStatus] = useState<UserStatus>(
+    user.status === "BLOCKED" ? "BLOCKED" : user.status,
+  )
   const [twoFactor, setTwoFactor] = useState(user.twoFactor)
   const [showPwSection, setShowPwSection] = useState(false)
   const [newPassword, setNewPassword] = useState("")
@@ -925,10 +925,7 @@ function EditUserModal({
               style={{ backgroundColor: "#0f1f3a" }}
             >
               <div className="flex-1 pr-4">
-                <p
-                  className="text-sm font-medium"
-                  style={{ color: "#f0ede8" }}
-                >
+                <p className="text-sm font-medium" style={{ color: "#f0ede8" }}>
                   Autenticación de dos factores
                 </p>
                 <p className="mt-0.5 text-xs" style={{ color: "#4a6080" }}>
@@ -1100,7 +1097,7 @@ function UsersPage() {
   // reset page on filter change
   useEffect(() => {
     setPage(1)
-  }, [searchTerm, roleFilter, statusFilter])
+  }, [])
 
   const filtered = useMemo(() => {
     const q = searchTerm.toLowerCase()
@@ -1126,8 +1123,7 @@ function UsersPage() {
     [users],
   )
 
-  const handleCreated = (u: MockUser) =>
-    setUsers((prev) => [u, ...prev])
+  const handleCreated = (u: MockUser) => setUsers((prev) => [u, ...prev])
 
   const handleSaved = (updated: MockUser) =>
     setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)))
@@ -1137,9 +1133,7 @@ function UsersPage() {
     const next: UserStatus =
       statusTarget.status === "ACTIVE" ? "INACTIVE" : "ACTIVE"
     setUsers((prev) =>
-      prev.map((u) =>
-        u.id === statusTarget.id ? { ...u, status: next } : u,
-      ),
+      prev.map((u) => (u.id === statusTarget.id ? { ...u, status: next } : u)),
     )
     toast.success(
       `Cuenta de ${statusTarget.firstName} ${statusTarget.lastName} ${next === "ACTIVE" ? "reactivada" : "desactivada"}.`,
@@ -1157,7 +1151,11 @@ function UsersPage() {
         <div>
           <h1
             className="text-[28px]"
-            style={{ fontFamily: "DM Serif Display, serif", color: "#f0ede8", fontWeight: 400 }}
+            style={{
+              fontFamily: "DM Serif Display, serif",
+              color: "#f0ede8",
+              fontWeight: 400,
+            }}
           >
             Gestión de Usuarios
           </h1>
@@ -1179,10 +1177,30 @@ function UsersPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {[
-          { icon: <Users size={20} />, label: "Total", value: stats.total, color: "#c9a84c" },
-          { icon: <UserCheck size={20} />, label: "Activos", value: stats.active, color: "#22c55e" },
-          { icon: <ShieldCheck size={20} />, label: "Con 2FA", value: stats.with2fa, color: "#60a5fa" },
-          { icon: <ShieldAlert size={20} />, label: "Bloqueados", value: stats.blocked, color: "#e05252" },
+          {
+            icon: <Users size={20} />,
+            label: "Total",
+            value: stats.total,
+            color: "#c9a84c",
+          },
+          {
+            icon: <UserCheck size={20} />,
+            label: "Activos",
+            value: stats.active,
+            color: "#22c55e",
+          },
+          {
+            icon: <ShieldCheck size={20} />,
+            label: "Con 2FA",
+            value: stats.with2fa,
+            color: "#60a5fa",
+          },
+          {
+            icon: <ShieldAlert size={20} />,
+            label: "Bloqueados",
+            value: stats.blocked,
+            color: "#e05252",
+          },
         ].map((s) => (
           <div
             key={s.label}
@@ -1196,7 +1214,10 @@ function UsersPage() {
               {s.icon}
             </div>
             <div>
-              <p className="text-2xl font-semibold" style={{ color: "#f0ede8" }}>
+              <p
+                className="text-2xl font-semibold"
+                style={{ color: "#f0ede8" }}
+              >
                 {s.value}
               </p>
               <p className="text-xs" style={{ color: "#4a6080" }}>
@@ -1229,7 +1250,10 @@ function UsersPage() {
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value as Role | "")}
           className="h-10 rounded-lg border px-3 text-sm outline-none transition-all border-[#1b2e4a] focus:border-[#c9a84c]"
-          style={{ backgroundColor: "#0f1f3a", color: roleFilter ? "#f0ede8" : "#4a6080" }}
+          style={{
+            backgroundColor: "#0f1f3a",
+            color: roleFilter ? "#f0ede8" : "#4a6080",
+          }}
         >
           <option value="">Todos los roles</option>
           {ROLE_VALUES.map((r) => (
@@ -1243,7 +1267,10 @@ function UsersPage() {
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as UserStatus | "")}
           className="h-10 rounded-lg border px-3 text-sm outline-none transition-all border-[#1b2e4a] focus:border-[#c9a84c]"
-          style={{ backgroundColor: "#0f1f3a", color: statusFilter ? "#f0ede8" : "#4a6080" }}
+          style={{
+            backgroundColor: "#0f1f3a",
+            color: statusFilter ? "#f0ede8" : "#4a6080",
+          }}
         >
           <option value="">Todos los estados</option>
           <option value="ACTIVE">Activos</option>
@@ -1275,8 +1302,22 @@ function UsersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr style={{ backgroundColor: "#0f1f3a", borderBottom: "1px solid #1b2e4a" }}>
-                {["#", "Nombre", "Correo", "Rol", "Estado", "2FA", "Último acceso", "Acciones"].map((h) => (
+              <tr
+                style={{
+                  backgroundColor: "#0f1f3a",
+                  borderBottom: "1px solid #1b2e4a",
+                }}
+              >
+                {[
+                  "#",
+                  "Nombre",
+                  "Correo",
+                  "Rol",
+                  "Estado",
+                  "2FA",
+                  "Último acceso",
+                  "Acciones",
+                ].map((h) => (
                   <th
                     key={h}
                     className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider"
@@ -1309,12 +1350,18 @@ function UsersPage() {
                       {(page - 1) * PAGE_SIZE + i + 1}
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="font-medium" style={{ color: "#f0ede8" }}>
+                      <span
+                        className="font-medium"
+                        style={{ color: "#f0ede8" }}
+                      >
                         {u.firstName} {u.lastName}
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="font-mono text-xs" style={{ color: "#8a9bb5" }}>
+                      <span
+                        className="font-mono text-xs"
+                        style={{ color: "#8a9bb5" }}
+                      >
                         {u.email}
                       </span>
                     </td>
@@ -1331,7 +1378,10 @@ function UsersPage() {
                         <span style={{ color: "#1b2e4a" }}>—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3.5 text-xs" style={{ color: "#8a9bb5" }}>
+                    <td
+                      className="px-4 py-3.5 text-xs"
+                      style={{ color: "#8a9bb5" }}
+                    >
                       {fmtDate(u.lastAccess)}
                     </td>
                     <td className="px-4 py-3.5">
@@ -1355,7 +1405,8 @@ function UsersPage() {
                           }
                           className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[#1b2e4a]"
                           style={{
-                            color: u.status === "ACTIVE" ? "#e05252" : "#22c55e",
+                            color:
+                              u.status === "ACTIVE" ? "#e05252" : "#22c55e",
                           }}
                         >
                           {u.status === "ACTIVE" ? (
@@ -1403,7 +1454,11 @@ function UsersPage() {
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-xs transition-colors"
                 style={
                   p === page
-                    ? { backgroundColor: "#c9a84c", color: "#040d1c", fontWeight: 600 }
+                    ? {
+                        backgroundColor: "#c9a84c",
+                        color: "#040d1c",
+                        fontWeight: 600,
+                      }
                     : { color: "#8a9bb5" }
                 }
               >

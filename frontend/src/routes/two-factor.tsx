@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from "react"
 import {
   createFileRoute,
   Link as RouterLink,
   redirect,
   useNavigate,
 } from "@tanstack/react-router"
-import { ShieldCheck, ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react"
+import { useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
 import { OTPInput } from "@/components/auth/OTPInput"
 import { completeLogin, type Role } from "@/lib/mock-data"
@@ -183,10 +183,7 @@ function TwoFactor() {
         <div className="mb-6 flex flex-col items-center gap-2">
           {!expired ? (
             <div className="relative h-16 w-16">
-              <svg
-                className="h-full w-full -rotate-90"
-                viewBox="0 0 48 48"
-              >
+              <svg className="h-full w-full -rotate-90" viewBox="0 0 48 48">
                 <circle
                   cx="24"
                   cy="24"
@@ -264,10 +261,7 @@ function TwoFactor() {
           )}
         </p>
 
-        <p
-          className="mt-8 text-center text-xs"
-          style={{ color: "#4a6080" }}
-        >
+        <p className="mt-8 text-center text-xs" style={{ color: "#4a6080" }}>
           Demo: usa el código{" "}
           <span className="font-mono" style={{ color: "#8a9bb5" }}>
             123456
