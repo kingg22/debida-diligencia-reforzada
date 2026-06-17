@@ -9,7 +9,8 @@ import {
 
 // Badge de estado del caso DDR (lista y detalle de casos).
 export function EstadoCasoBadge({ estado }: { estado?: string | null }) {
-  const cfg = estado && estado in ESTADO_CASO ? ESTADO_CASO[estado as EstadoCaso] : null
+  const cfg =
+    estado && estado in ESTADO_CASO ? ESTADO_CASO[estado as EstadoCaso] : null
   return <BadgePill cfg={cfg} fallback={estado} />
 }
 
@@ -24,7 +25,8 @@ export function EstadoClienteBadge({ estado }: { estado?: string | null }) {
 
 // Badge de estado del expediente KYC (compatibilidad con el modelo ExpedienteKYC).
 export function EstadoKYCBadge({ estado }: { estado?: string | null }) {
-  const cfg = estado && estado in ESTADO_KYC ? ESTADO_KYC[estado as EstadoKYC] : null
+  const cfg =
+    estado && estado in ESTADO_KYC ? ESTADO_KYC[estado as EstadoKYC] : null
   return <BadgePill cfg={cfg} fallback={estado} />
 }
 

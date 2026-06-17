@@ -1,9 +1,9 @@
 import {
+  type ClipboardEvent,
+  type KeyboardEvent,
+  useEffect,
   useRef,
   useState,
-  useEffect,
-  type KeyboardEvent,
-  type ClipboardEvent,
 } from "react"
 import { cn } from "@/lib/utils"
 

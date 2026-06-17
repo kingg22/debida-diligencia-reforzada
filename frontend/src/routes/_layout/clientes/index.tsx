@@ -2,20 +2,23 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Plus, Search, X } from "lucide-react"
 import { useEffect, useState } from "react"
-
-import { EstadoClienteBadge } from "@/components/Common/EstadoCasoBadge"
+import { ClientesService } from "@/client/sgddr"
+import { EstadoKYCBadge } from "@/components/Common/EstadoCasoBadge"
 import { NivelRiesgoBadge } from "@/components/Common/NivelRiesgoBadge"
 import { PageHeader } from "@/components/Common/PageHeader"
-import { EmptyState, ErrorState, LoadingState } from "@/components/Common/QueryStates"
-import { ClientesService } from "@/client/sgddr"
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "@/components/Common/QueryStates"
 import useAuth from "@/hooks/useAuth"
 import {
   type AppUser,
-  ESTADOS_CLIENTE,
-  ESTADO_CLIENTE,
+  ESTADO_KYC,
+  ESTADOS_KYC,
   formatFecha,
-  NIVELES_RIESGO,
   NIVEL_RIESGO,
+  NIVELES_RIESGO,
   puedeRegistrarCliente,
 } from "@/lib/sgddr"
 
@@ -47,7 +50,7 @@ function ClientesPage() {
 
   useEffect(() => {
     setPage(1)
-  }, [nombre, nivel, estado])
+  }, [])
 
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ["clientes", { nombre, nivel, estado, page }],
@@ -60,6 +63,7 @@ function ClientesPage() {
         size: PAGE_SIZE,
       }),
     retry: false,
+    enabled: !!user,
   })
 
   const total = data?.count ?? 0
@@ -108,7 +112,10 @@ function ClientesPage() {
           value={nivel}
           onChange={(e) => setNivel(e.target.value)}
           className="h-10 rounded-lg border px-3 text-sm outline-none transition-all border-[#1b2e4a] focus:border-[#c9a84c]"
-          style={{ backgroundColor: "#0f1f3a", color: nivel ? "#f0ede8" : "#4a6080" }}
+          style={{
+            backgroundColor: "#0f1f3a",
+            color: nivel ? "#f0ede8" : "#4a6080",
+          }}
         >
           <option value="">Todos los niveles</option>
           {NIVELES_RIESGO.map((n) => (
@@ -122,12 +129,15 @@ function ClientesPage() {
           value={estado}
           onChange={(e) => setEstado(e.target.value)}
           className="h-10 rounded-lg border px-3 text-sm outline-none transition-all border-[#1b2e4a] focus:border-[#c9a84c]"
-          style={{ backgroundColor: "#0f1f3a", color: estado ? "#f0ede8" : "#4a6080" }}
+          style={{
+            backgroundColor: "#0f1f3a",
+            color: estado ? "#f0ede8" : "#4a6080",
+          }}
         >
           <option value="">Todos los estados</option>
-          {ESTADOS_CLIENTE.map((e) => (
-            <option key={e} value={e}>
-              {ESTADO_CLIENTE[e].label}
+          {ESTADOS_KYC.map((kyc) => (
+            <option key={kyc} value={kyc}>
+              {ESTADO_KYC[kyc].label}
             </option>
           ))}
         </select>
@@ -172,8 +182,19 @@ function ClientesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ backgroundColor: "#0f1f3a", borderBottom: "1px solid #1b2e4a" }}>
-                  {["Nombre", "Identificación", "Nivel de riesgo", "Estado", "Registro"].map((h) => (
+                <tr
+                  style={{
+                    backgroundColor: "#0f1f3a",
+                    borderBottom: "1px solid #1b2e4a",
+                  }}
+                >
+                  {[
+                    "Nombre",
+                    "Identificación",
+                    "Nivel de riesgo",
+                    "Estado",
+                    "Registro",
+                  ].map((h) => (
                     <th
                       key={h}
                       className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider"
@@ -188,33 +209,47 @@ function ClientesPage() {
                 {data?.data.map((c) => (
                   <tr
                     key={c.id}
-                    onClick={() => navigate({ to: "/clientes/$id", params: { id: c.id } })}
+                    onClick={() =>
+                      navigate({ to: "/clientes/$id", params: { id: c.id } })
+                    }
                     className="cursor-pointer transition-colors hover:bg-[#0f1f3a]"
                     style={{ borderBottom: "1px solid #1b2e4a" }}
                   >
                     <td className="px-4 py-3.5">
-                      <span className="font-medium" style={{ color: "#f0ede8" }}>
+                      <span
+                        className="font-medium"
+                        style={{ color: "#f0ede8" }}
+                      >
                         {c.nombres} {c.apellidos}
                       </span>
                       {c.es_pep && (
                         <span
                           className="ml-2 rounded px-1.5 py-0.5 text-[10px] font-semibold"
-                          style={{ backgroundColor: "rgba(201,168,76,0.15)", color: "#c9a84c" }}
+                          style={{
+                            backgroundColor: "rgba(201,168,76,0.15)",
+                            color: "#c9a84c",
+                          }}
                         >
                           PEP
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3.5 font-mono text-xs" style={{ color: "#8a9bb5" }}>
+                    <td
+                      className="px-4 py-3.5 font-mono text-xs"
+                      style={{ color: "#8a9bb5" }}
+                    >
                       {c.numero_identificacion}
                     </td>
                     <td className="px-4 py-3.5">
                       <NivelRiesgoBadge nivel={c.nivel_riesgo} />
                     </td>
                     <td className="px-4 py-3.5">
-                      <EstadoClienteBadge estado={c.estado} />
+                      <EstadoKYCBadge estado={c.estado} />
                     </td>
-                    <td className="px-4 py-3.5 text-xs" style={{ color: "#8a9bb5" }}>
+                    <td
+                      className="px-4 py-3.5 text-xs"
+                      style={{ color: "#8a9bb5" }}
+                    >
                       {formatFecha(c.creado_en)}
                     </td>
                   </tr>
@@ -226,7 +261,10 @@ function ClientesPage() {
           {/* Paginación */}
           <div
             className="flex items-center justify-between px-4 py-3"
-            style={{ borderTop: "1px solid #1b2e4a", backgroundColor: "#0f1f3a" }}
+            style={{
+              borderTop: "1px solid #1b2e4a",
+              backgroundColor: "#0f1f3a",
+            }}
           >
             <p className="text-xs" style={{ color: "#4a6080" }}>
               {total} cliente{total !== 1 ? "s" : ""}

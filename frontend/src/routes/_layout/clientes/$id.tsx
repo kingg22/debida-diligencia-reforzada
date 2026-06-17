@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { ArrowLeft, FileText } from "lucide-react"
-
-import { EstadoClienteBadge } from "@/components/Common/EstadoCasoBadge"
+import { ClientesService } from "@/client/sgddr"
+import { EstadoKYCBadge } from "@/components/Common/EstadoCasoBadge"
 import { NivelRiesgoBadge } from "@/components/Common/NivelRiesgoBadge"
 import { PageHeader } from "@/components/Common/PageHeader"
 import { ErrorState, LoadingState } from "@/components/Common/QueryStates"
-import { ClientesService } from "@/client/sgddr"
 import { formatFecha } from "@/lib/sgddr"
 
 export const Route = createFileRoute("/_layout/clientes/$id")({
@@ -29,7 +28,13 @@ function Campo({ label, value }: { label: string; value?: string | null }) {
   )
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
   return (
     <div
       className="rounded-xl p-5"
@@ -50,10 +55,17 @@ function ClienteDetallePage() {
   const { id } = useParams({ from: "/_layout/clientes/$id" })
   const navigate = useNavigate()
 
-  const { data: c, isPending, isError, error, refetch } = useQuery({
+  const {
+    data: c,
+    isPending,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["cliente", id],
     queryFn: () => ClientesService.get(id),
     retry: false,
+    enabled: !!id,
   })
 
   return (
@@ -70,7 +82,10 @@ function ClienteDetallePage() {
       {isPending ? (
         <LoadingState label="Cargando expediente…" />
       ) : isError ? (
-        <ErrorState message={(error as Error)?.message} onRetry={() => refetch()} />
+        <ErrorState
+          message={(error as Error)?.message}
+          onRetry={() => refetch()}
+        />
       ) : c ? (
         <>
           <PageHeader
@@ -79,7 +94,7 @@ function ClienteDetallePage() {
             action={
               <div className="flex items-center gap-2">
                 <NivelRiesgoBadge nivel={c.nivel_riesgo} />
-                <EstadoClienteBadge estado={c.estado} />
+                <EstadoKYCBadge estado={c.estado} />
               </div>
             }
           />
@@ -93,8 +108,8 @@ function ClienteDetallePage() {
                 color: "#c9a84c",
               }}
             >
-              Cliente identificado como PEP (Persona Expuesta Políticamente) — Ley
-              23/2015 Art. 24. Requiere Debida Diligencia Reforzada.
+              Cliente identificado como PEP (Persona Expuesta Políticamente) —
+              Ley 23/2015 Art. 24. Requiere Debida Diligencia Reforzada.
             </div>
           )}
 
@@ -103,7 +118,10 @@ function ClienteDetallePage() {
               <div className="grid grid-cols-2 gap-4">
                 <Campo label="Nombres" value={c.nombres} />
                 <Campo label="Apellidos" value={c.apellidos} />
-                <Campo label="Fecha de nacimiento" value={formatFecha(c.fecha_nacimiento)} />
+                <Campo
+                  label="Fecha de nacimiento"
+                  value={formatFecha(c.fecha_nacimiento)}
+                />
                 <Campo label="Nacionalidad" value={c.nacionalidad} />
                 <Campo label="País de residencia" value={c.pais_residencia} />
                 <Campo label="Correo" value={c.correo} />
@@ -115,9 +133,18 @@ function ClienteDetallePage() {
               <div className="grid grid-cols-2 gap-4">
                 <Campo label="Ocupación" value={c.ocupacion} />
                 <Campo label="Fuente de ingresos" value={c.fuente_ingresos} />
-                <Campo label="Ingresos mensuales" value={c.ingresos_mensuales_usd} />
-                <Campo label="Propósito de la relación" value={c.proposito_relacion} />
-                <Campo label="Puntaje de riesgo" value={String(c.puntaje_riesgo)} />
+                <Campo
+                  label="Ingresos mensuales"
+                  value={c.ingresos_mensuales_usd}
+                />
+                <Campo
+                  label="Propósito de la relación"
+                  value={c.proposito_relacion}
+                />
+                <Campo
+                  label="Puntaje de riesgo"
+                  value={String(c.puntaje_riesgo)}
+                />
                 <Campo label="Registro" value={formatFecha(c.creado_en)} />
               </div>
             </Card>
@@ -134,11 +161,14 @@ function ClienteDetallePage() {
                   >
                     <FileText size={16} style={{ color: "#8a9bb5" }} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm" style={{ color: "#f0ede8" }}>
-                        {d.nombre_archivo}
+                      <p
+                        className="truncate text-sm"
+                        style={{ color: "#f0ede8" }}
+                      >
+                        {d.nombre}
                       </p>
                       <p className="text-xs" style={{ color: "#4a6080" }}>
-                        {d.tipo_documento} · {formatFecha(d.subido_en)}
+                        {d.tipo} · {formatFecha(d.fecha_carga)}
                       </p>
                     </div>
                   </div>

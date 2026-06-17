@@ -9,7 +9,11 @@ export function LoadingState({ label = "Cargando…" }: { label?: string }) {
       className="flex flex-col items-center justify-center gap-3 rounded-xl py-16"
       style={{ border: "1px solid #1b2e4a", backgroundColor: "#0a1628" }}
     >
-      <Loader2 size={22} className="animate-spin" style={{ color: "#c9a84c" }} />
+      <Loader2
+        size={22}
+        className="animate-spin"
+        style={{ color: "#c9a84c" }}
+      />
       <p className="text-sm" style={{ color: "#8a9bb5" }}>
         {label}
       </p>
@@ -27,7 +31,10 @@ export function ErrorState({
   return (
     <div
       className="flex flex-col items-center justify-center gap-3 rounded-xl py-16 text-center"
-      style={{ border: "1px solid rgba(224,82,82,0.25)", backgroundColor: "rgba(224,82,82,0.05)" }}
+      style={{
+        border: "1px solid rgba(224,82,82,0.25)",
+        backgroundColor: "rgba(224,82,82,0.05)",
+      }}
     >
       <AlertCircle size={22} style={{ color: "#e05252" }} />
       <p className="max-w-md text-sm" style={{ color: "#e05252" }}>

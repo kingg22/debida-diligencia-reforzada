@@ -3,11 +3,10 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
-
+import { CasosDdrService, type CuestionarioInput } from "@/client/sgddr"
 import { DropZone } from "@/components/Common/DropZone"
 import { PageHeader } from "@/components/Common/PageHeader"
 import { WizardProgress } from "@/components/Common/WizardProgress"
-import { CasosDdrService, type CuestionarioInput } from "@/client/sgddr"
 
 export const Route = createFileRoute("/_layout/casos-ddr/$id/evaluacion")({
   component: EvaluacionPage,
@@ -24,7 +23,10 @@ const PATRIMONIOS = [
 ]
 
 const DOCS_DDR = [
-  { tipo: "DECLARACION_FONDOS", label: "Declaración jurada de origen de fondos" },
+  {
+    tipo: "DECLARACION_FONDOS",
+    label: "Declaración jurada de origen de fondos",
+  },
   { tipo: "REFERENCIA_BANCARIA", label: "Referencia bancaria" },
   { tipo: "ESTADOS_FINANCIEROS", label: "Estado financiero" },
 ] as const
@@ -75,7 +77,11 @@ function RadioSiNo({
           className="rounded-lg border px-5 py-2 text-sm transition-colors"
           style={
             value === v
-              ? { borderColor: "#c9a84c", backgroundColor: "rgba(201,168,76,0.1)", color: "#c9a84c" }
+              ? {
+                  borderColor: "#c9a84c",
+                  backgroundColor: "rgba(201,168,76,0.1)",
+                  color: "#c9a84c",
+                }
               : { borderColor: "#1b2e4a", color: "#8a9bb5" }
           }
         >
@@ -92,7 +98,9 @@ function EvaluacionPage() {
 
   const [etapa, setEtapa] = useState(0) // 0 = cuestionario, 1 = documentos
   const [form, setForm] = useState<Form>(VACIO)
-  const [docs, setDocs] = useState<Record<string, { file: File; hash?: string }>>({})
+  const [docs, setDocs] = useState<
+    Record<string, { file: File; hash?: string }>
+  >({})
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) =>
     setForm((f) => ({ ...f, [k]: v }))
@@ -119,7 +127,10 @@ function EvaluacionPage() {
     mutationFn: ({ tipo, file }: { tipo: string; file: File }) =>
       CasosDdrService.subirDocumento(id, tipo, file),
     onSuccess: (doc, vars) => {
-      setDocs((d) => ({ ...d, [vars.tipo]: { file: vars.file, hash: doc.hash_sha256 ?? undefined } }))
+      setDocs((d) => ({
+        ...d,
+        [vars.tipo]: { file: vars.file, hash: doc.hash_sha256 ?? undefined },
+      }))
       toast.success("Documento cargado.")
     },
     onError: (e: Error) => toast.error(e.message),
@@ -152,8 +163,14 @@ function EvaluacionPage() {
         subtitle="Cuestionario EBR y documentación de soporte (Ley 23/2015 Art. 27-28)."
       />
 
-      <div className="rounded-xl p-6" style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}>
-        <WizardProgress steps={["Cuestionario EBR", "Documentos"]} current={etapa} />
+      <div
+        className="rounded-xl p-6"
+        style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+      >
+        <WizardProgress
+          steps={["Cuestionario EBR", "Documentos"]}
+          current={etapa}
+        />
       </div>
 
       {etapa === 0 ? (
@@ -170,7 +187,15 @@ function EvaluacionPage() {
               className="w-full rounded-lg border p-3 text-sm text-[#f0ede8] outline-none border-[#1b2e4a] focus:border-[#c9a84c]"
               style={{ backgroundColor: "#0f1f3a" }}
             />
-            <p className="mt-1 text-xs" style={{ color: form.origen_fondos.trim().length >= 20 ? "#22c55e" : "#4a6080" }}>
+            <p
+              className="mt-1 text-xs"
+              style={{
+                color:
+                  form.origen_fondos.trim().length >= 20
+                    ? "#22c55e"
+                    : "#4a6080",
+              }}
+            >
               {form.origen_fondos.trim().length}/20 caracteres mínimos
             </p>
           </div>
@@ -184,7 +209,15 @@ function EvaluacionPage() {
               className="w-full rounded-lg border p-3 text-sm text-[#f0ede8] outline-none border-[#1b2e4a] focus:border-[#c9a84c]"
               style={{ backgroundColor: "#0f1f3a" }}
             />
-            <p className="mt-1 text-xs" style={{ color: form.proposito_relacion.trim().length >= 20 ? "#22c55e" : "#4a6080" }}>
+            <p
+              className="mt-1 text-xs"
+              style={{
+                color:
+                  form.proposito_relacion.trim().length >= 20
+                    ? "#22c55e"
+                    : "#4a6080",
+              }}
+            >
               {form.proposito_relacion.trim().length}/20 caracteres mínimos
             </p>
           </div>
@@ -196,7 +229,10 @@ function EvaluacionPage() {
                 value={form.patrimonio_estimado}
                 onChange={(e) => set("patrimonio_estimado", e.target.value)}
                 className="h-10 w-full rounded-lg border px-3 text-sm outline-none border-[#1b2e4a] focus:border-[#c9a84c]"
-                style={{ backgroundColor: "#0f1f3a", color: form.patrimonio_estimado ? "#f0ede8" : "#4a6080" }}
+                style={{
+                  backgroundColor: "#0f1f3a",
+                  color: form.patrimonio_estimado ? "#f0ede8" : "#4a6080",
+                }}
               >
                 <option value="">Selecciona…</option>
                 {PATRIMONIOS.map((p) => (
@@ -229,7 +265,10 @@ function EvaluacionPage() {
             </div>
             <div>
               <Label>¿Tiene familiares que sean PEP?</Label>
-              <RadioSiNo value={form.familiar_pep} onChange={(v) => set("familiar_pep", v)} />
+              <RadioSiNo
+                value={form.familiar_pep}
+                onChange={(v) => set("familiar_pep", v)}
+              />
             </div>
           </div>
 
@@ -241,7 +280,9 @@ function EvaluacionPage() {
               className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
               style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
             >
-              {guardarCuestionario.isPending ? "Guardando…" : "Guardar y continuar"}
+              {guardarCuestionario.isPending
+                ? "Guardando…"
+                : "Guardar y continuar"}
             </button>
           </div>
         </div>
@@ -257,7 +298,9 @@ function EvaluacionPage() {
               file={docs[d.tipo]?.file}
               done={!!docs[d.tipo]}
               hash={docs[d.tipo]?.hash}
-              uploading={subirDoc.isPending && subirDoc.variables?.tipo === d.tipo}
+              uploading={
+                subirDoc.isPending && subirDoc.variables?.tipo === d.tipo
+              }
               onFile={(file) => subirDoc.mutate({ tipo: d.tipo, file })}
             />
           ))}

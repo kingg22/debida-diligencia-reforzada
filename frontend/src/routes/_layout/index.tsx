@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { ShieldCheck, Users, FileText, AlertTriangle } from "lucide-react"
+import { AlertTriangle, FileText, ShieldCheck, Users } from "lucide-react"
 import useAuth from "@/hooks/useAuth"
 import { ROLE_LABELS, type Role } from "@/lib/mock-data"
 
