@@ -74,11 +74,13 @@ function Admin() {
         action={<AddUser />}
       />
 
-      <div className="space-y-3">
-        <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+      <div className="bg-card overflow-hidden rounded-xl border">
+        <p className="text-muted-foreground border-b px-5 py-4 text-xs font-semibold tracking-wider uppercase">
           Listado de usuarios
         </p>
-        <UsersTable />
+        <div className="p-5">
+          <UsersTable />
+        </div>
       </div>
     </div>
   )
