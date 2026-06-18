@@ -36,39 +36,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* ─── PanamaCompliance dark navy theme ──────────────────────────── */
-.dark {
-  --radius: 0.5rem;
-
-  --background: #040d1c;
-  --foreground: #f0ede8;
-  --card: #0a1628;
-  --card-foreground: #f0ede8;
-  --popover: #0f1f3a;
-  --popover-foreground: #f0ede8;
-  --primary: #c9a84c;
-  --primary-foreground: #040d1c;
-  --secondary: #0f1f3a;
-  --secondary-foreground: #f0ede8;
-  --muted: #0f1f3a;
-  --muted-foreground: #8a9bb5;
-  --accent: #1b2e4a;
-  --accent-foreground: #f0ede8;
-  --destructive: #e05252;
-  --border: #1b2e4a;
-  --input: #1b2e4a;
-  --ring: #c9a84c;
-  --sidebar: #0a1628;
-  --sidebar-foreground: #f0ede8;
-  --sidebar-primary: #c9a84c;
-  --sidebar-primary-foreground: #040d1c;
-  --sidebar-accent: #1b2e4a;
-  --sidebar-accent-foreground: #f0ede8;
-  --sidebar-border: #1b2e4a;
-  --sidebar-ring: #c9a84c;
-}
-
-/* ─── PanamaCompliance light theme ──────────────────────────────── */
+/* ─── PanamaCompliance light theme (default) ────────────────────── */
 :root {
   --radius: 0.5rem;
 
@@ -98,6 +66,40 @@
   --sidebar-accent-foreground: #1a1a2e;
   --sidebar-border: #e0ddd6;
   --sidebar-ring: #b8942e;
+}
+
+/* ─── PanamaCompliance dark navy theme ──────────────────────────── */
+/* Must come AFTER :root so the .dark override actually wins when both
+   selectors match the <html> element (same specificity, later wins). */
+.dark {
+  --radius: 0.5rem;
+
+  --background: #040d1c;
+  --foreground: #f0ede8;
+  --card: #0a1628;
+  --card-foreground: #f0ede8;
+  --popover: #0f1f3a;
+  --popover-foreground: #f0ede8;
+  --primary: #c9a84c;
+  --primary-foreground: #040d1c;
+  --secondary: #0f1f3a;
+  --secondary-foreground: #f0ede8;
+  --muted: #0f1f3a;
+  --muted-foreground: #8a9bb5;
+  --accent: #1b2e4a;
+  --accent-foreground: #f0ede8;
+  --destructive: #e05252;
+  --border: #1b2e4a;
+  --input: #1b2e4a;
+  --ring: #c9a84c;
+  --sidebar: #0a1628;
+  --sidebar-foreground: #f0ede8;
+  --sidebar-primary: #c9a84c;
+  --sidebar-primary-foreground: #040d1c;
+  --sidebar-accent: #1b2e4a;
+  --sidebar-accent-foreground: #f0ede8;
+  --sidebar-border: #1b2e4a;
+  --sidebar-ring: #c9a84c;
 }
 
 @layer base {

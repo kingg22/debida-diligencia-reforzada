@@ -62,16 +62,12 @@ function SessionTimer() {
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-mono",
-        isWarn && "animate-pulse-warn",
+        "text-muted-foreground flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-xs",
+        isWarn
+          ? "border-primary/40 bg-primary/15 text-primary animate-pulse-warn"
+          : "border-primary/20 bg-primary/10",
+        isWarn && "text-primary",
       )}
-      style={{
-        backgroundColor: isWarn
-          ? "rgba(201,168,76,0.12)"
-          : "rgba(201,168,76,0.07)",
-        border: `1px solid ${isWarn ? "rgba(201,168,76,0.40)" : "rgba(201,168,76,0.18)"}`,
-        color: isWarn ? "#c9a84c" : "#8a9bb5",
-      }}
       title="Tiempo restante de sesión"
     >
       <Clock size={11} />
@@ -87,17 +83,16 @@ function Layout() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b px-4">
+        <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b px-4 backdrop-blur-md">
           <SidebarTrigger className="-ml-1 text-muted-foreground" />
           <div className="flex-1" />
           <SessionTimer />
           <button
             onClick={logout}
             className={cn(
-              "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium",
-              "transition-colors hover:bg-red-500/10 hover:text-red-400",
+              "text-muted-foreground flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium",
+              "transition-colors hover:bg-red-500/10 hover:text-red-500",
             )}
-            style={{ color: "#8a9bb5" }}
             title="Cerrar sesión"
           >
             <LogOut size={14} />

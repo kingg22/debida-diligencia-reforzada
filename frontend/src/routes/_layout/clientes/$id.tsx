@@ -18,12 +18,8 @@ export const Route = createFileRoute("/_layout/clientes/$id")({
 function Campo({ label, value }: { label: string; value?: string | null }) {
   return (
     <div>
-      <p className="text-xs" style={{ color: "#4a6080" }}>
-        {label}
-      </p>
-      <p className="mt-0.5 text-sm" style={{ color: "#f0ede8" }}>
-        {value || "—"}
-      </p>
+      <p className="text-muted-foreground text-xs">{label}</p>
+      <p className="text-foreground mt-0.5 text-sm">{value || "—"}</p>
     </div>
   )
 }
@@ -36,14 +32,8 @@ function Card({
   children: React.ReactNode
 }) {
   return (
-    <div
-      className="rounded-xl p-5"
-      style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
-    >
-      <p
-        className="mb-4 text-xs font-semibold uppercase tracking-wider"
-        style={{ color: "#4a6080" }}
-      >
+    <div className="bg-card border-border rounded-xl border p-5">
+      <p className="text-muted-foreground mb-4 text-xs font-semibold uppercase tracking-wider">
         {title}
       </p>
       {children}
@@ -73,8 +63,7 @@ function ClienteDetallePage() {
       <button
         type="button"
         onClick={() => navigate({ to: "/clientes" })}
-        className="flex items-center gap-1.5 text-sm transition-colors hover:text-[#c9a84c]"
-        style={{ color: "#8a9bb5" }}
+        className="text-muted-foreground hover:text-primary flex items-center gap-1.5 text-sm transition-colors"
       >
         <ArrowLeft size={15} /> Volver a clientes
       </button>
@@ -100,14 +89,7 @@ function ClienteDetallePage() {
           />
 
           {c.es_pep && (
-            <div
-              className="rounded-xl px-4 py-3 text-sm"
-              style={{
-                backgroundColor: "rgba(201,168,76,0.08)",
-                border: "1px solid rgba(201,168,76,0.25)",
-                color: "#c9a84c",
-              }}
-            >
+            <div className="bg-primary/10 text-primary border-primary/25 rounded-xl border px-4 py-3 text-sm">
               Cliente identificado como PEP (Persona Expuesta Políticamente) —
               Ley 23/2015 Art. 24. Requiere Debida Diligencia Reforzada.
             </div>
@@ -156,18 +138,14 @@ function ClienteDetallePage() {
                 {c.documentos.map((d) => (
                   <div
                     key={d.id}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2.5"
-                    style={{ backgroundColor: "#0f1f3a" }}
+                    className="bg-muted/40 flex items-center gap-3 rounded-lg px-3 py-2.5"
                   >
-                    <FileText size={16} style={{ color: "#8a9bb5" }} />
+                    <FileText size={16} className="text-muted-foreground" />
                     <div className="min-w-0 flex-1">
-                      <p
-                        className="truncate text-sm"
-                        style={{ color: "#f0ede8" }}
-                      >
+                      <p className="text-foreground truncate text-sm">
                         {d.nombre}
                       </p>
-                      <p className="text-xs" style={{ color: "#4a6080" }}>
+                      <p className="text-muted-foreground text-xs">
                         {d.tipo} · {formatFecha(d.fecha_carga)}
                       </p>
                     </div>
@@ -175,7 +153,7 @@ function ClienteDetallePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm" style={{ color: "#4a6080" }}>
+              <p className="text-muted-foreground text-sm">
                 No hay documentos cargados.
               </p>
             )}
