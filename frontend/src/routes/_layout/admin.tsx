@@ -1,12 +1,16 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
-import { Suspense } from "react"
 
 import { type UserPublic, UsersService } from "@/client"
 import AddUser from "@/components/Admin/AddUser"
 import { columns, type UserTableData } from "@/components/Admin/columns"
+import { PageHeader } from "@/components/Common/PageHeader"
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "@/components/Common/QueryStates"
 import { DataTable } from "@/components/Common/DataTable"
-import PendingUsers from "@/components/Pending/PendingUsers"
 import useAuth from "@/hooks/useAuth"
 
 function getUsersQueryOptions() {
@@ -29,47 +33,53 @@ export const Route = createFileRoute("/_layout/admin")({
   head: () => ({
     meta: [
       {
-        title: "Admin - FastAPI Template",
+        title: "Usuarios — PanamaCompliance SGDDR",
       },
     ],
   }),
 })
 
-function UsersTableContent() {
+function UsersTable() {
   const { user: currentUser } = useAuth()
-  const { data: users } = useSuspenseQuery(getUsersQueryOptions())
+  const { data, isPending, isError, error, refetch } = useQuery(
+    getUsersQueryOptions(),
+  )
 
-  const tableData: UserTableData[] = users.data.map((user: UserPublic) => ({
+  if (isPending) return <LoadingState label="Cargando usuarios…" />
+  if (isError)
+    return (
+      <ErrorState
+        message={(error as Error)?.message}
+        onRetry={() => refetch()}
+      />
+    )
+
+  const rows: UserTableData[] = (data?.data ?? []).map((user: UserPublic) => ({
     ...user,
     isCurrentUser: currentUser?.id === user.id,
   }))
 
-  return <DataTable columns={columns} data={tableData} />
-}
+  if (rows.length === 0)
+    return <EmptyState message="No hay usuarios registrados." />
 
-function UsersTable() {
-  return (
-    <Suspense fallback={<PendingUsers />}>
-      <UsersTableContent />
-    </Suspense>
-  )
+  return <DataTable columns={columns} data={rows} />
 }
 
 function Admin() {
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-foreground text-2xl font-bold tracking-tight">
-            Users
-          </h1>
-          <p className="text-muted-foreground">
-            Manage user accounts and permissions
-          </p>
-        </div>
-        <AddUser />
+    <div className="space-y-6">
+      <PageHeader
+        title="Usuarios"
+        subtitle="Cuentas registradas y permisos del sistema."
+        action={<AddUser />}
+      />
+
+      <div className="space-y-3">
+        <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+          Listado de usuarios
+        </p>
+        <UsersTable />
       </div>
-      <UsersTable />
     </div>
   )
 }
