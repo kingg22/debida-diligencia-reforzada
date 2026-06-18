@@ -1,10 +1,12 @@
 import hashlib
+import urllib.parse
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi.responses import FileResponse
 from sqlmodel import col, func, select
 
 from app import crud
@@ -274,6 +276,49 @@ def delete_documento(
     session.delete(documento)
     session.commit()
     return Message(message="Documento eliminado")
+
+
+@router.get(
+    "/{id}/documentos/{doc_id}/descargar",
+    dependencies=[AccesoKYC],
+)
+def descargar_documento(
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: uuid.UUID,
+    doc_id: uuid.UUID,
+    disposition: str = Query(default="attachment", pattern="^(inline|attachment)$"),
+) -> FileResponse:
+    """Descargar (attachment) o previsualizar inline un documento del expediente.
+    El archivo se reconstruye desde `ruta_archivo` en la fila del documento;
+    nunca se conf\u00eda en nombres provistos por el cliente."""
+    expediente = _get_expediente_o_404(session, id)
+    _verificar_acceso(expediente, current_user)
+
+    documento = session.get(DocumentoKYC, doc_id)
+    if not documento or documento.expediente_id != expediente.id:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+    if not documento.ruta_archivo:
+        raise HTTPException(status_code=410, detail="El archivo ya no está disponible")
+
+    archivo = Path(documento.ruta_archivo)
+    if not archivo.is_file():
+        raise HTTPException(status_code=410, detail="El archivo ya no está disponible")
+
+    nombre = documento.nombre
+    safe_name = nombre.encode("ascii", "ignore").decode("ascii") or "documento"
+    headers = {
+        "Content-Disposition": (
+            f'{disposition}; filename="{safe_name}"; '
+            f"filename*=UTF-8''{urllib.parse.quote(nombre)}"
+        ),
+        "X-Content-Type-Options": "nosniff",
+    }
+    return FileResponse(
+        path=str(archivo),
+        media_type=documento.mime_type or "application/octet-stream",
+        headers=headers,
+    )
 
 
 @router.post(
