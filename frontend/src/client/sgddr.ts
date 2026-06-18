@@ -459,7 +459,7 @@ export const ClientesService = {
     fetchJson<Paginated<Documento>>(Endpoints.clientes.documentos(id)),
   subirDocumento: (id: string, tipo: string, file: File) => {
     const form = new FormData()
-    form.append("tipo_documento", tipo)
+    form.append("tipo", tipo)
     form.append("file", file)
     return fetchForm<Documento>(Endpoints.clientes.documentos(id), form)
   },
@@ -520,7 +520,7 @@ export const CasosDdrService = {
     }),
   subirDocumento: (id: string, tipo: string, file: File) => {
     const form = new FormData()
-    form.append("tipo_documento", tipo)
+    form.append("tipo", tipo)
     form.append("file", file)
     return fetchForm<Documento>(Endpoints.casosDdr.documentos(id), form)
   },
