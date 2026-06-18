@@ -1,12 +1,47 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
-import { ArrowLeft, FileText } from "lucide-react"
-import { ClientesService } from "@/client/sgddr"
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Check,
+  Download,
+  Eye,
+  FileText,
+  Loader2,
+  ShieldAlert,
+  X,
+} from "lucide-react"
+import { useState } from "react"
+import { ClientesService, type Documento, type ExpedienteKYC } from "@/client/sgddr"
 import { EstadoKYCBadge } from "@/components/Common/EstadoCasoBadge"
 import { NivelRiesgoBadge } from "@/components/Common/NivelRiesgoBadge"
 import { PageHeader } from "@/components/Common/PageHeader"
-import { ErrorState, LoadingState } from "@/components/Common/QueryStates"
-import { formatFecha } from "@/lib/sgddr"
+import { DocumentoPreviewDialog } from "@/components/Common/DocumentoPreviewDialog"
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "@/components/Common/QueryStates"
+import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DOCUMENTO_ESTADO,
+  DOCUMENTO_TIPO_LABEL,
+  type DocumentoEstado,
+  type DocumentoTipo,
+  formatBytes,
+  formatFecha,
+  formatFechaHora,
+  TIPO_CLIENTE_LABELS,
+} from "@/lib/sgddr"
 
 export const Route = createFileRoute("/_layout/clientes/$id")({
   component: ClienteDetallePage,
@@ -15,11 +50,21 @@ export const Route = createFileRoute("/_layout/clientes/$id")({
   }),
 })
 
-function Campo({ label, value }: { label: string; value?: string | null }) {
+// ── Helpers de UI ────────────────────────────────────────────────────────
+
+function Campo({
+  label,
+  value,
+}: {
+  label: string
+  value?: string | number | null
+}) {
   return (
     <div>
       <p className="text-muted-foreground text-xs">{label}</p>
-      <p className="text-foreground mt-0.5 text-sm">{value || "—"}</p>
+      <p className="text-foreground mt-0.5 text-sm">
+        {value === null || value === undefined || value === "" ? "—" : String(value)}
+      </p>
     </div>
   )
 }
@@ -41,22 +86,86 @@ function Card({
   )
 }
 
+function BoolPill({ value }: { value?: boolean | null }) {
+  const isTrue = value === true
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+      style={{
+        backgroundColor: isTrue ? "rgba(34,197,94,0.14)" : "rgba(224,82,82,0.10)",
+        color: isTrue ? "#22c55e" : "#8a9bb5",
+      }}
+    >
+      {isTrue ? <Check size={12} /> : <X size={12} />}
+      {isTrue ? "Sí" : "No"}
+    </span>
+  )
+}
+
+function DocumentoEstadoBadge({ estado }: { estado?: string | null }) {
+  const key = (estado || "") as DocumentoEstado
+  const cfg = DOCUMENTO_ESTADO[key]
+  if (!cfg) {
+    return (
+      <span
+        className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+        style={{ backgroundColor: "rgba(138,155,181,0.12)", color: "#8a9bb5" }}
+      >
+        {estado || "—"}
+      </span>
+    )
+  }
+  return (
+    <span
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+      style={{ backgroundColor: cfg.bg, color: cfg.color }}
+    >
+      {cfg.label}
+    </span>
+  )
+}
+
+const USD = new Intl.NumberFormat("es-PA", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+})
+function formatMoneda(value?: number | null): string {
+  if (value === null || value === undefined) return "—"
+  return USD.format(value)
+}
+
+// ── Página ───────────────────────────────────────────────────────────────
+
 function ClienteDetallePage() {
   const { id } = useParams({ from: "/_layout/clientes/$id" })
   const navigate = useNavigate()
+  const [previewDoc, setPreviewDoc] = useState<Documento | null>(null)
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
-  const {
-    data: c,
-    isPending,
-    isError,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["cliente", id],
-    queryFn: () => ClientesService.get(id),
+  const { data, isPending, isError, error, refetch } = useQuery({
+    queryKey: ["expediente", id],
+    queryFn: () => ClientesService.getExpediente(id),
     retry: false,
     enabled: !!id,
   })
+
+  const handleDownload = async (doc: Documento) => {
+    setDownloadingId(doc.id)
+    try {
+      const blob = await ClientesService.descargarDocumento(id, doc.id, "attachment")
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = doc.nombre
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 0)
+    } finally {
+      setDownloadingId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -75,91 +184,476 @@ function ClienteDetallePage() {
           message={(error as Error)?.message}
           onRetry={() => refetch()}
         />
-      ) : c ? (
-        <>
-          <PageHeader
-            title={`${c.nombres} ${c.apellidos}`}
-            subtitle={`${c.tipo_identificacion} · ${c.numero_identificacion}`}
-            action={
-              <div className="flex items-center gap-2">
-                <NivelRiesgoBadge nivel={c.nivel_riesgo} />
-                <EstadoKYCBadge estado={c.estado} />
-              </div>
-            }
-          />
+      ) : data ? (
+        <DetalleBody
+          data={data}
+          downloadingId={downloadingId}
+          onPreview={setPreviewDoc}
+          onDownload={handleDownload}
+        />
+      ) : null}
 
-          {c.es_pep && (
-            <div className="bg-primary/10 text-primary border-primary/25 rounded-xl border px-4 py-3 text-sm">
-              Cliente identificado como PEP (Persona Expuesta Políticamente) —
-              Ley 23/2015 Art. 24. Requiere Debida Diligencia Reforzada.
-            </div>
-          )}
+      <DocumentoPreviewDialog
+        open={!!previewDoc}
+        onOpenChange={(o) => !o && setPreviewDoc(null)}
+        expedienteId={id}
+        documento={previewDoc}
+      />
+    </div>
+  )
+}
 
+// ── Cuerpo: header + tabs ───────────────────────────────────────────────
+
+function DetalleBody({
+  data,
+  downloadingId,
+  onPreview,
+  onDownload,
+}: {
+  data: ExpedienteKYC
+  downloadingId: string | null
+  onPreview: (d: Documento) => void
+  onDownload: (d: Documento) => void
+}) {
+  const isNatural = data.tipo_cliente === "NATURAL"
+  const pn = data.persona_natural
+  const pj = data.persona_juridica
+  const bfs = data.beneficiarios_final ?? []
+  const docs = data.documentos ?? []
+
+  const totalPorcentaje = bfs.reduce(
+    (s, b) => s + (b.porcentaje_participacion ?? 0),
+    0,
+  )
+  const porcentajeOk = Math.abs(totalPorcentaje - 100) < 0.01
+
+  const displayName = isNatural
+    ? `${pn?.nombre ?? ""} ${pn?.apellido ?? ""}`.trim() || "—"
+    : pj?.razon_social || "—"
+  const displayId = isNatural
+    ? `${pn?.tipo_documento ?? ""} ${pn?.numero_documento ?? ""}`.trim() || "—"
+    : pj?.ruc
+      ? `RUC ${pj.ruc}`
+      : "—"
+
+  const showPep =
+    (isNatural && (pn?.es_pep || pn?.es_pep_familiar)) ||
+    (bfs ?? []).some((b) => b.es_pep)
+
+  return (
+    <>
+      <PageHeader
+        title={displayName}
+        subtitle={`${TIPO_CLIENTE_LABELS[data.tipo_cliente]} · ${displayId}`}
+        action={
+          <div className="flex items-center gap-2">
+            <NivelRiesgoBadge nivel={data.nivel_riesgo} />
+            <EstadoKYCBadge estado={data.status} />
+          </div>
+        }
+      />
+
+      {data.status === "RECHAZADO" && data.comentario_rechazo && (
+        <div
+          className="flex items-start gap-3 rounded-xl border px-4 py-3 text-sm"
+          style={{
+            backgroundColor: "rgba(224,82,82,0.10)",
+            borderColor: "rgba(224,82,82,0.35)",
+            color: "#e05252",
+          }}
+        >
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold">Expediente rechazado</p>
+            <p className="mt-0.5 text-xs opacity-90">
+              {data.comentario_rechazo}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {showPep && (
+        <div
+          className="flex items-start gap-3 rounded-xl border px-4 py-3 text-sm"
+          style={{
+            backgroundColor: "rgba(201,168,76,0.10)",
+            borderColor: "rgba(201,168,76,0.35)",
+            color: "#c9a84c",
+          }}
+        >
+          <ShieldAlert size={16} className="mt-0.5 shrink-0" />
+          <div>
+            <p className="font-semibold">Cliente identificado como PEP</p>
+            <p className="mt-0.5 text-xs opacity-90">
+              Persona Expuesta Políticamente — Ley 23/2015 Art. 24. Requiere
+              Debida Diligencia Reforzada.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <Tabs defaultValue="informacion" className="gap-4">
+        <TabsList>
+          <TabsTrigger value="informacion">Información</TabsTrigger>
+          <TabsTrigger value="beneficiarios">
+            Beneficiarios {bfs.length > 0 ? `(${bfs.length})` : ""}
+          </TabsTrigger>
+          <TabsTrigger value="documentos">
+            Documentos {docs.length > 0 ? `(${docs.length})` : ""}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ── Tab: Información ─────────────────────────────────────── */}
+        <TabsContent value="informacion" className="space-y-4">
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <Card title="Datos personales">
+            {/* Identificación (siempre) */}
+            <Card title="Identificación">
               <div className="grid grid-cols-2 gap-4">
-                <Campo label="Nombres" value={c.nombres} />
-                <Campo label="Apellidos" value={c.apellidos} />
-                <Campo
-                  label="Fecha de nacimiento"
-                  value={formatFecha(c.fecha_nacimiento)}
-                />
-                <Campo label="Nacionalidad" value={c.nacionalidad} />
-                <Campo label="País de residencia" value={c.pais_residencia} />
-                <Campo label="Correo" value={c.correo} />
-                <Campo label="Teléfono" value={c.telefono} />
+                {isNatural ? (
+                  <>
+                    <Campo label="Tipo de documento" value={pn?.tipo_documento} />
+                    <Campo label="Número de documento" value={pn?.numero_documento} />
+                    <Campo
+                      label="Fecha de expiración"
+                      value={formatFecha(pn?.fecha_expiracion_doc)}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Campo label="Razón social" value={pj?.razon_social} />
+                    <Campo label="RUC" value={pj?.ruc} />
+                    <Campo
+                      label="Tipo de sociedad"
+                      value={pj?.tipo_sociedad}
+                    />
+                    <Campo
+                      label="Fecha de constitución"
+                      value={formatFecha(pj?.fecha_constitucion)}
+                    />
+                    <Campo
+                      label="País de constitución"
+                      value={pj?.pais_constitucion}
+                    />
+                    <Campo
+                      label="Registro mercantil"
+                      value={pj?.numero_registro_mercantil}
+                    />
+                  </>
+                )}
               </div>
             </Card>
 
+            {/* Información personal (NATURAL) */}
+            {isNatural && (
+              <Card title="Información personal">
+                <div className="grid grid-cols-2 gap-4">
+                  <Campo label="Nombre" value={pn?.nombre} />
+                  <Campo label="Apellido" value={pn?.apellido} />
+                  <Campo
+                    label="Fecha de nacimiento"
+                    value={formatFecha(pn?.fecha_nacimiento)}
+                  />
+                  <Campo label="Género" value={pn?.genero} />
+                  <Campo label="Estado civil" value={pn?.estado_civil} />
+                  <Campo label="Nacionalidad" value={pn?.nacionalidad} />
+                  <Campo label="País de nacimiento" value={pn?.pais_nacimiento} />
+                  <Campo label="País de residencia" value={pn?.pais} />
+                  <Campo label="Teléfono" value={pn?.telefono} />
+                  <Campo label="Correo" value={pn?.email} />
+                  <Campo label="Dirección" value={pn?.direccion} />
+                  <Campo label="Ciudad" value={pn?.ciudad} />
+                </div>
+              </Card>
+            )}
+
+            {/* Información de la empresa (JURIDICA) */}
+            {!isNatural && (
+              <Card title="Información de la empresa">
+                <div className="grid grid-cols-2 gap-4">
+                  <Campo
+                    label="Actividad económica"
+                    value={pj?.actividad_economica}
+                  />
+                  <Campo
+                    label="Ingreso anual (USD)"
+                    value={formatMoneda(pj?.ingreso_anual_aproximado)}
+                  />
+                  <Campo
+                    label="Cantidad de empleados"
+                    value={pj?.cantidad_empleados}
+                  />
+                  <Campo
+                    label="Teléfono empresa"
+                    value={pj?.telefono_empresa}
+                  />
+                  <Campo label="Correo empresa" value={pj?.email_empresa} />
+                  <Campo label="Dirección fiscal" value={pj?.direccion_fiscal} />
+                  <Campo label="Ciudad" value={pj?.ciudad} />
+                  <Campo label="País" value={pj?.pais} />
+                </div>
+              </Card>
+            )}
+
+            {/* Representante legal (JURIDICA) */}
+            {!isNatural && (
+              <Card title="Representante legal">
+                <div className="grid grid-cols-2 gap-4">
+                  <Campo
+                    label="Nombre"
+                    value={pj?.nombre_representante}
+                  />
+                  <Campo
+                    label="Cédula"
+                    value={pj?.cedula_representante}
+                  />
+                  <Campo
+                    label="Cargo"
+                    value={pj?.cargo_representante}
+                  />
+                </div>
+              </Card>
+            )}
+
+            {/* Información económica */}
             <Card title="Información económica">
               <div className="grid grid-cols-2 gap-4">
-                <Campo label="Ocupación" value={c.ocupacion} />
-                <Campo label="Fuente de ingresos" value={c.fuente_ingresos} />
-                <Campo
-                  label="Ingresos mensuales"
-                  value={c.ingresos_mensuales_usd}
-                />
-                <Campo
-                  label="Propósito de la relación"
-                  value={c.proposito_relacion}
-                />
-                <Campo
-                  label="Puntaje de riesgo"
-                  value={String(c.puntaje_riesgo)}
-                />
-                <Campo label="Registro" value={formatFecha(c.creado_en)} />
+                {isNatural ? (
+                  <>
+                    <Campo label="Ocupación" value={pn?.ocupacion} />
+                    <Campo label="Empleador" value={pn?.empleador} />
+                    <Campo label="Fuente de ingresos" value={pn?.fuente_ingresos} />
+                    <Campo
+                      label="Ingreso mensual (USD)"
+                      value={formatMoneda(pn?.ingreso_mensual_aproximado)}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Campo
+                      label="Actividad económica"
+                      value={pj?.actividad_economica}
+                    />
+                    <Campo
+                      label="Ingreso anual (USD)"
+                      value={formatMoneda(pj?.ingreso_anual_aproximado)}
+                    />
+                  </>
+                )}
+              </div>
+            </Card>
+
+            {/* Alertas / PEP */}
+            <Card title="Alertas y PEP">
+              <div className="grid grid-cols-2 gap-4">
+                {isNatural ? (
+                  <>
+                    <div>
+                      <p className="text-muted-foreground text-xs">¿Es PEP?</p>
+                      <div className="mt-1">
+                        <BoolPill value={pn?.es_pep} />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">¿Familiar PEP?</p>
+                      <div className="mt-1">
+                        <BoolPill value={pn?.es_pep_familiar} />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">
+                        ¿Tiene antecedentes?
+                      </p>
+                      <div className="mt-1">
+                        <BoolPill value={pn?.tiene_antecedentes} />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <p className="text-muted-foreground text-xs">
+                        ¿Tiene accionistas anónimos?
+                      </p>
+                      <div className="mt-1">
+                        <BoolPill value={pj?.tiene_accionistas_anonimos} />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-xs">
+                        ¿Opera en países de alto riesgo?
+                      </p>
+                      <div className="mt-1">
+                        <BoolPill value={pj?.opera_en_paises_alto_riesgo} />
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </Card>
+
+            {/* Metadatos del expediente */}
+            <Card title="Metadatos del expediente">
+              <div className="grid grid-cols-2 gap-4">
+                <Campo label="Código" value={data.codigo} />
+                <Campo label="Puntaje de riesgo" value={data.puntaje_riesgo} />
+                <Campo label="Creado" value={formatFechaHora(data.created_at)} />
+                <Campo label="Actualizado" value={formatFechaHora(data.updated_at)} />
               </div>
             </Card>
           </div>
+        </TabsContent>
 
-          <Card title="Documentos">
-            {c.documentos && c.documentos.length > 0 ? (
-              <div className="space-y-2">
-                {c.documentos.map((d) => (
-                  <div
-                    key={d.id}
-                    className="bg-muted/40 flex items-center gap-3 rounded-lg px-3 py-2.5"
+        {/* ── Tab: Beneficiarios ────────────────────────────────────── */}
+        <TabsContent value="beneficiarios">
+          {bfs.length === 0 ? (
+            <EmptyState message="Este expediente no incluye beneficiarios finales." />
+          ) : (
+            <Card title={`Beneficiarios finales (${bfs.length})`}>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre completo</TableHead>
+                    <TableHead>Cédula</TableHead>
+                    <TableHead>País</TableHead>
+                    <TableHead>Nacimiento</TableHead>
+                    <TableHead className="text-right">% Participación</TableHead>
+                    <TableHead>PEP</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bfs.map((b) => (
+                    <TableRow key={b.id}>
+                      <TableCell>
+                        {b.nombre} {b.apellido}
+                      </TableCell>
+                      <TableCell>{b.cedula || "—"}</TableCell>
+                      <TableCell>{b.pais || "—"}</TableCell>
+                      <TableCell>{formatFecha(b.fecha_nacimiento)}</TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {(b.porcentaje_participacion ?? 0).toFixed(2)}%
+                      </TableCell>
+                      <TableCell>
+                        <BoolPill value={b.es_pep} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {/* Barra de progreso: Ley 254/2021 exige suma 100% */}
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">
+                    Total participación
+                  </span>
+                  <span
+                    className="font-semibold"
+                    style={{ color: porcentajeOk ? "#22c55e" : "#e05252" }}
                   >
-                    <FileText size={16} className="text-muted-foreground" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-foreground truncate text-sm">
-                        {d.nombre}
-                      </p>
-                      <p className="text-muted-foreground text-xs">
-                        {d.tipo} · {formatFecha(d.fecha_carga)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                    {totalPorcentaje.toFixed(2)}%
+                    {porcentajeOk ? " ✓" : " — suma incorrecta"}
+                  </span>
+                </div>
+                <div
+                  className="h-2 w-full overflow-hidden rounded-full"
+                  style={{ backgroundColor: "rgba(138,155,181,0.18)" }}
+                >
+                  <div
+                    className="h-full transition-all"
+                    style={{
+                      width: `${Math.min(100, totalPorcentaje)}%`,
+                      backgroundColor: porcentajeOk ? "#c9a84c" : "#e05252",
+                    }}
+                  />
+                </div>
               </div>
-            ) : (
-              <p className="text-muted-foreground text-sm">
-                No hay documentos cargados.
-              </p>
-            )}
-          </Card>
-        </>
-      ) : null}
-    </div>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* ── Tab: Documentos ───────────────────────────────────────── */}
+        <TabsContent value="documentos">
+          {docs.length === 0 ? (
+            <EmptyState message="No hay documentos cargados." />
+          ) : (
+            <Card title={`Documentos (${docs.length})`}>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Tamaño</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Fecha de carga</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {docs.map((d) => {
+                    const isDownloading = downloadingId === d.id
+                    const tipoLabel =
+                      DOCUMENTO_TIPO_LABEL[d.tipo as DocumentoTipo] ?? d.tipo
+                    return (
+                      <TableRow key={d.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <FileText
+                              size={14}
+                              className="text-muted-foreground shrink-0"
+                            />
+                            <span className="truncate">{d.nombre}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {tipoLabel}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {formatBytes(d.tamanio)}
+                        </TableCell>
+                        <TableCell>
+                          <DocumentoEstadoBadge estado={d.estado} />
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {formatFecha(d.fecha_carga)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onPreview(d)}
+                              className="gap-1.5"
+                            >
+                              <Eye size={14} /> Ver
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onDownload(d)}
+                              disabled={isDownloading}
+                              className="gap-1.5"
+                            >
+                              {isDownloading ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Download size={14} />
+                              )}
+                              Descargar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
+    </>
   )
 }

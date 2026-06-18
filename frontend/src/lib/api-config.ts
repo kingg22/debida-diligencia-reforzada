@@ -42,6 +42,8 @@ export const Endpoints = {
     documentos: (id: string) => `${API_VERSION}/clientes/${id}/documentos`,
     deleteDocumento: (id: string, docId: string) =>
       `${API_VERSION}/clientes/${id}/documentos/${docId}`,
+    descargarDocumento: (id: string, docId: string) =>
+      `${API_VERSION}/clientes/${id}/documentos/${docId}/descargar`,
     evaluarRiesgo: (id: string) =>
       `${API_VERSION}/clientes/${id}/evaluar-riesgo`,
     verificarListas: (id: string) =>

@@ -62,6 +62,23 @@ async function fetchForm<T>(path: string, form: FormData): Promise<T> {
   return handle<T>(res)
 }
 
+// Descarga binaria (PDF/imagen). Reusa auth y manejo de errores de fetchJson
+// pero devuelve el Blob crudo para que el caller construya un object URL.
+async function fetchBlob(path: string): Promise<Blob> {
+  const res = await fetch(`${API_BASE_URL}${path}`, { headers: authHeader() })
+  if (!res.ok) {
+    let detail = `Error ${res.status}`
+    try {
+      const body = await res.json()
+      detail = body?.detail ?? detail
+    } catch {
+      /* sin cuerpo JSON */
+    }
+    throw new SgddrApiError(res.status, detail)
+  }
+  return res.blob()
+}
+
 // ── Tipos del contrato ────────────────────────────────────────────────────
 export interface Paginated<T> {
   data: T[]
@@ -339,6 +356,26 @@ export interface CasoDDR {
   fecha_apertura: string | null
   fecha_cierre: string | null
   updated_at: string | null
+  /** Resumen del cliente asociado al expediente (populado por el backend
+   * en GET /casos-ddr y GET /casos-ddr/{id}). Permite mostrar el nombre
+   * del cliente sin un round-trip extra a /clientes/{id}. */
+  cliente?: ClienteResumen | null
+}
+
+/** Subset de ``Cliente`` que el backend embebe en otras respuestas para
+ * evitar un round-trip extra. Sincronizado con ``ClienteResumen`` del
+ * backend (models.py). */
+export interface ClienteResumen {
+  id: string
+  codigo: string
+  tipo_cliente: "NATURAL" | "JURIDICA"
+  nombres: string
+  apellidos: string
+  tipo_identificacion: string
+  numero_identificacion: string
+  nivel_riesgo: string | null
+  estado: string
+  es_pep: boolean
 }
 
 export interface CuestionarioEBR {
@@ -445,6 +482,10 @@ export const ClientesService = {
     const raw = await fetchJson<ExpedienteKYC>(Endpoints.clientes.get(id))
     return expedienteAClienteDetalle(raw)
   },
+  /** Devuelve el ExpedienteKYC crudo con persona_natural/persona_juridica/
+   *  beneficiarios_final/documentos. La pantalla de detalle lo usa directo. */
+  getExpediente: (id: string) =>
+    fetchJson<ExpedienteKYC>(Endpoints.clientes.get(id)),
   create: (body: CreateExpedienteInput) =>
     fetchJson<ExpedienteKYC>(Endpoints.clientes.create(), {
       method: "POST",
@@ -467,6 +508,16 @@ export const ClientesService = {
     fetchJson<{ message: string }>(
       Endpoints.clientes.deleteDocumento(id, docId),
       { method: "DELETE" },
+    ),
+  /** Devuelve el archivo como Blob. disposition="attachment" → descarga;
+   *  disposition="inline" → previsualización (iframe/img). */
+  descargarDocumento: (
+    id: string,
+    docId: string,
+    disposition: "attachment" | "inline" = "attachment",
+  ): Promise<Blob> =>
+    fetchBlob(
+      `${Endpoints.clientes.descargarDocumento(id, docId)}?disposition=${disposition}`,
     ),
 }
 

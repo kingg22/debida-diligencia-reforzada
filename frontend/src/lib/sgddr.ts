@@ -225,3 +225,49 @@ export function diasDesde(iso?: string | null): number {
   if (Number.isNaN(d.getTime())) return 0
   return Math.max(0, Math.floor((Date.now() - d.getTime()) / 86_400_000))
 }
+
+// ── Documentos ─────────────────────────────────────────────────────────────
+export type DocumentoTipo =
+  | "CEDULA_FRONTAL"
+  | "CEDULA_POSTERIOR"
+  | "PASAPORTE"
+  | "RUC"
+  | "REGISTRO_MERCANTIL"
+  | "ESTADOS_FINANCIEROS"
+  | "DECLARACION_RENTA"
+  | "ESCRITURA_CONSTITUCION"
+  | "PODER_REPRESENTANTE"
+  | "OTRO"
+
+export const DOCUMENTO_TIPO_LABEL: Record<DocumentoTipo, string> = {
+  CEDULA_FRONTAL: "Cédula (frontal)",
+  CEDULA_POSTERIOR: "Cédula (posterior)",
+  PASAPORTE: "Pasaporte",
+  RUC: "RUC",
+  REGISTRO_MERCANTIL: "Registro mercantil",
+  ESTADOS_FINANCIEROS: "Estados financieros",
+  DECLARACION_RENTA: "Declaración de renta",
+  ESCRITURA_CONSTITUCION: "Escritura de constitución",
+  PODER_REPRESENTANTE: "Poder del representante",
+  OTRO: "Otro",
+}
+
+export type DocumentoEstado = "PENDIENTE" | "VALIDADO" | "RECHAZADO"
+
+export const DOCUMENTO_ESTADO: Record<
+  DocumentoEstado,
+  { label: string; color: string; bg: string }
+> = {
+  PENDIENTE: { label: "Pendiente", color: "#eab308", bg: "rgba(234,179,8,0.14)" },
+  VALIDADO: { label: "Validado", color: "#22c55e", bg: "rgba(34,197,94,0.14)" },
+  RECHAZADO: { label: "Rechazado", color: "#e05252", bg: "rgba(224,82,82,0.14)" },
+}
+
+export function formatBytes(bytes?: number | null): string {
+  if (bytes === null || bytes === undefined) return "—"
+  if (bytes < 1024) return `${bytes} B`
+  const kb = bytes / 1024
+  if (kb < 1024) return `${kb.toFixed(kb < 10 ? 1 : 0)} KB`
+  const mb = kb / 1024
+  return `${mb.toFixed(mb < 10 ? 2 : 1)} MB`
+}
