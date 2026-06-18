@@ -181,7 +181,7 @@ def update_cliente(
                 status_code=400,
                 detail="El rechazo requiere un comentario",
             )
-        expediente.status = nuevo_status.value
+        expediente.status = nuevo_status.value()
 
     if update_in.comentario_rechazo is not None:
         expediente.comentario_rechazo = update_in.comentario_rechazo

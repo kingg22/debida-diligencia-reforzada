@@ -37,7 +37,7 @@ AccesoDDR = Depends(
 
 
 def _get_caso_o_404(session: SessionDep, caso_id: uuid.UUID) -> CasoDDR:
-    caso = session.get(CasoDDR, caso_id)
+    caso: CasoDDR | None = session.get(CasoDDR, caso_id)
     if not caso:
         raise HTTPException(status_code=404, detail="Caso DDR no encontrado")
     return caso

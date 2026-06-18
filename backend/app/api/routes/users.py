@@ -196,7 +196,7 @@ def update_user(
     current_user: CurrentUser,
 ) -> Any:
     """Actualiza un usuario."""
-    db_user = session.get(User, user_id)
+    db_user: User | None = session.get(User, user_id)
     if not db_user:
         raise HTTPException(
             status_code=404,

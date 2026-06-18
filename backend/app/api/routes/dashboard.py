@@ -16,14 +16,14 @@ def _count_expedientes_hoy(session) -> int:
         hour=0, minute=0, second=0, microsecond=0
     )
     statement = select(func.count()).select_from(ExpedienteKYC).where(
-        ExpedienteKYC.creado_en >= hoy_inicio
+        ExpedienteKYC.created_at >= hoy_inicio if ExpedienteKYC.created_at is not None else False
     )
     return session.exec(statement).one()
 
 
 def _count_expedientes_por_estado(session, estado: KYCStatus) -> int:
     statement = select(func.count()).select_from(ExpedienteKYC).where(
-        ExpedienteKYC.estado == estado
+        ExpedienteKYC.status == estado
     )
     return session.exec(statement).one()
 

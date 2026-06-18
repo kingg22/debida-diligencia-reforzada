@@ -1,10 +1,9 @@
-import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
-from sqlmodel import Session, select
+from sqlmodel import select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.auditoria import registrar_auditoria
@@ -33,7 +32,7 @@ class LoginResponse(BaseModel):
 
 @router.post("/login", response_model=LoginResponse)
 def login(body: LoginInput, request: Request, session: SessionDep) -> Any:
-    user = session.exec(select(User).where(User.email == body.correo)).first()
+    user: User | None = session.exec(select(User).where(User.email == body.correo)).first()
 
     if not user:
         registrar_auditoria(
