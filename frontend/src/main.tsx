@@ -26,7 +26,21 @@ const handleApiError = (error: Error) => {
     window.location.href = "/login"
   }
 }
+
+// Defaults del QueryClient pensados para una SPA de gestión:
+// - Los datos se consideran "frescos" durante 30s: navegaciones, remontajes
+//   de componentes y cambios de tab/ventana NO relanzan peticiones.
+// - `refetchOnWindowFocus: false` y `refetchOnReconnect: false` desactivan
+//   los refetch automáticos que se disparaban al volver al navegador.
+// - El refetch manual sigue disponible vía `queryClient.invalidateQueries`.
 const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+    },
+  },
   queryCache: new QueryCache({
     onError: handleApiError,
   }),

@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
 import {
   createFileRoute,
   Link as RouterLink,
@@ -8,7 +9,9 @@ import {
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 import { z } from "zod"
+import { LoginService } from "@/client"
 import {
   PasswordChecklist,
   passwordIsValid,
@@ -45,9 +48,9 @@ export const Route = createFileRoute("/reset-password")({
 
 function ResetPassword() {
   const navigate = useNavigate()
+  const { token } = Route.useSearch()
   const [showNew, setShowNew] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [loading, setLoading] = useState(false)
 
   const {
     register,
@@ -63,12 +66,18 @@ function ResetPassword() {
   const newPw = watch("new_password")
   const canSubmit = passwordIsValid(newPw)
 
-  const onSubmit = async () => {
+  const resetMutation = useMutation({
+    mutationFn: (new_password: string) =>
+      LoginService.resetPassword({
+        requestBody: { token, new_password },
+      }),
+    onSuccess: () => navigate({ to: "/login" }),
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  const onSubmit = (data: FormData) => {
     if (!canSubmit) return
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 1000))
-    setLoading(false)
-    navigate({ to: "/login" })
+    resetMutation.mutate(data.new_password)
   }
 
   return (
@@ -173,7 +182,7 @@ function ResetPassword() {
 
           <button
             type="submit"
-            disabled={loading || !canSubmit}
+            disabled={resetMutation.isPending || !canSubmit}
             className={cn(
               "mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-lg",
               "text-sm font-semibold transition-all hover:brightness-110",
@@ -181,7 +190,7 @@ function ResetPassword() {
             )}
             style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
           >
-            {loading ? (
+            {resetMutation.isPending ? (
               <>
                 <Loader2 size={15} className="animate-spin" />
                 Guardando…

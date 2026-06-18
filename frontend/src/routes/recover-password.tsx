@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
 import {
   createFileRoute,
   Link as RouterLink,
@@ -7,7 +8,9 @@ import {
 import { ArrowLeft, CheckCircle, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 import { z } from "zod"
+import { LoginService } from "@/client"
 import { isLoggedIn } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
 
@@ -31,7 +34,6 @@ export const Route = createFileRoute("/recover-password")({
 
 function RecoverPassword() {
   const [sent, setSent] = useState(false)
-  const [loading, setLoading] = useState(false)
 
   const {
     register,
@@ -42,11 +44,14 @@ function RecoverPassword() {
     defaultValues: { email: "" },
   })
 
-  const onSubmit = async () => {
-    setLoading(true)
-    await new Promise((r) => setTimeout(r, 1000))
-    setLoading(false)
-    setSent(true)
+  const recoverMutation = useMutation({
+    mutationFn: (email: string) => LoginService.recoverPassword({ email }),
+    onSuccess: () => setSent(true),
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  const onSubmit = (data: FormData) => {
+    recoverMutation.mutate(data.email)
   }
 
   return (
@@ -92,7 +97,7 @@ function RecoverPassword() {
                 type="email"
                 autoComplete="email"
                 placeholder="correo@institución.com"
-                disabled={loading}
+                disabled={recoverMutation.isPending}
                 {...register("email")}
                 className={cn(
                   "h-11 w-full rounded-lg border px-4 text-sm text-[#f0ede8] placeholder:text-[#4a6080]",
@@ -117,7 +122,7 @@ function RecoverPassword() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={recoverMutation.isPending}
               className={cn(
                 "flex h-11 w-full items-center justify-center gap-2 rounded-lg",
                 "text-sm font-semibold transition-all hover:brightness-110",
@@ -125,7 +130,7 @@ function RecoverPassword() {
               )}
               style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
             >
-              {loading ? (
+              {recoverMutation.isPending ? (
                 <>
                   <Loader2 size={15} className="animate-spin" />
                   Enviando…

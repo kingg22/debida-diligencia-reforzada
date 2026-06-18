@@ -156,44 +156,6 @@ function Login() {
               <span style={{ color: "#8a9bb5" }}>Ley 254/2021</span>
             </p>
           </div>
-
-          {/* Demo credentials hint */}
-          <div
-            className="mt-8 w-full rounded-xl px-5 py-4 text-left"
-            style={{
-              backgroundColor: "#0a1628",
-              border: "1px dashed #1b2e4a",
-            }}
-          >
-            <p
-              className="mb-2 text-xs font-semibold uppercase tracking-wide"
-              style={{ color: "#4a6080" }}
-            >
-              Credenciales demo
-            </p>
-            <div className="space-y-1">
-              {[
-                ["admin@example.com", "changethis", "Admin"],
-                ["analista@example.com", "changethis", "Analista DDR"],
-                ["oficial@example.com", "changethis", "Oficial Cumpl."],
-              ].map(([email, pw, role]) => (
-                <div
-                  key={email}
-                  className="text-xs"
-                  style={{ color: "#4a6080" }}
-                >
-                  <span className="font-mono" style={{ color: "#8a9bb5" }}>
-                    {email}
-                  </span>{" "}
-                  /{" "}
-                  <span className="font-mono" style={{ color: "#8a9bb5" }}>
-                    {pw}
-                  </span>{" "}
-                  <span style={{ color: "#4a6080" }}>({role})</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
 

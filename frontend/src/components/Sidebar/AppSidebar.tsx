@@ -29,9 +29,7 @@ const ddrItems: Item[] = [
   { icon: Briefcase, title: "Casos DDR", path: "/casos-ddr" },
 ]
 
-const adminItems: Item[] = [
-  { icon: Users, title: "Usuarios", path: "/usuarios" },
-]
+const adminItems: Item[] = [{ icon: Users, title: "Usuarios", path: "/admin" }]
 
 function PanamaComplianceLogo() {
   return (
