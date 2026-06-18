@@ -81,20 +81,9 @@ def create_cliente(
                 status_code=422,
                 detail="Persona Jurídica requiere los datos de la empresa",
             )
-        # Beneficiarios finales deben sumar 100% al enviar a revisión (Ley 254/2021).
-        if expediente_in.enviar_a_revision:
-            total = sum(
-                bf.porcentaje_participacion
-                for bf in expediente_in.beneficiarios_final
-            )
-            if round(total) != 100:
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "Los porcentajes de beneficiarios finales deben sumar "
-                        f"100%. Actualmente: {round(total)}%"
-                    ),
-                )
+        # Validación de beneficiarios finales (Ley 254/2021) la hace
+        # el @model_validator en ExpedienteKYCCreate (models.py).
+        # FastAPI la convierte en 422 antes de llegar aquí.
 
     expediente = crud.create_expediente(
         session=session,

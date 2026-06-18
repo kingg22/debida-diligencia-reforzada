@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 
-from pydantic import EmailStr
+from pydantic import EmailStr, model_validator
 from sqlalchemy import DateTime, String
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -375,7 +375,7 @@ class BeneficiarioFinalBase(SQLModel):
     nacionalidad: str = Field(max_length=80)
     pais: str = Field(max_length=80)
     fecha_nacimiento: str = Field(max_length=20)
-    porcentaje_participacion: float = 0
+    porcentaje_participacion: float = Field(default=0, ge=0, le=100)
     es_pep: bool = False
 
 
@@ -561,6 +561,28 @@ class ExpedienteKYCCreate(SQLModel):
     persona_juridica: PersonaJuridicaCreate | None = None
     beneficiarios_final: list[BeneficiarioFinalCreate] = Field(default_factory=list)
     enviar_a_revision: bool = False
+
+    @model_validator(mode="after")
+    def _juridica_beneficiarios_suman_100(self) -> "ExpedienteKYCCreate":
+        """Ley 254/2021: una Persona Jurídica debe declarar beneficiarios finales
+        cuya participación sume exactamente 100%. La validación corre siempre
+        (no sólo al enviar a revisión) para no permitir borradores inválidos."""
+        if self.tipo_cliente != ClientType.JURIDICA:
+            return self
+        if not self.beneficiarios_final:
+            raise ValueError(
+                "Una Persona Jurídica requiere al menos un beneficiario final "
+                "(Ley 254/2021)."
+            )
+        total = sum(bf.porcentaje_participacion for bf in self.beneficiarios_final)
+        if round(total) != 100:
+            delta = round(100 - total)
+            signo = "Falta" if delta > 0 else "Sobra"
+            raise ValueError(
+                "Los porcentajes de beneficiarios finales deben sumar 100%. "
+                f"Actualmente: {round(total)}%. {signo} {abs(delta)}%."
+            )
+        return self
 
 
 class ExpedienteKYCUpdate(SQLModel):

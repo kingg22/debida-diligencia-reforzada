@@ -38,14 +38,31 @@ type NivelRiesgo = "ALTO" | "MEDIO" | "BAJO"
 type FormErrors = Record<string, string>
 
 interface BeneficiarioFinalForm {
-  id: string
-  nombre_completo: string
+  id: string // local-only React key (no se envía al backend)
+  nombre: string
+  apellido: string
   tipo_identificacion: "CEDULA_PA" | "PASAPORTE"
   numero_identificacion: string
+  fecha_nacimiento: string
   porcentaje_participacion: string
   tipo_control: "DIRECTA" | "INDIRECTA" | "OTRO"
   pais_residencia: string
   es_pep: boolean
+}
+
+function emptyBeneficiario(): BeneficiarioFinalForm {
+  return {
+    id: Math.random().toString(36).slice(2),
+    nombre: "",
+    apellido: "",
+    tipo_identificacion: "CEDULA_PA",
+    numero_identificacion: "",
+    fecha_nacimiento: "",
+    porcentaje_participacion: "",
+    tipo_control: "DIRECTA",
+    pais_residencia: "Panamá",
+    es_pep: false,
+  }
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -506,12 +523,18 @@ function KYCNuevoCliente() {
   // ── Paso 2 — Jurídica ──
   const [paisConstitucion, setPaisConstitucion] = useState("Panamá")
   const [actividadEconomica, setActividadEconomica] = useState("")
+  const [tipoSociedad, setTipoSociedad] = useState("SOCIEDAD_ANONIMA")
+  const [numeroRegistroMercantil, setNumeroRegistroMercantil] = useState("")
+  const [direccionFiscal, setDireccionFiscal] = useState("")
+  const [ciudadEmpresa, setCiudadEmpresa] = useState("")
+  const [telefonoEmpresa, setTelefonoEmpresa] = useState("")
+  const [emailEmpresa, setEmailEmpresa] = useState("")
   const [representanteLegal, setRepresentanteLegal] = useState("")
   const [idRepresentante, setIdRepresentante] = useState("")
-  const [tieneBeneficiarioFinal, setTieneBeneficiarioFinal] = useState(false)
-  const [beneficiarios, setBeneficiarios] = useState<BeneficiarioFinalForm[]>(
-    [],
-  )
+  const [cargoRepresentante, setCargoRepresentante] = useState("REPRESENTANTE_LEGAL")
+  // Los beneficiarios finales son obligatorios para Persona Jurídica
+  // (Ley 254/2021 Art. 3). Se siembra con una fila vacía al elegir JURIDICA.
+  const [beneficiarios, setBeneficiarios] = useState<BeneficiarioFinalForm[]>([])
 
   // ── Paso 3 — Documentos ──
   const [docIdentidad, setDocIdentidad] = useState<File | null>(null)
@@ -534,19 +557,7 @@ function KYCNuevoCliente() {
 
   // ── Beneficiarios helpers ──
   const addBeneficiario = () =>
-    setBeneficiarios((prev) => [
-      ...prev,
-      {
-        id: Math.random().toString(36).slice(2),
-        nombre_completo: "",
-        tipo_identificacion: "CEDULA_PA",
-        numero_identificacion: "",
-        porcentaje_participacion: "",
-        tipo_control: "DIRECTA",
-        pais_residencia: "Panamá",
-        es_pep: false,
-      },
-    ])
+    setBeneficiarios((prev) => [...prev, emptyBeneficiario()])
 
   const removeBeneficiario = (id: string) =>
     setBeneficiarios((prev) => prev.filter((b) => b.id !== id))
@@ -604,21 +615,44 @@ function KYCNuevoCliente() {
     } else {
       if (!actividadEconomica)
         e.actividadEconomica = "La actividad económica es requerida"
+      if (!numeroRegistroMercantil.trim())
+        e.numeroRegistroMercantil = "El número de registro mercantil es requerido"
+      if (!direccionFiscal.trim())
+        e.direccionFiscal = "La dirección fiscal es requerida"
+      if (!ciudadEmpresa.trim())
+        e.ciudadEmpresa = "La ciudad es requerida"
+      if (!telefonoEmpresa.trim())
+        e.telefonoEmpresa = "El teléfono de la empresa es requerido"
+      if (!emailEmpresa.trim())
+        e.emailEmpresa = "El correo de la empresa es requerido"
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEmpresa))
+        e.emailEmpresa = "Formato de correo inválido"
       if (!representanteLegal.trim())
         e.representanteLegal = "El nombre del representante es requerido"
       if (!idRepresentante.trim())
         e.idRepresentante = "La identificación del representante es requerida"
-      if (tieneBeneficiarioFinal && beneficiarios.length === 0)
+
+      // Beneficiarios finales: Ley 254/2021 — obligatorios para Persona Jurídica.
+      if (beneficiarios.length === 0)
         e.beneficiarios = "Debe registrar al menos un Beneficiario Final"
       beneficiarios.forEach((bf, i) => {
-        if (!bf.nombre_completo.trim()) e[`bf_${i}_nom`] = "Requerido"
-        if (!bf.numero_identificacion.trim()) e[`bf_${i}_id`] = "Requerido"
+        if (!bf.nombre.trim()) e[`bf_${i}_nombre`] = "Requerido"
+        if (!bf.apellido.trim()) e[`bf_${i}_apellido`] = "Requerido"
+        if (!bf.numero_identificacion.trim())
+          e[`bf_${i}_id`] = "Requerido"
+        if (!bf.fecha_nacimiento)
+          e[`bf_${i}_nac`] = "Requerida"
         const pct = parseFloat(bf.porcentaje_participacion)
-        if (Number.isNaN(pct) || pct < 25 || pct > 100)
-          e[`bf_${i}_pct`] = "Valor entre 25% y 100%"
+        if (Number.isNaN(pct) || pct < 0 || pct > 100)
+          e[`bf_${i}_pct`] = "Valor entre 0% y 100%"
       })
-      if (totalPorcentajeBF > 100)
-        e.totalPct = `La suma de participaciones (${totalPorcentajeBF}%) supera el 100%`
+      if (beneficiarios.length > 0 && Math.round(totalPorcentajeBF) !== 100) {
+        const delta = Math.round(100 - totalPorcentajeBF)
+        const signo = delta > 0 ? "Falta" : "Sobra"
+        e.totalPct = `La suma debe ser exactamente 100%. Actual: ${Math.round(
+          totalPorcentajeBF,
+        )}%. ${signo} ${Math.abs(delta)}%.`
+      }
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -663,19 +697,20 @@ function KYCNuevoCliente() {
     mutationFn: async () => {
       if (!tipoPersona) throw new Error("Tipo de persona no seleccionado")
 
-      const baseBeneficiarios = tieneBeneficiarioFinal
-        ? beneficiarios.map((b) => ({
-            nombre: b.nombre_completo.split(" ")[0] ?? "",
-            apellido: b.nombre_completo.split(" ").slice(1).join(" ") || "—",
-            cedula: b.numero_identificacion,
-            nacionalidad: b.pais_residencia,
-            pais: b.pais_residencia,
-            fecha_nacimiento: "1970-01-01",
-            porcentaje_participacion:
-              parseFloat(b.porcentaje_participacion) || 0,
-            es_pep: b.es_pep,
-          }))
-        : []
+      const baseBeneficiarios =
+        tipoPersona === "JURIDICA"
+          ? beneficiarios.map((b) => ({
+              nombre: b.nombre.trim(),
+              apellido: b.apellido.trim(),
+              cedula: b.numero_identificacion,
+              nacionalidad: b.pais_residencia,
+              pais: b.pais_residencia,
+              fecha_nacimiento: b.fecha_nacimiento,
+              porcentaje_participacion:
+                parseFloat(b.porcentaje_participacion) || 0,
+              es_pep: b.es_pep,
+            }))
+          : []
 
       let payload: CreateExpedienteInput
 
@@ -716,17 +751,17 @@ function KYCNuevoCliente() {
           persona_juridica: {
             razon_social: razonSocial,
             ruc,
-            tipo_sociedad: "SOCIEDAD_ANONIMA",
+            tipo_sociedad: tipoSociedad,
             fecha_constitucion: fechaConstitucion,
             pais_constitucion: paisConstitucion,
-            numero_registro_mercantil: "—",
+            numero_registro_mercantil: numeroRegistroMercantil,
             nombre_representante: representanteLegal,
             cedula_representante: idRepresentante,
-            cargo_representante: "REPRESENTANTE_LEGAL",
-            telefono_empresa: telefono,
-            email_empresa: correo,
-            direccion_fiscal: "—",
-            ciudad: "—",
+            cargo_representante: cargoRepresentante,
+            telefono_empresa: telefonoEmpresa,
+            email_empresa: emailEmpresa,
+            direccion_fiscal: direccionFiscal,
+            ciudad: ciudadEmpresa,
             pais: paisConstitucion,
             actividad_economica: actividadEconomica,
             ingreso_anual_aproximado: 0,
@@ -840,6 +875,11 @@ function KYCNuevoCliente() {
               onClick={() => {
                 setTipoPersona(opt.value)
                 setErrors({})
+                // Persona Jurídica requiere al menos un Beneficiario Final
+                // (Ley 254/2021). Sembramos una fila vacía al elegirla.
+                if (opt.value === "JURIDICA" && beneficiarios.length === 0) {
+                  setBeneficiarios([emptyBeneficiario()])
+                }
               }}
               className={cn(
                 "flex flex-col items-center gap-2 rounded-xl border p-5 text-left transition-all",
@@ -1195,6 +1235,92 @@ function KYCNuevoCliente() {
 
           <div className="grid grid-cols-2 gap-4">
             <Field
+              label="Tipo de sociedad"
+              required
+            >
+              <StyledSelect
+                value={tipoSociedad}
+                onChange={(e) => setTipoSociedad(e.target.value)}
+              >
+                <option value="SOCIEDAD_ANONIMA">Sociedad Anónima (S.A.)</option>
+                <option value="SOCIEDAD_RESPONSABILIDAD_LIMITADA">
+                  Sociedad de Responsabilidad Limitada (S.R.L.)
+                </option>
+                <option value="SOCIEDAD_COLECTIVA">Sociedad Colectiva</option>
+                <option value="SOCIEDAD_EN_COMANDITA">Sociedad en Comandita</option>
+                <option value="FUNDACION">Fundación</option>
+                <option value="ASOCIACION">Asociación sin fines de lucro</option>
+                <option value="OTRO">Otro</option>
+              </StyledSelect>
+            </Field>
+            <Field
+              label="N° Registro Mercantil"
+              required
+              error={errors.numeroRegistroMercantil}
+            >
+              <StyledInput
+                value={numeroRegistroMercantil}
+                onChange={(e) => setNumeroRegistroMercantil(e.target.value)}
+                placeholder="RM-1234567"
+                error={errors.numeroRegistroMercantil}
+              />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field
+              label="Dirección fiscal"
+              required
+              error={errors.direccionFiscal}
+            >
+              <StyledInput
+                value={direccionFiscal}
+                onChange={(e) => setDireccionFiscal(e.target.value)}
+                placeholder="Av. Principal 123, Edif. ABC, Piso 5"
+                error={errors.direccionFiscal}
+              />
+            </Field>
+            <Field label="Ciudad" required error={errors.ciudadEmpresa}>
+              <StyledInput
+                value={ciudadEmpresa}
+                onChange={(e) => setCiudadEmpresa(e.target.value)}
+                placeholder="Ciudad de Panamá"
+                error={errors.ciudadEmpresa}
+              />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field
+              label="Teléfono de la empresa"
+              required
+              error={errors.telefonoEmpresa}
+              hint="Formato: +507-XXXX-XXXX"
+            >
+              <StyledInput
+                value={telefonoEmpresa}
+                onChange={(e) => setTelefonoEmpresa(e.target.value)}
+                placeholder="+507-200-0000"
+                error={errors.telefonoEmpresa}
+              />
+            </Field>
+            <Field
+              label="Correo de la empresa"
+              required
+              error={errors.emailEmpresa}
+            >
+              <StyledInput
+                type="email"
+                value={emailEmpresa}
+                onChange={(e) => setEmailEmpresa(e.target.value)}
+                placeholder="contacto@empresa.com"
+                error={errors.emailEmpresa}
+              />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field
               label="Representante legal"
               required
               error={errors.representanteLegal}
@@ -1221,72 +1347,80 @@ function KYCNuevoCliente() {
             </Field>
           </div>
 
-          {/* Beneficiario Final */}
+          <Field label="Cargo del representante" required>
+            <StyledSelect
+              value={cargoRepresentante}
+              onChange={(e) => setCargoRepresentante(e.target.value)}
+            >
+              <option value="REPRESENTANTE_LEGAL">Representante Legal</option>
+              <option value="PRESIDENTE">Presidente</option>
+              <option value="GERENTE_GENERAL">Gerente General</option>
+              <option value="DIRECTOR">Director</option>
+              <option value="APODERADO">Apoderado</option>
+              <option value="OTRO">Otro</option>
+            </StyledSelect>
+          </Field>
+
+          {/* Beneficiarios Finales — OBLIGATORIO para Persona Jurídica */}
           <div
             className="rounded-xl p-4"
             style={{
-              backgroundColor: tieneBeneficiarioFinal
-                ? "rgba(201,168,76,0.06)"
-                : "#0a1628",
-              border: `1px solid ${tieneBeneficiarioFinal ? "rgba(201,168,76,0.30)" : "#1b2e4a"}`,
+              backgroundColor: "rgba(201,168,76,0.06)",
+              border: "1px solid rgba(201,168,76,0.30)",
             }}
           >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-medium" style={{ color: "#f0ede8" }}>
-                  Tiene Beneficiario(s) Final(es)
+                  Beneficiarios Finales{" "}
+                  <span style={{ color: "#e05252" }}>*</span>
                 </p>
                 <p className="mt-0.5 text-xs" style={{ color: "#8a9bb5" }}>
-                  Persona natural con ≥25% de participación —{" "}
-                  <span style={{ color: "#c9a84c" }}>Ley 254/2021 Art. 3</span>
+                  Personas naturales con participación directa o indirecta. La
+                  suma debe ser{" "}
+                  <strong style={{ color: "#c9a84c" }}>exactamente 100%</strong>{" "}
+                  — <span style={{ color: "#c9a84c" }}>Ley 254/2021 Art. 3</span>
                 </p>
               </div>
-              <Toggle
-                checked={tieneBeneficiarioFinal}
-                onChange={() => {
-                  setTieneBeneficiarioFinal((p) => !p)
-                  if (tieneBeneficiarioFinal) setBeneficiarios([])
-                }}
-              />
             </div>
 
-            {tieneBeneficiarioFinal && (
-              <div className="mt-5 space-y-4">
-                {errors.beneficiarios && (
+            <div className="mt-5 space-y-4">
+              {errors.beneficiarios && (
+                <p className="text-xs" style={{ color: "#e05252" }}>
+                  {errors.beneficiarios}
+                </p>
+              )}
+              {errors.totalPct && (
+                <div
+                  className="rounded-lg p-3"
+                  style={{
+                    backgroundColor: "rgba(224,82,82,0.08)",
+                    border: "1px solid rgba(224,82,82,0.25)",
+                  }}
+                >
                   <p className="text-xs" style={{ color: "#e05252" }}>
-                    {errors.beneficiarios}
+                    {errors.totalPct}
                   </p>
-                )}
-                {errors.totalPct && (
-                  <div
-                    className="rounded-lg p-3"
-                    style={{
-                      backgroundColor: "rgba(224,82,82,0.08)",
-                      border: "1px solid rgba(224,82,82,0.25)",
-                    }}
-                  >
-                    <p className="text-xs" style={{ color: "#e05252" }}>
-                      {errors.totalPct}
-                    </p>
-                  </div>
-                )}
+                </div>
+              )}
 
-                {beneficiarios.map((bf, i) => (
-                  <div
-                    key={bf.id}
-                    className="rounded-xl p-4"
-                    style={{
-                      backgroundColor: "#040d1c",
-                      border: "1px solid #1b2e4a",
-                    }}
-                  >
-                    <div className="mb-3 flex items-center justify-between">
-                      <p
-                        className="text-xs font-semibold uppercase tracking-wide"
-                        style={{ color: "#c9a84c" }}
-                      >
-                        Beneficiario Final #{i + 1}
-                      </p>
+              {beneficiarios.map((bf, i) => (
+                <div
+                  key={bf.id}
+                  className="rounded-xl p-4"
+                  style={{
+                    backgroundColor: "#040d1c",
+                    border: "1px solid #1b2e4a",
+                  }}
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <p
+                      className="text-xs font-semibold uppercase tracking-wide"
+                      style={{ color: "#c9a84c" }}
+                    >
+                      Beneficiario Final #{i + 1}
+                    </p>
+                    {beneficiarios.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeBeneficiario(bf.id)}
@@ -1295,164 +1429,220 @@ function KYCNuevoCliente() {
                       >
                         <Trash2 size={14} />
                       </button>
-                    </div>
+                    )}
+                  </div>
 
-                    <div className="space-y-3">
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <Field
-                        label="Nombre completo"
+                        label="Nombre"
                         required
-                        error={errors[`bf_${i}_nom`]}
+                        error={errors[`bf_${i}_nombre`]}
                       >
                         <StyledInput
-                          value={bf.nombre_completo}
+                          value={bf.nombre}
                           onChange={(e) =>
-                            updateBF(bf.id, "nombre_completo", e.target.value)
+                            updateBF(bf.id, "nombre", e.target.value)
                           }
-                          placeholder="Nombre y apellidos"
-                          error={errors[`bf_${i}_nom`]}
+                          placeholder="Juan Carlos"
+                          error={errors[`bf_${i}_nombre`]}
                         />
                       </Field>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <Field label="Tipo identificación" required>
-                          <StyledSelect
-                            value={bf.tipo_identificacion}
-                            onChange={(e) =>
-                              updateBF(
-                                bf.id,
-                                "tipo_identificacion",
-                                e.target.value,
-                              )
-                            }
-                          >
-                            <option value="CEDULA_PA">Cédula PA</option>
-                            <option value="PASAPORTE">Pasaporte</option>
-                          </StyledSelect>
-                        </Field>
-                        <Field
-                          label="Número"
-                          required
-                          error={errors[`bf_${i}_id`]}
-                        >
-                          <StyledInput
-                            value={bf.numero_identificacion}
-                            onChange={(e) =>
-                              updateBF(
-                                bf.id,
-                                "numero_identificacion",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="8-123-4567"
-                            error={errors[`bf_${i}_id`]}
-                          />
-                        </Field>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3">
-                        <Field
-                          label="% Participación"
-                          required
-                          error={errors[`bf_${i}_pct`]}
-                          hint="Mín. 25%"
-                        >
-                          <StyledInput
-                            type="number"
-                            min="25"
-                            max="100"
-                            value={bf.porcentaje_participacion}
-                            onChange={(e) =>
-                              updateBF(
-                                bf.id,
-                                "porcentaje_participacion",
-                                e.target.value,
-                              )
-                            }
-                            placeholder="25"
-                            error={errors[`bf_${i}_pct`]}
-                          />
-                        </Field>
-                        <Field label="Tipo control" required>
-                          <StyledSelect
-                            value={bf.tipo_control}
-                            onChange={(e) =>
-                              updateBF(bf.id, "tipo_control", e.target.value)
-                            }
-                          >
-                            <option value="DIRECTA">Directa</option>
-                            <option value="INDIRECTA">Indirecta</option>
-                            <option value="OTRO">Otro</option>
-                          </StyledSelect>
-                        </Field>
-                        <Field label="País residencia" required>
-                          <StyledSelect
-                            value={bf.pais_residencia}
-                            onChange={(e) =>
-                              updateBF(bf.id, "pais_residencia", e.target.value)
-                            }
-                          >
-                            {PAISES.map((p) => (
-                              <option key={p}>{p}</option>
-                            ))}
-                          </StyledSelect>
-                        </Field>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <Toggle
-                          checked={bf.es_pep}
-                          onChange={() => updateBF(bf.id, "es_pep", !bf.es_pep)}
-                          danger
+                      <Field
+                        label="Apellido"
+                        required
+                        error={errors[`bf_${i}_apellido`]}
+                      >
+                        <StyledInput
+                          value={bf.apellido}
+                          onChange={(e) =>
+                            updateBF(bf.id, "apellido", e.target.value)
+                          }
+                          placeholder="González Pérez"
+                          error={errors[`bf_${i}_apellido`]}
                         />
-                        <span
-                          className="text-xs"
-                          style={{ color: bf.es_pep ? "#e05252" : "#8a9bb5" }}
+                      </Field>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Tipo identificación" required>
+                        <StyledSelect
+                          value={bf.tipo_identificacion}
+                          onChange={(e) =>
+                            updateBF(
+                              bf.id,
+                              "tipo_identificacion",
+                              e.target.value,
+                            )
+                          }
                         >
-                          Es Persona Expuesta Políticamente (PEP)
-                        </span>
-                      </div>
+                          <option value="CEDULA_PA">Cédula PA</option>
+                          <option value="PASAPORTE">Pasaporte</option>
+                        </StyledSelect>
+                      </Field>
+                      <Field
+                        label="Número"
+                        required
+                        error={errors[`bf_${i}_id`]}
+                      >
+                        <StyledInput
+                          value={bf.numero_identificacion}
+                          onChange={(e) =>
+                            updateBF(
+                              bf.id,
+                              "numero_identificacion",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="8-123-4567"
+                          error={errors[`bf_${i}_id`]}
+                        />
+                      </Field>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field
+                        label="Fecha de nacimiento"
+                        required
+                        error={errors[`bf_${i}_nac`]}
+                        hint="Debe ser mayor de 18 años"
+                      >
+                        <StyledInput
+                          type="date"
+                          value={bf.fecha_nacimiento}
+                          onChange={(e) =>
+                            updateBF(
+                              bf.id,
+                              "fecha_nacimiento",
+                              e.target.value,
+                            )
+                          }
+                          max={maxFechaNac()}
+                          error={errors[`bf_${i}_nac`]}
+                        />
+                      </Field>
+                      <Field
+                        label="% Participación"
+                        required
+                        error={errors[`bf_${i}_pct`]}
+                      >
+                        <StyledInput
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={bf.porcentaje_participacion}
+                          onChange={(e) =>
+                            updateBF(
+                              bf.id,
+                              "porcentaje_participacion",
+                              e.target.value,
+                            )
+                          }
+                          placeholder="0"
+                          error={errors[`bf_${i}_pct`]}
+                        />
+                      </Field>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <Field label="Tipo control" required>
+                        <StyledSelect
+                          value={bf.tipo_control}
+                          onChange={(e) =>
+                            updateBF(bf.id, "tipo_control", e.target.value)
+                          }
+                        >
+                          <option value="DIRECTA">Directa</option>
+                          <option value="INDIRECTA">Indirecta</option>
+                          <option value="OTRO">Otro</option>
+                        </StyledSelect>
+                      </Field>
+                      <Field label="País residencia" required>
+                        <StyledSelect
+                          value={bf.pais_residencia}
+                          onChange={(e) =>
+                            updateBF(bf.id, "pais_residencia", e.target.value)
+                          }
+                        >
+                          {PAISES.map((p) => (
+                            <option key={p}>{p}</option>
+                          ))}
+                        </StyledSelect>
+                      </Field>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Toggle
+                        checked={bf.es_pep}
+                        onChange={() => updateBF(bf.id, "es_pep", !bf.es_pep)}
+                        danger
+                      />
+                      <span
+                        className="text-xs"
+                        style={{ color: bf.es_pep ? "#e05252" : "#8a9bb5" }}
+                      >
+                        Es Persona Expuesta Políticamente (PEP)
+                      </span>
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
 
-                {/* Totalizador */}
-                {beneficiarios.length > 0 && (
-                  <div
-                    className="flex items-center justify-between rounded-lg px-4 py-2.5"
+              {/* Totalizador con regla de color */}
+              {beneficiarios.length > 0 && (
+                <div
+                  className="flex items-center justify-between rounded-lg px-4 py-3"
+                  style={{
+                    backgroundColor: "#040d1c",
+                    border: `1px solid ${
+                      totalPorcentajeBF > 100
+                        ? "rgba(224,82,82,0.40)"
+                        : totalPorcentajeBF === 100
+                          ? "rgba(34,197,94,0.40)"
+                          : "rgba(217,119,6,0.40)"
+                    }`,
+                  }}
+                  aria-live="polite"
+                >
+                  <div>
+                    <span className="text-xs" style={{ color: "#8a9bb5" }}>
+                      Total participación
+                    </span>
+                    <p className="mt-0.5 text-[10px]" style={{ color: "#4a6080" }}>
+                      Debe sumar exactamente 100% (Ley 254/2021)
+                    </p>
+                  </div>
+                  <span
+                    className="text-base font-bold font-mono"
                     style={{
-                      backgroundColor: "#040d1c",
-                      border: "1px solid #1b2e4a",
+                      color:
+                        totalPorcentajeBF > 100
+                          ? "#e05252"
+                          : totalPorcentajeBF === 100
+                            ? "#22c55e"
+                            : "#d97706",
                     }}
                   >
-                    <span className="text-xs" style={{ color: "#8a9bb5" }}>
-                      Total participación directa
-                    </span>
-                    <span
-                      className="text-sm font-semibold font-mono"
-                      style={{
-                        color: totalPorcentajeBF > 100 ? "#e05252" : "#22c55e",
-                      }}
-                    >
-                      {totalPorcentajeBF.toFixed(0)}%
-                    </span>
-                  </div>
-                )}
+                    {totalPorcentajeBF.toFixed(2)}%
+                  </span>
+                </div>
+              )}
 
-                <button
-                  type="button"
-                  onClick={addBeneficiario}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border py-3 text-sm transition-all hover:border-[#c9a84c] hover:text-[#c9a84c]"
-                  style={{
-                    borderColor: "#1b2e4a",
-                    borderStyle: "dashed",
-                    color: "#8a9bb5",
-                  }}
-                >
-                  <Plus size={15} />
-                  Agregar Beneficiario Final
-                </button>
-              </div>
-            )}
+              <button
+                type="button"
+                onClick={addBeneficiario}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border py-3 text-sm transition-all hover:border-[#c9a84c] hover:text-[#c9a84c]"
+                style={{
+                  borderColor: "#1b2e4a",
+                  borderStyle: "dashed",
+                  color: "#8a9bb5",
+                }}
+              >
+                <Plus size={15} />
+                Agregar Beneficiario Final
+              </button>
+            </div>
           </div>
         </>
       )}
@@ -1665,9 +1855,17 @@ function KYCNuevoCliente() {
               <Row
                 label="Beneficiarios finales"
                 value={
-                  tieneBeneficiarioFinal
-                    ? `${beneficiarios.length} registrado(s) · ${totalPorcentajeBF}% total`
-                    : "No aplica"
+                  <span
+                    style={{
+                      color:
+                        Math.round(totalPorcentajeBF) === 100
+                          ? "#22c55e"
+                          : "#e05252",
+                    }}
+                  >
+                    {beneficiarios.length} registrado(s) ·{" "}
+                    {totalPorcentajeBF.toFixed(0)}% total
+                  </span>
                 }
               />
             </>
@@ -1776,7 +1974,17 @@ function KYCNuevoCliente() {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={
+                submitting ||
+                (tipoPersona === "JURIDICA" &&
+                  Math.round(totalPorcentajeBF) !== 100)
+              }
+              title={
+                tipoPersona === "JURIDICA" &&
+                Math.round(totalPorcentajeBF) !== 100
+                  ? `Los beneficiarios deben sumar 100% (actual: ${totalPorcentajeBF.toFixed(0)}%)`
+                  : undefined
+              }
               className={cn(
                 "flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-all",
                 "hover:brightness-110 active:scale-[0.99]",

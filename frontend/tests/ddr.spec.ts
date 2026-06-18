@@ -245,3 +245,175 @@ test.describe("Health Check API", () => {
     expect(clientes.ok()).toBeTruthy()
   })
 })
+
+test.describe("Crear Cliente — Persona Jurídica (Ley 254/2021)", () => {
+  test.use({ storageState: "playwright/.auth/admin.json" })
+
+  test("paso 1 muestra sección de datos de empresa", async ({ page }) => {
+    await page.goto("/kyc/nuevo")
+    await page.getByRole("button", { name: "Persona Jurídica" }).click()
+    await expect(page.getByText("Datos de la empresa")).toBeVisible()
+    await expect(page.getByPlaceholder("Corp Panama S.A.")).toBeVisible()
+    await expect(page.getByPlaceholder("123-456-789")).toBeVisible()
+  })
+
+  test("paso 2 siembra un beneficiario y muestra total 0%", async ({ page }) => {
+    await page.goto("/kyc/nuevo")
+    await page.getByRole("button", { name: "Persona Jurídica" }).click()
+    await page.getByPlaceholder("Corp Panama S.A.").fill("Acme S.A.")
+    await page.getByPlaceholder("123-456-789").fill("1234567-1-234567")
+    await page
+      .locator('input[type="date"]')
+      .first()
+      .fill("2010-01-01")
+    await page.getByRole("button", { name: "Siguiente" }).click()
+
+    // Espera a que aparezca el título del paso 2 antes de aserciones.
+    await expect(
+      page.getByText("Persona Jurídica — Ley 254/2021").first(),
+    ).toBeVisible()
+
+    // La sección de Beneficiarios Finales debe estar visible y obligatoria.
+    await expect(
+      page.locator("p", { hasText: /^Beneficiarios Finales/ }).first(),
+    ).toBeVisible()
+    // Una fila pre-sembrada.
+    await expect(page.getByText("Beneficiario Final #1")).toBeVisible()
+    // Total inicial = 0%.
+    await expect(page.getByText("0.00%")).toBeVisible()
+  })
+
+  test("validación bloquea envío cuando suma != 100%", async ({ page }) => {
+    await page.goto("/kyc/nuevo")
+    await page.getByRole("button", { name: "Persona Jurídica" }).click()
+
+    // Paso 1 — Identificación empresa
+    await page.getByPlaceholder("Corp Panama S.A.").fill("Acme S.A.")
+    await page.getByPlaceholder("123-456-789").fill("1234567-1-234567")
+    await page
+      .locator('input[type="date"]')
+      .first()
+      .fill("2010-01-01")
+    await page.getByRole("button", { name: "Siguiente" }).click()
+
+    // Espera paso 2.
+    await expect(
+      page.getByPlaceholder("RM-1234567"),
+    ).toBeVisible()
+
+    // Llena los campos requeridos de empresa y representante, pero deja
+    // el total de beneficiarios en 60% (no llega a 100%).
+    await page.getByPlaceholder("RM-1234567").fill("RM-99999")
+    await page
+      .getByPlaceholder("Av. Principal 123, Edif. ABC, Piso 5")
+      .fill("Av. Test 100")
+    await page.getByPlaceholder("Ciudad de Panamá").fill("Panamá")
+    await page.getByPlaceholder("+507-200-0000").fill("+507-200-0000")
+    await page.getByPlaceholder("contacto@empresa.com").fill("acme@test.com")
+    await page.getByPlaceholder("Nombre completo").fill("Carlos Mendoza")
+    await page.getByPlaceholder("8-123-4567").first().fill("8-999-0001")
+    await page
+      .locator("select")
+      .nth(1)
+      .selectOption({ label: "Servicios jurídicos y contables" })
+
+    await page.getByPlaceholder("Juan Carlos").fill("Carlos")
+    await page.getByPlaceholder("González Pérez").fill("Mendoza")
+    await page.getByPlaceholder("8-123-4567").last().fill("3-456-789")
+    await page.locator('input[type="date"]').last().fill("1980-01-01")
+    await page.locator('input[type="number"]').fill("60")
+
+    // Intentar avanzar debe fallar y mostrar el error inline.
+    await page.getByRole("button", { name: "Siguiente" }).click()
+    await expect(
+      page.getByText(/Actual: 60%/),
+    ).toBeVisible()
+  })
+
+  test("crear persona jurídica happy path (60 + 40)", async ({ page }) => {
+    await page.goto("/kyc/nuevo")
+    await page.getByRole("button", { name: "Persona Jurídica" }).click()
+
+    // Paso 1 — Identificación empresa
+    await page.getByPlaceholder("Corp Panama S.A.").fill("Acme S.A.")
+    await page.getByPlaceholder("123-456-789").fill("1234567-1-234567")
+    await page
+      .locator('input[type="date"]')
+      .first()
+      .fill("2010-01-01")
+    await page.getByRole("button", { name: "Siguiente" }).click()
+
+    await expect(page.getByPlaceholder("RM-1234567")).toBeVisible()
+
+    // Paso 2 — Empresa
+    await page.getByPlaceholder("RM-1234567").fill("RM-99999")
+    await page
+      .getByPlaceholder("Av. Principal 123, Edif. ABC, Piso 5")
+      .fill("Av. Test 100")
+    await page.getByPlaceholder("Ciudad de Panamá").fill("Panamá")
+    await page.getByPlaceholder("+507-200-0000").fill("+507-200-0000")
+    await page.getByPlaceholder("contacto@empresa.com").fill("acme@test.com")
+    await page.getByPlaceholder("Nombre completo").fill("Carlos Mendoza")
+    await page.getByPlaceholder("8-123-4567").first().fill("8-999-0001")
+    await page
+      .locator("select")
+      .nth(1)
+      .selectOption({ label: "Servicios jurídicos y contables" })
+
+    // Beneficiario #1 al 60% (es el único; usa .last() / .first())
+    await page.getByPlaceholder("Juan Carlos").fill("Carlos")
+    await page.getByPlaceholder("González Pérez").fill("Mendoza")
+    await page.getByPlaceholder("8-123-4567").last().fill("3-456-789")
+    await page.locator('input[type="date"]').last().fill("1980-01-01")
+    await page.locator('input[type="number"]').first().fill("60")
+
+    // Agregar Beneficiario #2 al 40% (queda como .last())
+    await page
+      .getByRole("button", { name: "Agregar Beneficiario Final" })
+      .click()
+    await expect(page.getByText("Beneficiario Final #2")).toBeVisible()
+    await page.getByPlaceholder("Juan Carlos").last().fill("Ana")
+    await page.getByPlaceholder("González Pérez").last().fill("Ruiz")
+    await page.getByPlaceholder("8-123-4567").last().fill("4-567-890")
+    await page.locator('input[type="date"]').last().fill("1985-05-10")
+    await page.locator('input[type="number"]').last().fill("40")
+
+    // Total debe ser 100%.
+    await expect(page.getByText("100.00%")).toBeVisible()
+
+    await page.getByRole("button", { name: "Siguiente" }).click()
+
+    // Paso 3 — Documentos. Subimos un PDF dummy para RUC (docIdentidad)
+    // y escritura de constitución. Hay 3 inputs file en paso 3 para JURIDICA
+    // (identidad, constitución, poder opcional). Tomamos los dos primeros.
+    const dummyPdf = Buffer.from(
+      "%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>%%EOF",
+    )
+    const fileInputs = page.locator('input[type="file"]')
+    await fileInputs.nth(0).setInputFiles({
+      name: "ruc.pdf",
+      mimeType: "application/pdf",
+      buffer: dummyPdf,
+    })
+    await fileInputs.nth(1).setInputFiles({
+      name: "escritura.pdf",
+      mimeType: "application/pdf",
+      buffer: dummyPdf,
+    })
+
+    await page.getByRole("button", { name: "Siguiente" }).click()
+
+    // Paso 4 — Revisión (SectionHeader renderiza <p>, no heading)
+    await expect(page.getByText("Revisión y confirmación")).toBeVisible()
+    await expect(page.getByText(/100% total/)).toBeVisible()
+
+    // Enviar
+    await page
+      .getByRole("button", { name: "Guardar y Enviar a Revisión" })
+      .click()
+
+    // Tras éxito, redirige a /clientes/:id
+    await page.waitForURL(/\/clientes\/[a-f0-9-]+$/, { timeout: 15000 })
+    await expect(page.getByText("Acme S.A.").first()).toBeVisible()
+  })
+})
