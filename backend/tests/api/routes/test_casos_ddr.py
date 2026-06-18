@@ -1,7 +1,6 @@
 import io
 import uuid
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
@@ -11,7 +10,6 @@ from app.core.security import get_password_hash
 from app.models import (
     CasoDDR,
     ClientType,
-    DocumentoKYC,
     EstadoCasoDDR,
     ExpedienteKYCCreate,
     PersonaNaturalCreate,
@@ -466,3 +464,228 @@ class TestAutoCrearCasoDDR:
             select(CasoDDR).where(CasoDDR.expediente_id == expediente.id)
         ).first()
         assert caso is None
+
+
+# ── Resumen de cliente embebido en GET /casos-ddr y /casos-ddr/{id} ───────
+#
+# El backend embebe un ``ClienteResumen`` en cada caso DDR para que la UI
+# pueda mostrar el nombre/identificación del cliente sin un round-trip
+# extra a /clientes/{id} (que tiene AccesoKYC y no es accesible para
+# GERENTE, COMITE, AUDITOR).
+#
+# Estos tests verifican que el resumen se popula para roles con DDR y
+# que los campos clave (nombres, apellidos, identificación) están
+# presentes y coinciden con los datos del expediente.
+
+
+def _expediente_juridica() -> ExpedienteKYCCreate:
+    """Expediente jurídica con 2 beneficiarios que suman 100% (Ley 254/2021)."""
+    from app.models import (
+        BeneficiarioFinalCreate,
+        PersonaJuridicaCreate,
+    )
+
+    return ExpedienteKYCCreate(
+        tipo_cliente=ClientType.JURIDICA,
+        persona_juridica=PersonaJuridicaCreate(
+            razon_social="Acme S.A.",
+            ruc="1234567-1-234567",
+            tipo_sociedad="SOCIEDAD_ANONIMA",
+            fecha_constitucion="2010-01-01",
+            pais_constitucion="Panamá",
+            numero_registro_mercantil="RM-12345",
+            nombre_representante="Carlos Mendoza",
+            cedula_representante="8-999-0001",
+            cargo_representante="REPRESENTANTE_LEGAL",
+            telefono_empresa="200-0000",
+            email_empresa="acme@test.com",
+            direccion_fiscal="Av. Test 100",
+            ciudad="Panamá",
+            pais="Panamá",
+            actividad_economica="Servicios",
+            ingreso_anual_aproximado=1_000_000,
+            cantidad_empleados=10,
+            tiene_accionistas_anonimos=False,
+            opera_en_paises_alto_riesgo=False,
+        ),
+        beneficiarios_final=[
+            BeneficiarioFinalCreate(
+                nombre="Carlos",
+                apellido="Gómez",
+                cedula="3-456-789",
+                nacionalidad="Panamá",
+                pais="Panamá",
+                fecha_nacimiento="1980-01-01",
+                porcentaje_participacion=60,
+                es_pep=False,
+            ),
+            BeneficiarioFinalCreate(
+                nombre="Ana",
+                apellido="Ruiz",
+                cedula="4-567-890",
+                nacionalidad="Panamá",
+                pais="Panamá",
+                fecha_nacimiento="1985-05-10",
+                porcentaje_participacion=40,
+                es_pep=False,
+            ),
+        ],
+        enviar_a_revision=False,
+    )
+
+
+class TestClienteSummaryEmbebido:
+    def test_get_caso_incluye_cliente_natural(
+        self, client: TestClient, db: Session
+    ) -> None:
+        """GET /casos-ddr/{id} debe incluir el resumen del cliente con
+        nombres, apellidos y número de identificación para una persona
+        natural. Sin este campo la UI muestra el UUID del expediente."""
+        analista = _create_analista(db)
+        headers = user_authentication_headers(
+            client=client, email=analista.email, password=TEST_PASSWORD
+        )
+        exp = crud.create_expediente(
+            session=db,
+            expediente_in=_make_expediente_data(),
+            analista_id=analista.id,
+        )
+        # Disparar la creación del caso DDR (lo hace el endpoint al
+        # consultar la API de evaluación de riesgo del expediente).
+        # Aquí creamos un caso DDR directamente en BD para simplificar.
+        caso_id = uuid.uuid4()
+        from app.models import EstadoCasoDDR
+
+        caso = CasoDDR(
+            id=caso_id,
+            expediente_id=exp.id,
+            nivel_riesgo="ALTO",
+            status=EstadoCasoDDR.ABIERTO.value,
+            analista_id=analista.id,
+        )
+        db.add(caso)
+        db.commit()
+        db.refresh(caso)
+
+        r = client.get(f"{settings.API_V1_STR}/casos-ddr/{caso_id}", headers=headers)
+        assert r.status_code == 200, r.text
+        body = r.json()
+        assert "cliente" in body and body["cliente"] is not None
+        cli = body["cliente"]
+        assert cli["id"] == str(exp.id)
+        assert cli["tipo_cliente"] == "NATURAL"
+        assert cli["nombres"] == "Juan"
+        assert cli["apellidos"] == "Pérez"
+        assert "CEDULA" in cli["tipo_identificacion"]
+        assert "1-123-456" in cli["numero_identificacion"]
+        assert cli["estado"] == exp.status
+
+    def test_get_caso_incluye_cliente_juridica_con_ruc(
+        self, client: TestClient, db: Session
+    ) -> None:
+        """Para JURIDICA, nombres = razón social y la identificación
+        incluye el prefijo RUC."""
+        analista = _create_analista(db)
+        headers = user_authentication_headers(
+            client=client, email=analista.email, password=TEST_PASSWORD
+        )
+        exp = crud.create_expediente(
+            session=db,
+            expediente_in=_expediente_juridica(),
+            analista_id=analista.id,
+        )
+        caso_id = uuid.uuid4()
+        from app.models import EstadoCasoDDR
+
+        caso = CasoDDR(
+            id=caso_id,
+            expediente_id=exp.id,
+            nivel_riesgo="MEDIO",
+            status=EstadoCasoDDR.ABIERTO.value,
+            analista_id=analista.id,
+        )
+        db.add(caso)
+        db.commit()
+        db.refresh(caso)
+
+        r = client.get(f"{settings.API_V1_STR}/casos-ddr/{caso_id}", headers=headers)
+        assert r.status_code == 200, r.text
+        cli = r.json()["cliente"]
+        assert cli is not None
+        assert cli["tipo_cliente"] == "JURIDICA"
+        assert cli["nombres"] == "Acme S.A."
+        assert cli["apellidos"] == ""
+        assert "RUC" in cli["numero_identificacion"]
+        assert "1234567-1-234567" in cli["numero_identificacion"]
+
+    def test_get_casos_lista_incluye_cliente_para_cada_caso(
+        self, client: TestClient, db: Session
+    ) -> None:
+        """El listado también debe incluir el resumen del cliente en cada
+        caso, para que la tabla pueda mostrar el nombre sin joins extra
+        en el cliente."""
+        analista = _create_analista(db)
+        headers = user_authentication_headers(
+            client=client, email=analista.email, password=TEST_PASSWORD
+        )
+        from app.models import EstadoCasoDDR
+
+        exp1 = crud.create_expediente(
+            session=db,
+            expediente_in=_make_expediente_data(),
+            analista_id=analista.id,
+        )
+        caso1 = CasoDDR(
+            id=uuid.uuid4(),
+            expediente_id=exp1.id,
+            nivel_riesgo="ALTO",
+            status=EstadoCasoDDR.ABIERTO.value,
+            analista_id=analista.id,
+        )
+        db.add(caso1)
+        db.commit()
+
+        r = client.get(f"{settings.API_V1_STR}/casos-ddr/", headers=headers)
+        assert r.status_code == 200, r.text
+        data = r.json()["data"]
+        assert len(data) >= 1
+        # Encontrar el caso que acabamos de crear.
+        mine = next((c for c in data if c["id"] == str(caso1.id)), None)
+        assert mine is not None, f"Caso {caso1.id} no apareció en el listado"
+        assert mine["cliente"] is not None
+        assert mine["cliente"]["nombres"] == "Juan"
+
+    def test_gerente_puede_ver_caso_y_cliente_sin_acceso_kyc(
+        self, client: TestClient, db: Session
+    ) -> None:
+        """Sanity check: un GERENTE_CUMPLIMIENTO (que NO tiene AccesoKYC
+        al endpoint /clientes/{id}) puede ver el cliente embebido en el
+        caso DDR. Esto era la raíz del bug original: la UI mostraba el
+        UUID del expediente porque el fetch a /clientes/{id} devolvía
+        403 para estos roles."""
+        analista = _create_analista(db)
+        exp = crud.create_expediente(
+            session=db,
+            expediente_in=_make_expediente_data(),
+            analista_id=analista.id,
+        )
+        from app.models import EstadoCasoDDR
+
+        caso = CasoDDR(
+            id=uuid.uuid4(),
+            expediente_id=exp.id,
+            nivel_riesgo="ALTO",  # para que un GERENTE lo vea
+            status=EstadoCasoDDR.EN_APROBACION.value,
+            analista_id=analista.id,
+        )
+        db.add(caso)
+        db.commit()
+        db.refresh(caso)
+
+        gerente = _create_gerente(db)
+        headers = user_authentication_headers(
+            client=client, email=gerente.email, password=TEST_PASSWORD
+        )
+        r = client.get(f"{settings.API_V1_STR}/casos-ddr/{caso.id}", headers=headers)
+        assert r.status_code == 200, r.text
+        assert r.json()["cliente"] is not None

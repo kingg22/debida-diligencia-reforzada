@@ -471,6 +471,28 @@ class CasoDDRPublic(SQLModel):
     fecha_apertura: datetime | None = None
     fecha_cierre: datetime | None = None
     updated_at: datetime | None = None
+    # Resumen del cliente asociado al expediente. Se popula en los
+    # endpoints GET para que la UI pueda mostrar nombre/identificación
+    # sin un round-trip adicional a /clientes/{id} (que tiene AccesoKYC
+    # y no es accesible para todos los roles con AccesoDDR).
+    cliente: "ClienteResumen | None" = None
+
+
+class ClienteResumen(SQLModel):
+    """Proyección mínima de un expediente KYC para embeber en otras
+    respuestas (casos DDR, dashboard, etc.) y evitar un round-trip extra.
+    Mantener sincronizado con la vista ``Cliente`` del frontend."""
+
+    id: uuid.UUID
+    codigo: str
+    tipo_cliente: str
+    nombres: str
+    apellidos: str
+    tipo_identificacion: str
+    numero_identificacion: str
+    nivel_riesgo: str | None = None
+    estado: str
+    es_pep: bool = False
 
 
 class CasosDDRPublic(SQLModel):
