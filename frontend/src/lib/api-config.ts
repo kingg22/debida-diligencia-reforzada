@@ -66,22 +66,23 @@ export const Endpoints = {
 } as const
 
 /**
- * Une `API_BASE_URL` con un endpoint versionado y serializa query params.
- * Devuelve siempre una URL absoluta, apta para `fetch`.
+ * Devuelve un path versionado con query params serializados.
+ * NO incluye `API_BASE_URL`: lo añade `fetchJson` al hacer la petición.
+ * Devolver solo el path evita duplicar la base al llamar a `buildUrl`
+ * y luego a `fetch`, que ya la antepone.
  */
 export function buildUrl(
   path: string,
   params?: Record<string, string | number | undefined | null>,
 ): string {
-  const url = `${BASE}${path}`
-  if (!params) return url
+  if (!params) return path
   const sp = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) {
     if (v === undefined || v === null || v === "") continue
     sp.set(k, String(v))
   }
   const qs = sp.toString()
-  return qs ? `${url}?${qs}` : url
+  return qs ? `${path}?${qs}` : path
 }
 
 /** Header `Authorization` con el JWT en localStorage, si existe. */

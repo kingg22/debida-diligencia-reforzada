@@ -81,7 +81,7 @@ function AccountLocked() {
 
         {/* Contact button */}
         <a
-          href="mailto:admin@panama.com"
+          href="mailto:admin@sgddr.pa"
           className="inline-flex items-center gap-2 rounded-lg border px-6 py-2.5 text-sm font-medium transition-colors hover:bg-[#1b2e4a]"
           style={{ borderColor: "#1b2e4a", color: "#8a9bb5" }}
         >
