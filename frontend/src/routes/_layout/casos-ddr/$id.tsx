@@ -4,7 +4,7 @@ import { ArrowLeft, ClipboardCheck } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import { UsersService } from "@/client"
-import { CasosDdrService, ClientesService, SgddrApiError } from "@/client/sgddr"
+import { CasosDdrService, SgddrApiError } from "@/client/sgddr"
 import { EstadoCasoBadge } from "@/components/Common/EstadoCasoBadge"
 import { NivelRiesgoBadge } from "@/components/Common/NivelRiesgoBadge"
 import { PageHeader } from "@/components/Common/PageHeader"
@@ -91,15 +91,11 @@ function CasoDetallePage() {
     enabled: !!id,
   })
 
-  // Datos relacionados del caso (cliente, cuestionario EBR, documentos).
-  // El backend devuelve el caso DDR con `expediente_id` y endpoints separados
-  // para cada recurso. Se cargan en paralelo para minimizar el tiempo total.
-  const { data: cliente } = useQuery({
-    queryKey: ["cliente", caso?.expediente_id],
-    queryFn: () => ClientesService.get(caso!.expediente_id),
-    retry: false,
-    enabled: !!caso?.expediente_id,
-  })
+  // El backend embebe un resumen del cliente en el caso DDR
+  // (ClienteResumen en /casos-ddr/{id}), así que ya no necesitamos un
+  // round-trip a /clientes/{id} — eso evita errores 403 para roles con
+  // AccesoDDR pero sin AccesoKYC (GERENTE, COMITE, AUDITOR).
+  const cliente = caso?.cliente
 
   const { data: cuestionario } = useQuery({
     queryKey: ["caso-ddr", id, "cuestionario"],
@@ -189,13 +185,13 @@ function CasoDetallePage() {
           <PageHeader
             title={
               cliente
-                ? `${cliente.nombres} ${cliente.apellidos}`.trim()
+                ? `${cliente.nombres} ${cliente.apellidos}`.trim() || "Caso DDR"
                 : "Caso DDR"
             }
             subtitle={
               cliente
                 ? `${cliente.tipo_identificacion} · ${cliente.numero_identificacion}`
-                : caso.expediente_id
+                : `Caso #${caso.id.slice(0, 8)}`
             }
             action={
               <div className="flex items-center gap-2">

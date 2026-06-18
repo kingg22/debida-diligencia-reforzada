@@ -11,14 +11,16 @@ from sqlmodel import SQLModel, col, func, select
 from app.api.deps import CurrentUser, SessionDep, require_roles
 from app.models import (
     CasoDDR,
-    CasosDDRPublic,
     CasoDDRPublic,
+    CasosDDRPublic,
+    ClienteResumen,
+    CuestionarioEBRPublic,
     DocumentoEstado,
     DocumentoKYC,
     DocumentoKYCPublic,
     DocumentoTipo,
-    CuestionarioEBRPublic,
     EstadoCasoDDR,
+    ExpedienteKYC,
     User,
     UserRole,
 )
@@ -41,6 +43,65 @@ def _get_caso_o_404(session: SessionDep, caso_id: uuid.UUID) -> CasoDDR:
     if not caso:
         raise HTTPException(status_code=404, detail="Caso DDR no encontrado")
     return caso
+
+
+def _build_cliente_resumen(expediente: ExpedienteKYC) -> ClienteResumen:
+    """Proyecta un ExpedienteKYC al shape plano que consume el frontend.
+
+    Espejo de la función ``expedienteACliente`` del frontend; si se
+    modifica una, mantener la otra sincronizada.
+    """
+    pn = expediente.persona_natural
+    pj = expediente.persona_juridica
+    es_natural = expediente.tipo_cliente == "NATURAL"
+    nombres = pn.nombre if es_natural and pn else (pj.razon_social if pj else "")
+    apellidos = pn.apellido if es_natural and pn else ""
+    tipo_doc = (
+        pn.tipo_documento if es_natural and pn else ("RUC" if pj else "CEDULA")
+    )
+    num_doc = (
+        pn.numero_documento if es_natural and pn else (pj.ruc if pj else "")
+    )
+    identificacion = (
+        f"{tipo_doc} {num_doc}".strip() if es_natural else f"RUC {num_doc}".strip()
+    )
+    return ClienteResumen(
+        id=expediente.id,
+        codigo=expediente.codigo,
+        tipo_cliente=expediente.tipo_cliente,
+        nombres=nombres or "",
+        apellidos=apellidos or "",
+        tipo_identificacion=tipo_doc or "CEDULA",
+        numero_identificacion=identificacion,
+        nivel_riesgo=expediente.nivel_riesgo,
+        estado=expediente.status,
+        es_pep=bool(pn.es_pep) if pn else False,
+    )
+
+
+def _casos_to_public(
+    session: SessionDep, casos: list[CasoDDR]
+) -> list[CasoDDRPublic]:
+    """Serializa casos DDR y embebe un resumen del cliente asociado.
+
+    Carga todos los expedientes en una sola query para evitar N+1.
+    """
+    if not casos:
+        return []
+    exp_ids = {c.expediente_id for c in casos}
+    expedientes = session.exec(
+        select(ExpedienteKYC).where(col(ExpedienteKYC.id).in_(exp_ids))
+    ).all()
+    by_id = {e.id: e for e in expedientes}
+
+    out: list[CasoDDRPublic] = []
+    for c in casos:
+        public = CasoDDRPublic.model_validate(c)
+        exp = by_id.get(c.expediente_id)
+        if exp is not None:
+            public.cliente = _build_cliente_resumen(exp)
+        out.append(public)
+    return out
 
 
 @router.get("/", response_model=CasosDDRPublic, dependencies=[AccesoDDR])
@@ -81,14 +142,19 @@ def read_casos_ddr(
     ).all()
 
     return CasosDDRPublic(
-        data=[CasoDDRPublic.model_validate(c) for c in casos],
+        data=_casos_to_public(session, casos),
         count=count,
     )
 
 
 @router.get("/{id}", response_model=CasoDDRPublic, dependencies=[AccesoDDR])
 def read_caso_ddr(session: SessionDep, id: uuid.UUID) -> Any:
-    return _get_caso_o_404(session, id)
+    caso = _get_caso_o_404(session, id)
+    public = CasoDDRPublic.model_validate(caso)
+    exp = session.get(ExpedienteKYC, caso.expediente_id)
+    if exp is not None:
+        public.cliente = _build_cliente_resumen(exp)
+    return public
 
 
 class AsignarAnalistaInput(BaseModel):

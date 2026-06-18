@@ -129,9 +129,23 @@ function CasosDdrPage() {
                     className="hover:bg-muted/50 border-border cursor-pointer border-b transition-colors"
                   >
                     <td className="px-4 py-3.5">
-                      <span className="text-foreground font-medium">
-                        {caso.expediente_id.slice(0, 8)}…
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-foreground font-medium">
+                          {caso.cliente
+                            ? `${caso.cliente.nombres} ${caso.cliente.apellidos}`.trim() ||
+                              caso.cliente.codigo
+                            : `Expediente ${caso.expediente_id.slice(0, 8)}…`}
+                        </span>
+                        {caso.cliente && (
+                          <span
+                            className="text-xs"
+                            style={{ color: "#8a9bb5" }}
+                          >
+                            {caso.cliente.tipo_identificacion}{" "}
+                            {caso.cliente.numero_identificacion}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3.5">
                       <NivelRiesgoBadge nivel={caso.nivel_riesgo} />
