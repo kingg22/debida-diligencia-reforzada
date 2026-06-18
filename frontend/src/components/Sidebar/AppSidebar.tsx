@@ -45,14 +45,12 @@ function PanamaComplianceLogo() {
       </div>
       <div className="group-data-[collapsible=icon]:hidden">
         <p
-          className="text-sm font-semibold leading-none"
-          style={{ color: "#f0ede8", fontFamily: "DM Serif Display, serif" }}
+          className="text-sidebar-foreground text-sm font-semibold leading-none"
+          style={{ fontFamily: "DM Serif Display, serif" }}
         >
           PanamaCompliance
         </p>
-        <p className="text-[10px] mt-0.5" style={{ color: "#4a6080" }}>
-          SGDDR
-        </p>
+        <p className="text-sidebar-foreground/60 mt-0.5 text-[10px]">SGDDR</p>
       </div>
     </div>
   )

@@ -10,6 +10,7 @@ import {
   ErrorState,
   LoadingState,
 } from "@/components/Common/QueryStates"
+import { Button } from "@/components/ui/button"
 import {
   diasDesde,
   ESTADO_CASO,
@@ -64,11 +65,7 @@ function CasosDdrPage() {
         <select
           value={estado}
           onChange={(e) => setEstado(e.target.value)}
-          className="h-10 rounded-lg border px-3 text-sm outline-none transition-all border-[#1b2e4a] focus:border-[#c9a84c]"
-          style={{
-            backgroundColor: "#0f1f3a",
-            color: estado ? "#f0ede8" : "#4a6080",
-          }}
+          className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-ring h-10 rounded-lg border px-3 text-sm outline-none transition-all"
         >
           <option value="">Todos los estados</option>
           {ESTADOS_CASO.map((e) => (
@@ -81,11 +78,7 @@ function CasosDdrPage() {
         <select
           value={nivel}
           onChange={(e) => setNivel(e.target.value)}
-          className="h-10 rounded-lg border px-3 text-sm outline-none transition-all border-[#1b2e4a] focus:border-[#c9a84c]"
-          style={{
-            backgroundColor: "#0f1f3a",
-            color: nivel ? "#f0ede8" : "#4a6080",
-          }}
+          className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-ring h-10 rounded-lg border px-3 text-sm outline-none transition-all"
         >
           <option value="">Todos los niveles</option>
           {NIVELES_RIESGO.map((n) => (
@@ -106,25 +99,16 @@ function CasosDdrPage() {
       ) : data && data.data.length === 0 ? (
         <EmptyState message="No hay casos DDR para mostrar." />
       ) : (
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{ border: "1px solid #1b2e4a" }}
-        >
+        <div className="border-border bg-card overflow-hidden rounded-xl border">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr
-                  style={{
-                    backgroundColor: "#0f1f3a",
-                    borderBottom: "1px solid #1b2e4a",
-                  }}
-                >
+                <tr className="bg-muted/50 border-border border-b">
                   {["Cliente", "Nivel de riesgo", "Estado", "Días abierto"].map(
                     (h) => (
                       <th
                         key={h}
-                        className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider"
-                        style={{ color: "#4a6080" }}
+                        className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider"
                       >
                         {h}
                       </th>
@@ -142,14 +126,10 @@ function CasosDdrPage() {
                         params: { id: caso.id },
                       })
                     }
-                    className="cursor-pointer transition-colors hover:bg-[#0f1f3a]"
-                    style={{ borderBottom: "1px solid #1b2e4a" }}
+                    className="hover:bg-muted/50 border-border cursor-pointer border-b transition-colors"
                   >
                     <td className="px-4 py-3.5">
-                      <span
-                        className="font-medium"
-                        style={{ color: "#f0ede8" }}
-                      >
+                      <span className="text-foreground font-medium">
                         {caso.expediente_id.slice(0, 8)}…
                       </span>
                     </td>
@@ -159,10 +139,7 @@ function CasosDdrPage() {
                     <td className="px-4 py-3.5">
                       <EstadoCasoBadge estado={caso.status} />
                     </td>
-                    <td
-                      className="px-4 py-3.5 text-xs"
-                      style={{ color: "#8a9bb5" }}
-                    >
+                    <td className="text-muted-foreground px-4 py-3.5 text-xs">
                       {diasDesde(caso.fecha_apertura)} días
                     </td>
                   </tr>
@@ -171,38 +148,32 @@ function CasosDdrPage() {
             </table>
           </div>
 
-          <div
-            className="flex items-center justify-between px-4 py-3"
-            style={{
-              borderTop: "1px solid #1b2e4a",
-              backgroundColor: "#0f1f3a",
-            }}
-          >
-            <p className="text-xs" style={{ color: "#4a6080" }}>
+          <div className="border-border bg-muted/30 flex items-center justify-between border-t px-4 py-3">
+            <p className="text-muted-foreground text-xs">
               {total} caso{total !== 1 ? "s" : ""}
             </p>
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="rounded-lg border px-3 py-1.5 text-xs transition-colors hover:bg-[#1b2e4a] disabled:opacity-40"
-                style={{ borderColor: "#1b2e4a", color: "#8a9bb5" }}
               >
                 Anterior
-              </button>
-              <span className="text-xs" style={{ color: "#8a9bb5" }}>
+              </Button>
+              <span className="text-muted-foreground text-xs">
                 {page} / {totalPages}
               </span>
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="rounded-lg border px-3 py-1.5 text-xs transition-colors hover:bg-[#1b2e4a] disabled:opacity-40"
-                style={{ borderColor: "#1b2e4a", color: "#8a9bb5" }}
               >
                 Siguiente
-              </button>
+              </Button>
             </div>
           </div>
         </div>

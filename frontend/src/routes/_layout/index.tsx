@@ -29,10 +29,7 @@ function StatCard({
   color: string
 }) {
   return (
-    <div
-      className="rounded-xl p-5"
-      style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
-    >
+    <div className="bg-card text-card-foreground rounded-xl border p-5">
       <div className="mb-3 flex items-center gap-2.5">
         <div
           className="flex h-9 w-9 items-center justify-center rounded-lg"
@@ -40,13 +37,9 @@ function StatCard({
         >
           <Icon size={18} style={{ color }} />
         </div>
-        <span className="text-sm" style={{ color: "#8a9bb5" }}>
-          {label}
-        </span>
+        <span className="text-muted-foreground text-sm">{label}</span>
       </div>
-      <p className="text-2xl font-semibold" style={{ color: "#f0ede8" }}>
-        {value}
-      </p>
+      <p className="text-2xl font-semibold">{value}</p>
     </div>
   )
 }
@@ -67,12 +60,12 @@ function Dashboard() {
       {/* Welcome */}
       <div>
         <h1
-          className="mb-1 text-[28px]"
-          style={{ fontFamily: "DM Serif Display, serif", color: "#f0ede8" }}
+          className="mb-1 text-[28px] text-foreground"
+          style={{ fontFamily: "DM Serif Display, serif" }}
         >
           Bienvenido, {displayName}
         </h1>
-        <p className="text-sm" style={{ color: "#8a9bb5" }}>
+        <p className="text-muted-foreground text-sm">
           {roleLabel}
           {roleLabel && " · "}
           Sistema de Gestión de Debida Diligencia Reforzada

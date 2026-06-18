@@ -11,6 +11,8 @@ import {
   ErrorState,
   LoadingState,
 } from "@/components/Common/QueryStates"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import useAuth from "@/hooks/useAuth"
 import {
   type AppUser,
@@ -77,15 +79,14 @@ function ClientesPage() {
         subtitle="Expedientes KYC registrados en el sistema."
         action={
           puedeRegistrarCliente(rol) || rol === "ANALISTA_DDR" ? (
-            <button
+            <Button
               type="button"
               onClick={() => navigate({ to: "/kyc/nuevo" })}
-              className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 active:scale-[0.99]"
-              style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
+              className="bg-primary text-primary-foreground hover:brightness-110"
             >
               <Plus size={16} />
               Nuevo cliente
-            </button>
+            </Button>
           ) : undefined
         }
       />
@@ -95,27 +96,21 @@ function ClientesPage() {
         <div className="relative min-w-[240px] flex-1">
           <Search
             size={15}
-            className="absolute left-3 top-1/2 -translate-y-1/2"
-            style={{ color: "#4a6080" }}
+            className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2"
           />
-          <input
+          <Input
             type="text"
             placeholder="Buscar por nombre o identificación…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="h-10 w-full rounded-lg border pl-9 pr-3 text-sm text-[#f0ede8] placeholder:text-[#4a6080] outline-none transition-all border-[#1b2e4a] focus:border-[#c9a84c] focus:ring-[3px] focus:ring-[rgba(201,168,76,0.18)]"
-            style={{ backgroundColor: "#0f1f3a" }}
+            className="pl-9"
           />
         </div>
 
         <select
           value={nivel}
           onChange={(e) => setNivel(e.target.value)}
-          className="h-10 rounded-lg border px-3 text-sm outline-none transition-all border-[#1b2e4a] focus:border-[#c9a84c]"
-          style={{
-            backgroundColor: "#0f1f3a",
-            color: nivel ? "#f0ede8" : "#4a6080",
-          }}
+          className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-ring h-10 rounded-lg border px-3 text-sm outline-none transition-all"
         >
           <option value="">Todos los niveles</option>
           {NIVELES_RIESGO.map((n) => (
@@ -128,11 +123,7 @@ function ClientesPage() {
         <select
           value={estado}
           onChange={(e) => setEstado(e.target.value)}
-          className="h-10 rounded-lg border px-3 text-sm outline-none transition-all border-[#1b2e4a] focus:border-[#c9a84c]"
-          style={{
-            backgroundColor: "#0f1f3a",
-            color: estado ? "#f0ede8" : "#4a6080",
-          }}
+          className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-ring h-10 rounded-lg border px-3 text-sm outline-none transition-all"
         >
           <option value="">Todos los estados</option>
           {ESTADOS_KYC.map((kyc) => (
@@ -143,18 +134,18 @@ function ClientesPage() {
         </select>
 
         {tieneFiltros && (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => {
               setSearchInput("")
               setNivel("")
               setEstado("")
             }}
-            className="flex items-center gap-1.5 rounded-lg border px-3 text-sm transition-colors hover:bg-[#1b2e4a]"
-            style={{ borderColor: "#1b2e4a", color: "#8a9bb5" }}
           >
             <X size={13} /> Limpiar
-          </button>
+          </Button>
         )}
       </div>
 
@@ -175,19 +166,11 @@ function ClientesPage() {
           }
         />
       ) : (
-        <div
-          className="overflow-hidden rounded-xl"
-          style={{ border: "1px solid #1b2e4a" }}
-        >
+        <div className="border-border bg-card overflow-hidden rounded-xl border">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr
-                  style={{
-                    backgroundColor: "#0f1f3a",
-                    borderBottom: "1px solid #1b2e4a",
-                  }}
-                >
+                <tr className="bg-muted/50 border-border border-b">
                   {[
                     "Nombre",
                     "Identificación",
@@ -197,8 +180,7 @@ function ClientesPage() {
                   ].map((h) => (
                     <th
                       key={h}
-                      className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider"
-                      style={{ color: "#4a6080" }}
+                      className="text-muted-foreground px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider"
                     >
                       {h}
                     </th>
@@ -212,32 +194,19 @@ function ClientesPage() {
                     onClick={() =>
                       navigate({ to: "/clientes/$id", params: { id: c.id } })
                     }
-                    className="cursor-pointer transition-colors hover:bg-[#0f1f3a]"
-                    style={{ borderBottom: "1px solid #1b2e4a" }}
+                    className="hover:bg-muted/50 border-border cursor-pointer border-b transition-colors"
                   >
                     <td className="px-4 py-3.5">
-                      <span
-                        className="font-medium"
-                        style={{ color: "#f0ede8" }}
-                      >
+                      <span className="text-foreground font-medium">
                         {c.nombres} {c.apellidos}
                       </span>
                       {c.es_pep && (
-                        <span
-                          className="ml-2 rounded px-1.5 py-0.5 text-[10px] font-semibold"
-                          style={{
-                            backgroundColor: "rgba(201,168,76,0.15)",
-                            color: "#c9a84c",
-                          }}
-                        >
+                        <span className="ml-2 rounded bg-yellow-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-yellow-600 dark:text-yellow-400">
                           PEP
                         </span>
                       )}
                     </td>
-                    <td
-                      className="px-4 py-3.5 font-mono text-xs"
-                      style={{ color: "#8a9bb5" }}
-                    >
+                    <td className="text-muted-foreground px-4 py-3.5 font-mono text-xs">
                       {c.numero_identificacion}
                     </td>
                     <td className="px-4 py-3.5">
@@ -246,10 +215,7 @@ function ClientesPage() {
                     <td className="px-4 py-3.5">
                       <EstadoKYCBadge estado={c.estado} />
                     </td>
-                    <td
-                      className="px-4 py-3.5 text-xs"
-                      style={{ color: "#8a9bb5" }}
-                    >
+                    <td className="text-muted-foreground px-4 py-3.5 text-xs">
                       {formatFecha(c.creado_en)}
                     </td>
                   </tr>
@@ -259,38 +225,32 @@ function ClientesPage() {
           </div>
 
           {/* Paginación */}
-          <div
-            className="flex items-center justify-between px-4 py-3"
-            style={{
-              borderTop: "1px solid #1b2e4a",
-              backgroundColor: "#0f1f3a",
-            }}
-          >
-            <p className="text-xs" style={{ color: "#4a6080" }}>
+          <div className="border-border bg-muted/30 flex items-center justify-between border-t px-4 py-3">
+            <p className="text-muted-foreground text-xs">
               {total} cliente{total !== 1 ? "s" : ""}
             </p>
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="rounded-lg border px-3 py-1.5 text-xs transition-colors hover:bg-[#1b2e4a] disabled:opacity-40"
-                style={{ borderColor: "#1b2e4a", color: "#8a9bb5" }}
               >
                 Anterior
-              </button>
-              <span className="text-xs" style={{ color: "#8a9bb5" }}>
+              </Button>
+              <span className="text-muted-foreground text-xs">
                 {page} / {totalPages}
               </span>
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="rounded-lg border px-3 py-1.5 text-xs transition-colors hover:bg-[#1b2e4a] disabled:opacity-40"
-                style={{ borderColor: "#1b2e4a", color: "#8a9bb5" }}
               >
                 Siguiente
-              </button>
+              </Button>
             </div>
           </div>
         </div>
