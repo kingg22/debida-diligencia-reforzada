@@ -2,8 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 
 import {
-  type Body_login_login_access_token as AccessToken,
-  LoginService,
+  AuthService,
+  type AuthLoginData,
+  type LoginResponse,
   type UserPublic,
   type UserRegister,
   UsersService,
@@ -13,6 +14,19 @@ import useCustomToast from "./useCustomToast"
 
 const isLoggedIn = () => {
   return localStorage.getItem("access_token") !== null
+}
+
+/** Token temporal entregado por /auth/login cuando se requiere 2FA. */
+const TEMP_TOKEN_KEY = "twofa_temp_token"
+
+const setTempToken = (token: string) => {
+  sessionStorage.setItem(TEMP_TOKEN_KEY, token)
+}
+const getTempToken = (): string | null => {
+  return sessionStorage.getItem(TEMP_TOKEN_KEY)
+}
+const clearTempToken = () => {
+  sessionStorage.removeItem(TEMP_TOKEN_KEY)
 }
 
 const useAuth = () => {
@@ -38,23 +52,53 @@ const useAuth = () => {
     },
   })
 
-  const login = async (data: AccessToken) => {
-    const response = await LoginService.loginAccessToken({
-      formData: data,
+  /**
+   * Login con el backend unificado ``/auth/login``.
+   *
+   * El backend puede responder con 3 ramas:
+   *  1. ``requires_2fa = false``  → JWT directo, redirigir a "/".
+   *  2. ``requires_2fa = "verify"`` → 2FA activo, pedir código en "/two-factor".
+   *  3. ``requires_2fa = "setup"`` → forzar wizard en "/two-factor/setup".
+   */
+  const login = async (data: { username: string; password: string }) => {
+    const body: AuthLoginData["requestBody"] = {
+      correo: data.username,
+      password: data.password,
+    }
+    const response: LoginResponse = await AuthService.login({
+      requestBody: body,
     })
-    localStorage.setItem("access_token", response.access_token)
+
+    // Rama 1: login completo
+    if (response.requires_2fa === false && response.access_token) {
+      localStorage.setItem("access_token", response.access_token)
+      clearTempToken()
+      return { kind: "authenticated" as const }
+    }
+
+    // Ramas 2/3: requiere 2FA (verify o setup). El frontend decide a qué
+    // pantalla ir en base a ``requires_2fa``.
+    if (response.temp_token) {
+      setTempToken(response.temp_token)
+    }
+    return {
+      kind: "needs_2fa" as const,
+      requires_2fa: response.requires_2fa as "verify" | "setup",
+    }
   }
 
   const loginMutation = useMutation({
     mutationFn: login,
-    onSuccess: () => {
-      navigate({ to: "/" })
-    },
     onError: handleError.bind(showErrorToast),
   })
 
   const logout = () => {
+    // Llamar /auth/logout si tenemos token; no bloqueamos la UI.
+    if (isLoggedIn()) {
+      AuthService.logout().catch(() => undefined)
+    }
     localStorage.removeItem("access_token")
+    clearTempToken()
     navigate({ to: "/login" })
   }
 
@@ -63,8 +107,10 @@ const useAuth = () => {
     loginMutation,
     logout,
     user,
+    tempToken: getTempToken(),
+    clearTempToken,
   }
 }
 
-export { isLoggedIn }
+export { isLoggedIn, getTempToken, clearTempToken }
 export default useAuth

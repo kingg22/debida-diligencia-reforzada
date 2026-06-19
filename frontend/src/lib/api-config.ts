@@ -31,8 +31,20 @@ export const API_PREFIX = API_VERSION
  * basta con cambiar `API_PREFIX` o agregar una capa de rewrite aquí.
  */
 export const Endpoints = {
-  // ── Auth / Users (cliente auto-generado de openapi-ts los consume
-  // directamente desde su `OpenAPI.BASE`, así que no se duplican aquí).
+  // ── Auth / 2FA (el cliente auto-generado consume ``OpenAPI.BASE``
+  // directamente; estas constantes quedan para los pocos sitios que aún
+  // hacen fetch manual con ``fetchJson``). ────────────────────────────
+  auth: {
+    login: () => `${API_VERSION}/auth/login`,
+    logout: () => `${API_VERSION}/auth/logout`,
+    twofaSetupStart: () => `${API_VERSION}/auth/2fa/setup/start`,
+    twofaSetupConfirm: () => `${API_VERSION}/auth/2fa/setup/confirm`,
+    twofaVerify: () => `${API_VERSION}/auth/2fa/verify`,
+    twofaStatus: () => `${API_VERSION}/auth/2fa/status`,
+    twofaDisable: () => `${API_VERSION}/auth/2fa/disable`,
+    twofaRegenerateBackupCodes: () =>
+      `${API_VERSION}/auth/2fa/backup-codes/regenerate`,
+  },
   // ── Clientes (expedientes KYC) ─────────────────────────────────────────
   clientes: {
     list: () => `${API_VERSION}/clientes/`,

@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AccountLockedRouteImport } from './routes/account-locked'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as TwoFactorSetupRouteImport } from './routes/two-factor.setup'
 import { Route as LayoutUsuariosRouteImport } from './routes/_layout/usuarios'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
@@ -60,6 +61,11 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => LayoutRoute,
+} as any)
+const TwoFactorSetupRoute = TwoFactorSetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => TwoFactorRoute,
 } as any)
 const LayoutUsuariosRoute = LayoutUsuariosRouteImport.update({
   id: '/usuarios',
@@ -119,10 +125,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/two-factor': typeof TwoFactorRoute
+  '/two-factor': typeof TwoFactorRouteWithChildren
   '/admin': typeof LayoutAdminRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
+  '/two-factor/setup': typeof TwoFactorSetupRoute
   '/casos-ddr/$id': typeof LayoutCasosDdrIdRouteWithChildren
   '/clientes/$id': typeof LayoutClientesIdRoute
   '/kyc/nuevo': typeof LayoutKycNuevoRoute
@@ -136,10 +143,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/two-factor': typeof TwoFactorRoute
+  '/two-factor': typeof TwoFactorRouteWithChildren
   '/admin': typeof LayoutAdminRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
+  '/two-factor/setup': typeof TwoFactorSetupRoute
   '/': typeof LayoutIndexRoute
   '/casos-ddr/$id': typeof LayoutCasosDdrIdRouteWithChildren
   '/clientes/$id': typeof LayoutClientesIdRoute
@@ -156,10 +164,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/two-factor': typeof TwoFactorRoute
+  '/two-factor': typeof TwoFactorRouteWithChildren
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/usuarios': typeof LayoutUsuariosRoute
+  '/two-factor/setup': typeof TwoFactorSetupRoute
   '/_layout/': typeof LayoutIndexRoute
   '/_layout/casos-ddr/$id': typeof LayoutCasosDdrIdRouteWithChildren
   '/_layout/clientes/$id': typeof LayoutClientesIdRoute
@@ -181,6 +190,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/settings'
     | '/usuarios'
+    | '/two-factor/setup'
     | '/casos-ddr/$id'
     | '/clientes/$id'
     | '/kyc/nuevo'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/settings'
     | '/usuarios'
+    | '/two-factor/setup'
     | '/'
     | '/casos-ddr/$id'
     | '/clientes/$id'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/_layout/admin'
     | '/_layout/settings'
     | '/_layout/usuarios'
+    | '/two-factor/setup'
     | '/_layout/'
     | '/_layout/casos-ddr/$id'
     | '/_layout/clientes/$id'
@@ -233,7 +245,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  TwoFactorRoute: typeof TwoFactorRoute
+  TwoFactorRoute: typeof TwoFactorRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -286,6 +298,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
+    }
+    '/two-factor/setup': {
+      id: '/two-factor/setup'
+      path: '/setup'
+      fullPath: '/two-factor/setup'
+      preLoaderRoute: typeof TwoFactorSetupRouteImport
+      parentRoute: typeof TwoFactorRoute
     }
     '/_layout/usuarios': {
       id: '/_layout/usuarios'
@@ -400,13 +419,25 @@ const LayoutRouteChildren: LayoutRouteChildren = {
 const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
+interface TwoFactorRouteChildren {
+  TwoFactorSetupRoute: typeof TwoFactorSetupRoute
+}
+
+const TwoFactorRouteChildren: TwoFactorRouteChildren = {
+  TwoFactorSetupRoute: TwoFactorSetupRoute,
+}
+
+const TwoFactorRouteWithChildren = TwoFactorRoute._addFileChildren(
+  TwoFactorRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
   AccountLockedRoute: AccountLockedRoute,
   LoginRoute: LoginRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  TwoFactorRoute: TwoFactorRoute,
+  TwoFactorRoute: TwoFactorRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

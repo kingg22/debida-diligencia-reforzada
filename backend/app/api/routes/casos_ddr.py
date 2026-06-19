@@ -8,7 +8,12 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from pydantic import BaseModel, Field
 from sqlmodel import SQLModel, col, func, select
 
-from app.api.deps import CurrentUser, SessionDep, require_roles
+from app.api.deps import (
+    CurrentUser,
+    SessionDep,
+    require_2fa_if_required_by_role,
+    require_roles,
+)
 from app.models import (
     CasoDDR,
     CasoDDRPublic,
@@ -25,7 +30,11 @@ from app.models import (
     UserRole,
 )
 
-router = APIRouter(prefix="/casos-ddr", tags=["casos-ddr"])
+router = APIRouter(
+    prefix="/casos-ddr",
+    tags=["casos-ddr"],
+    dependencies=[Depends(require_2fa_if_required_by_role)],
+)
 
 AccesoDDR = Depends(
     require_roles(

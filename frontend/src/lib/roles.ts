@@ -42,6 +42,12 @@ export const ROLE_REQUIRES_2FA: Record<Role, boolean> = {
   AUDITOR: false,
 }
 
+/** Devuelve ``true`` si el rol requiere 2FA obligatorio al iniciar sesión. */
+export function roleRequires2FA(role: string | null | undefined): boolean {
+  if (!role) return false
+  return ROLE_REQUIRES_2FA[role as Role] === true
+}
+
 export const ROLE_BADGE: Record<Role, { bg: string; color: string }> = {
   ADMIN: { bg: "#2d1b69", color: "#a78bfa" },
   OFICIAL_CUMPLIMIENTO: { bg: "#1b3a2d", color: "#4ade80" },

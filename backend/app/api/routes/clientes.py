@@ -10,7 +10,12 @@ from fastapi.responses import FileResponse
 from sqlmodel import col, func, select
 
 from app import crud
-from app.api.deps import CurrentUser, SessionDep, require_roles
+from app.api.deps import (
+    CurrentUser,
+    SessionDep,
+    require_2fa_if_required_by_role,
+    require_roles,
+)
 from app.kyc_risk import calcular_riesgo
 from app.models import (
     ClientType,
@@ -32,7 +37,11 @@ from app.models import (
     UserRole,
 )
 
-router = APIRouter(prefix="/clientes", tags=["clientes"])
+router = APIRouter(
+    prefix="/clientes",
+    tags=["clientes"],
+    dependencies=[Depends(require_2fa_if_required_by_role)],
+)
 
 # Almacenamiento local de documentos (efímero en el contenedor).
 UPLOAD_DIR = Path("uploads")
