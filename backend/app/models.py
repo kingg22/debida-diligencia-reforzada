@@ -195,6 +195,52 @@ class AuditoriasPublic(SQLModel):
     count: int
 
 
+# ── 2FA (TOTP) ──────────────────────────────────────────────────────────────
+
+
+# Roles del sistema para los que el 2FA es **obligatorio** desde el primer
+# login. El resto de roles puede activarlo voluntariamente desde Settings.
+REQUIRES_2FA_ROLES: frozenset[UserRole] = frozenset(
+    {UserRole.ADMIN, UserRole.OFICIAL_CUMPLIMIENTO}
+)
+
+
+class TwoFactorAuth(SQLModel, table=True):
+    """Estado 2FA (TOTP) de un usuario.
+
+    Relación 1-a-1 con ``User``. El ``encrypted_secret`` guarda el secret
+    TOTP cifrado con Fernet (``app.core.crypto``). Los ``backup_codes_hashed``
+    son hashes Argon2 (vía ``pwdlib``) de códigos de un solo uso.
+    """
+
+    __tablename__ = "two_factor_auth"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(
+        foreign_key="user.id", nullable=False, unique=True, ondelete="CASCADE"
+    )
+    encrypted_secret: str = Field(max_length=512)
+    is_enabled: bool = Field(default=False)
+    # JSON serializado (lista de strings Argon2). ``text`` porque el
+    # tamaño es variable y no queremos VARCHAR(2k) artificial.
+    backup_codes_hashed: str | None = Field(default=None, sa_type=String)  # type: ignore[arg-type]
+    backup_codes_remaining: int = Field(default=10)
+    last_used_counter: int = Field(default=0)
+    confirmed_at: datetime | None = Field(
+        default=None, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+    disabled_at: datetime | None = Field(
+        default=None, sa_type=DateTime(timezone=True)  # type: ignore
+    )
+    created_at: datetime = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+    updated_at: datetime = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+
+
 # ── Tablas de simulación (consultadas por Dev 2) ───────────────────────────
 
 

@@ -3,7 +3,640 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { AuditoriaReadAuditoriaData, AuditoriaReadAuditoriaResponse, AuthLoginData, AuthLoginResponse, AuthLogoutResponse, AuthTwofaSetupStartData, AuthTwofaSetupStartResponse, AuthTwofaSetupConfirmData, AuthTwofaSetupConfirmResponse, AuthTwofaVerifyData, AuthTwofaVerifyResponse, AuthTwofaStatusResponse, AuthTwofaDisableData, AuthTwofaDisableResponse, AuthTwofaRegenerateBackupCodesData, AuthTwofaRegenerateBackupCodesResponse, CasosDdrReadCasosDdrData, CasosDdrReadCasosDdrResponse, CasosDdrReadCasoDdrData, CasosDdrReadCasoDdrResponse, CasosDdrAsignarAnalistaData, CasosDdrAsignarAnalistaResponse, CasosDdrEnviarAprobacionData, CasosDdrEnviarAprobacionResponse, CasosDdrAprobarCasoData, CasosDdrAprobarCasoResponse, CasosDdrRechazarCasoData, CasosDdrRechazarCasoResponse, CasosDdrGetCuestionarioData, CasosDdrGetCuestionarioResponse, CasosDdrUpdateCuestionarioData, CasosDdrUpdateCuestionarioResponse, CasosDdrUploadDocumentoDdrData, CasosDdrUploadDocumentoDdrResponse, CasosDdrListDocumentosDdrData, CasosDdrListDocumentosDdrResponse, ClientesCreateClienteData, ClientesCreateClienteResponse, ClientesReadClientesData, ClientesReadClientesResponse, ClientesReadClienteData, ClientesReadClienteResponse, ClientesUpdateClienteData, ClientesUpdateClienteResponse, ClientesUploadDocumentoData, ClientesUploadDocumentoResponse, ClientesDeleteDocumentoData, ClientesDeleteDocumentoResponse, ClientesDescargarDocumentoData, ClientesDescargarDocumentoResponse, ClientesEvaluarRiesgoData, ClientesEvaluarRiesgoResponse, ClientesVerificarListasData, ClientesVerificarListasResponse, DashboardGetDashboardResponse, ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+
+export class AuditoriaService {
+    /**
+     * Read Auditoria
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @param data.desde
+     * @param data.hasta
+     * @param data.usuarioId
+     * @param data.modulo
+     * @returns AuditoriasPublic Successful Response
+     * @throws ApiError
+     */
+    public static readAuditoria(data: AuditoriaReadAuditoriaData = {}): CancelablePromise<AuditoriaReadAuditoriaResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/auditoria/',
+            query: {
+                skip: data.skip,
+                limit: data.limit,
+                desde: data.desde,
+                hasta: data.hasta,
+                usuario_id: data.usuarioId,
+                modulo: data.modulo
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class AuthService {
+    /**
+     * Login
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns LoginResponse Successful Response
+     * @throws ApiError
+     */
+    public static login(data: AuthLoginData): CancelablePromise<AuthLoginResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/auth/login',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Logout
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static logout(): CancelablePromise<AuthLogoutResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/auth/logout'
+        });
+    }
+    
+    /**
+     * Twofa Setup Start
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns TwoFactorSetupStartResponse Successful Response
+     * @throws ApiError
+     */
+    public static twofaSetupStart(data: AuthTwofaSetupStartData): CancelablePromise<AuthTwofaSetupStartResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/auth/2fa/setup/start',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Twofa Setup Confirm
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns TwoFactorSetupConfirmResponse Successful Response
+     * @throws ApiError
+     */
+    public static twofaSetupConfirm(data: AuthTwofaSetupConfirmData): CancelablePromise<AuthTwofaSetupConfirmResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/auth/2fa/setup/confirm',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Twofa Verify
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns TwoFactorVerifyResponse Successful Response
+     * @throws ApiError
+     */
+    public static twofaVerify(data: AuthTwofaVerifyData): CancelablePromise<AuthTwofaVerifyResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/auth/2fa/verify',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Twofa Status
+     * @returns TwoFactorStatus Successful Response
+     * @throws ApiError
+     */
+    public static twofaStatus(): CancelablePromise<AuthTwofaStatusResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/auth/2fa/status'
+        });
+    }
+    
+    /**
+     * Twofa Disable
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static twofaDisable(data: AuthTwofaDisableData): CancelablePromise<AuthTwofaDisableResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/auth/2fa/disable',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Twofa Regenerate Backup Codes
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns TwoFactorRegenerateResponse Successful Response
+     * @throws ApiError
+     */
+    public static twofaRegenerateBackupCodes(data: AuthTwofaRegenerateBackupCodesData): CancelablePromise<AuthTwofaRegenerateBackupCodesResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/auth/2fa/backup-codes/regenerate',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class CasosDdrService {
+    /**
+     * Read Casos Ddr
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @param data.status
+     * @param data.nivelRiesgo
+     * @returns CasosDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static readCasosDdr(data: CasosDdrReadCasosDdrData = {}): CancelablePromise<CasosDdrReadCasosDdrResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/casos-ddr/',
+            query: {
+                skip: data.skip,
+                limit: data.limit,
+                status: data.status,
+                nivel_riesgo: data.nivelRiesgo
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Caso Ddr
+     * @param data The data for the request.
+     * @param data.id
+     * @returns CasoDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static readCasoDdr(data: CasosDdrReadCasoDdrData): CancelablePromise<CasosDdrReadCasoDdrResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/casos-ddr/{id}',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Asignar Analista
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns CasoDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static asignarAnalista(data: CasosDdrAsignarAnalistaData): CancelablePromise<CasosDdrAsignarAnalistaResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/casos-ddr/{id}/asignar',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Enviar Aprobacion
+     * @param data The data for the request.
+     * @param data.id
+     * @returns CasoDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static enviarAprobacion(data: CasosDdrEnviarAprobacionData): CancelablePromise<CasosDdrEnviarAprobacionResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/casos-ddr/{id}/enviar-aprobacion',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Aprobar Caso
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns CasoDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static aprobarCaso(data: CasosDdrAprobarCasoData): CancelablePromise<CasosDdrAprobarCasoResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/casos-ddr/{id}/aprobar',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Rechazar Caso
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns CasoDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static rechazarCaso(data: CasosDdrRechazarCasoData): CancelablePromise<CasosDdrRechazarCasoResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/casos-ddr/{id}/rechazar',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Get Cuestionario
+     * @param data The data for the request.
+     * @param data.id
+     * @returns CuestionarioEBRPublic Successful Response
+     * @throws ApiError
+     */
+    public static getCuestionario(data: CasosDdrGetCuestionarioData): CancelablePromise<CasosDdrGetCuestionarioResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/casos-ddr/{id}/cuestionario',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Cuestionario
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns CuestionarioEBRPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateCuestionario(data: CasosDdrUpdateCuestionarioData): CancelablePromise<CasosDdrUpdateCuestionarioResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/casos-ddr/{id}/cuestionario',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Upload Documento Ddr
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.formData
+     * @returns DocumentoKYCPublic Successful Response
+     * @throws ApiError
+     */
+    public static uploadDocumentoDdr(data: CasosDdrUploadDocumentoDdrData): CancelablePromise<CasosDdrUploadDocumentoDdrResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/casos-ddr/{id}/documentos',
+            path: {
+                id: data.id
+            },
+            formData: data.formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * List Documentos Ddr
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.skip
+     * @param data.limit
+     * @returns DocumentosDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static listDocumentosDdr(data: CasosDdrListDocumentosDdrData): CancelablePromise<CasosDdrListDocumentosDdrResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/casos-ddr/{id}/documentos',
+            path: {
+                id: data.id
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class ClientesService {
+    /**
+     * Create Cliente
+     * Registrar un nuevo cliente (expediente KYC).
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns ExpedienteKYCPublic Successful Response
+     * @throws ApiError
+     */
+    public static createCliente(data: ClientesCreateClienteData): CancelablePromise<ClientesCreateClienteResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/clientes/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Clientes
+     * Listar expedientes KYC con filtros y paginación.
+     * El analista solo ve los suyos; oficial/admin ven todos.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @param data.tipo
+     * @param data.status
+     * @param data.riesgo
+     * @param data.search
+     * @returns ExpedientesKYCPublic Successful Response
+     * @throws ApiError
+     */
+    public static readClientes(data: ClientesReadClientesData = {}): CancelablePromise<ClientesReadClientesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/clientes/',
+            query: {
+                skip: data.skip,
+                limit: data.limit,
+                tipo: data.tipo,
+                status: data.status,
+                riesgo: data.riesgo,
+                search: data.search
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Cliente
+     * Obtener el detalle de un expediente KYC.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns ExpedienteKYCPublic Successful Response
+     * @throws ApiError
+     */
+    public static readCliente(data: ClientesReadClienteData): CancelablePromise<ClientesReadClienteResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/clientes/{id}',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Cliente
+     * Actualizar el estado de un expediente (enviar a revisión, aprobar, rechazar).
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns ExpedienteKYCPublic Successful Response
+     * @throws ApiError
+     */
+    public static updateCliente(data: ClientesUpdateClienteData): CancelablePromise<ClientesUpdateClienteResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/clientes/{id}',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Upload Documento
+     * Subir un documento al expediente (PDF/JPG/PNG, máx. 10 MB).
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.formData
+     * @returns DocumentoKYCPublic Successful Response
+     * @throws ApiError
+     */
+    public static uploadDocumento(data: ClientesUploadDocumentoData): CancelablePromise<ClientesUploadDocumentoResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/clientes/{id}/documentos',
+            path: {
+                id: data.id
+            },
+            formData: data.formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Documento
+     * Eliminar un documento del expediente.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.docId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteDocumento(data: ClientesDeleteDocumentoData): CancelablePromise<ClientesDeleteDocumentoResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/clientes/{id}/documentos/{doc_id}',
+            path: {
+                id: data.id,
+                doc_id: data.docId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Descargar Documento
+     * Descargar (attachment) o previsualizar inline un documento del expediente.
+     * El archivo se reconstruye desde `ruta_archivo` en la fila del documento;
+     * nunca se confía en nombres provistos por el cliente.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.docId
+     * @param data.disposition
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static descargarDocumento(data: ClientesDescargarDocumentoData): CancelablePromise<ClientesDescargarDocumentoResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/clientes/{id}/documentos/{doc_id}/descargar',
+            path: {
+                id: data.id,
+                doc_id: data.docId
+            },
+            query: {
+                disposition: data.disposition
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Evaluar Riesgo
+     * Recalcular y persistir el nivel de riesgo del expediente.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns RiesgoResult Successful Response
+     * @throws ApiError
+     */
+    public static evaluarRiesgo(data: ClientesEvaluarRiesgoData): CancelablePromise<ClientesEvaluarRiesgoResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/clientes/{id}/evaluar-riesgo',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Verificar Listas
+     * Verificación contra listas restrictivas (OFAC, ONU, UE).
+     * Stub simulado — la administración de listas es de un sprint posterior.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns ListasResult Successful Response
+     * @throws ApiError
+     */
+    public static verificarListas(data: ClientesVerificarListasData): CancelablePromise<ClientesVerificarListasResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/clientes/{id}/verificar-listas',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class DashboardService {
+    /**
+     * Get Dashboard
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static getDashboard(): CancelablePromise<DashboardGetDashboardResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/dashboard/'
+        });
+    }
+}
 
 export class ItemsService {
     /**
@@ -238,7 +871,7 @@ export class PrivateService {
 export class UsersService {
     /**
      * Read Users
-     * Retrieve users.
+     * Lista usuarios.
      * @param data The data for the request.
      * @param data.skip
      * @param data.limit
@@ -261,7 +894,7 @@ export class UsersService {
     
     /**
      * Create User
-     * Create new user.
+     * Crea un nuevo usuario.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns UserPublic Successful Response
@@ -281,7 +914,7 @@ export class UsersService {
     
     /**
      * Read User Me
-     * Get current user.
+     * Devuelve el usuario actual.
      * @returns UserPublic Successful Response
      * @throws ApiError
      */
@@ -294,7 +927,7 @@ export class UsersService {
     
     /**
      * Delete User Me
-     * Delete own user.
+     * Elimina el propio usuario.
      * @returns Message Successful Response
      * @throws ApiError
      */
@@ -307,7 +940,7 @@ export class UsersService {
     
     /**
      * Update User Me
-     * Update own user.
+     * Actualiza el propio usuario.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns UserPublic Successful Response
@@ -327,7 +960,7 @@ export class UsersService {
     
     /**
      * Update Password Me
-     * Update own password.
+     * Actualiza la contraseña propia.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns Message Successful Response
@@ -347,7 +980,7 @@ export class UsersService {
     
     /**
      * Register User
-     * Create new user without the need to be logged in.
+     * Crea un nuevo usuario sin necesidad de estar logueado.
      * @param data The data for the request.
      * @param data.requestBody
      * @returns UserPublic Successful Response
@@ -367,7 +1000,7 @@ export class UsersService {
     
     /**
      * Read User By Id
-     * Get a specific user by id.
+     * Obtiene un usuario por id.
      * @param data The data for the request.
      * @param data.userId
      * @returns UserPublic Successful Response
@@ -388,7 +1021,7 @@ export class UsersService {
     
     /**
      * Update User
-     * Update a user.
+     * Actualiza un usuario.
      * @param data The data for the request.
      * @param data.userId
      * @param data.requestBody
@@ -412,7 +1045,7 @@ export class UsersService {
     
     /**
      * Delete User
-     * Delete a user.
+     * Desactiva (elimina) un usuario.
      * @param data The data for the request.
      * @param data.userId
      * @returns Message Successful Response

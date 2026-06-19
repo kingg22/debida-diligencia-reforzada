@@ -1,0 +1,5287 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SGDDR PanamaCompliance",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/login/access-token": {
+      "post": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Login Access Token",
+        "description": "OAuth2 compatible token login, get an access token for future requests",
+        "operationId": "login-login_access_token",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login-login_access_token"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/login/test-token": {
+      "post": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Test Token",
+        "description": "Test access token",
+        "operationId": "login-test_token",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/password-recovery/{email}": {
+      "post": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Recover Password",
+        "description": "Password Recovery",
+        "operationId": "login-recover_password",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reset-password/": {
+      "post": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Reset Password",
+        "description": "Reset password",
+        "operationId": "login-reset_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewPassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/password-recovery-html-content/{email}": {
+      "post": {
+        "tags": [
+          "login"
+        ],
+        "summary": "Recover Password Html Content",
+        "description": "HTML Content for Password Recovery",
+        "operationId": "login-recover_password_html_content",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "auth-login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "operationId": "auth-logout",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/setup/start": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Twofa Setup Start",
+        "operationId": "auth-twofa_setup_start",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorVerifyInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorSetupStartResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/2fa/setup/confirm": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Twofa Setup Confirm",
+        "operationId": "auth-twofa_setup_confirm",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorSetupConfirmInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorSetupConfirmResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/2fa/verify": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Twofa Verify",
+        "operationId": "auth-twofa_verify",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorVerifyInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorVerifyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/2fa/status": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Twofa Status",
+        "operationId": "auth-twofa_status",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorStatus"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/disable": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Twofa Disable",
+        "operationId": "auth-twofa_disable",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorDisableInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/backup-codes/regenerate": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Twofa Regenerate Backup Codes",
+        "operationId": "auth-twofa_regenerate_backup_codes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TwoFactorRegenerateInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwoFactorRegenerateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Read Users",
+        "description": "Lista usuarios.",
+        "operationId": "users-read_users",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Create User",
+        "description": "Crea un nuevo usuario.",
+        "operationId": "users-create_user",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Read User Me",
+        "description": "Devuelve el usuario actual.",
+        "operationId": "users-read_user_me",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete User Me",
+        "description": "Elimina el propio usuario.",
+        "operationId": "users-delete_user_me",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Update User Me",
+        "description": "Actualiza el propio usuario.",
+        "operationId": "users-update_user_me",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateMe"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me/password": {
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Update Password Me",
+        "description": "Actualiza la contrase\u00f1a propia.",
+        "operationId": "users-update_password_me",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/signup": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Register User",
+        "description": "Crea un nuevo usuario sin necesidad de estar logueado.",
+        "operationId": "users-register_user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegister"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Read User By Id",
+        "description": "Obtiene un usuario por id.",
+        "operationId": "users-read_user_by_id",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Update User",
+        "description": "Actualiza un usuario.",
+        "operationId": "users-update_user",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete User",
+        "description": "Desactiva (elimina) un usuario.",
+        "operationId": "users-delete_user",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/utils/test-email/": {
+      "post": {
+        "tags": [
+          "utils"
+        ],
+        "summary": "Test Email",
+        "description": "Test emails.",
+        "operationId": "utils-test_email",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "email_to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "email",
+              "title": "Email To"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/utils/health-check/": {
+      "get": {
+        "tags": [
+          "utils"
+        ],
+        "summary": "Health Check",
+        "operationId": "utils-health_check",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean",
+                  "title": "Response Utils-Health Check"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items/": {
+      "get": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Read Items",
+        "description": "Retrieve items.",
+        "operationId": "items-read_items",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemsPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Create Item",
+        "description": "Create new item.",
+        "operationId": "items-create_item",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items/{id}": {
+      "get": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Read Item",
+        "description": "Get item by ID.",
+        "operationId": "items-read_item",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Update Item",
+        "description": "Update an item.",
+        "operationId": "items-update_item",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "items"
+        ],
+        "summary": "Delete Item",
+        "description": "Delete an item.",
+        "operationId": "items-delete_item",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clientes/": {
+      "post": {
+        "tags": [
+          "clientes"
+        ],
+        "summary": "Create Cliente",
+        "description": "Registrar un nuevo cliente (expediente KYC).",
+        "operationId": "clientes-create_cliente",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExpedienteKYCCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpedienteKYCPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "clientes"
+        ],
+        "summary": "Read Clientes",
+        "description": "Listar expedientes KYC con filtros y paginaci\u00f3n.\nEl analista solo ve los suyos; oficial/admin ven todos.",
+        "operationId": "clientes-read_clientes",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "tipo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ClientType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tipo"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/KYCStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "riesgo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/RiskLevel"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Riesgo"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpedientesKYCPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clientes/{id}": {
+      "get": {
+        "tags": [
+          "clientes"
+        ],
+        "summary": "Read Cliente",
+        "description": "Obtener el detalle de un expediente KYC.",
+        "operationId": "clientes-read_cliente",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpedienteKYCPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "clientes"
+        ],
+        "summary": "Update Cliente",
+        "description": "Actualizar el estado de un expediente (enviar a revisi\u00f3n, aprobar, rechazar).",
+        "operationId": "clientes-update_cliente",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExpedienteKYCUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpedienteKYCPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clientes/{id}/documentos": {
+      "post": {
+        "tags": [
+          "clientes"
+        ],
+        "summary": "Upload Documento",
+        "description": "Subir un documento al expediente (PDF/JPG/PNG, m\u00e1x. 10 MB).",
+        "operationId": "clientes-upload_documento",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_clientes-upload_documento"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentoKYCPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clientes/{id}/documentos/{doc_id}": {
+      "delete": {
+        "tags": [
+          "clientes"
+        ],
+        "summary": "Delete Documento",
+        "description": "Eliminar un documento del expediente.",
+        "operationId": "clientes-delete_documento",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clientes/{id}/documentos/{doc_id}/descargar": {
+      "get": {
+        "tags": [
+          "clientes"
+        ],
+        "summary": "Descargar Documento",
+        "description": "Descargar (attachment) o previsualizar inline un documento del expediente.\nEl archivo se reconstruye desde `ruta_archivo` en la fila del documento;\nnunca se conf\u00eda en nombres provistos por el cliente.",
+        "operationId": "clientes-descargar_documento",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Doc Id"
+            }
+          },
+          {
+            "name": "disposition",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(inline|attachment)$",
+              "default": "attachment",
+              "title": "Disposition"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clientes/{id}/evaluar-riesgo": {
+      "post": {
+        "tags": [
+          "clientes"
+        ],
+        "summary": "Evaluar Riesgo",
+        "description": "Recalcular y persistir el nivel de riesgo del expediente.",
+        "operationId": "clientes-evaluar_riesgo",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiesgoResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clientes/{id}/verificar-listas": {
+      "get": {
+        "tags": [
+          "clientes"
+        ],
+        "summary": "Verificar Listas",
+        "description": "Verificaci\u00f3n contra listas restrictivas (OFAC, ONU, UE).\nStub simulado \u2014 la administraci\u00f3n de listas es de un sprint posterior.",
+        "operationId": "clientes-verificar_listas",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListasResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/casos-ddr/": {
+      "get": {
+        "tags": [
+          "casos-ddr"
+        ],
+        "summary": "Read Casos Ddr",
+        "operationId": "casos-ddr-read_casos_ddr",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/EstadoCasoDDR"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "nivel_riesgo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Nivel Riesgo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasosDDRPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/casos-ddr/{id}": {
+      "get": {
+        "tags": [
+          "casos-ddr"
+        ],
+        "summary": "Read Caso Ddr",
+        "operationId": "casos-ddr-read_caso_ddr",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasoDDRPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/casos-ddr/{id}/asignar": {
+      "patch": {
+        "tags": [
+          "casos-ddr"
+        ],
+        "summary": "Asignar Analista",
+        "operationId": "casos-ddr-asignar_analista",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarAnalistaInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasoDDRPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/casos-ddr/{id}/enviar-aprobacion": {
+      "post": {
+        "tags": [
+          "casos-ddr"
+        ],
+        "summary": "Enviar Aprobacion",
+        "operationId": "casos-ddr-enviar_aprobacion",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasoDDRPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/casos-ddr/{id}/aprobar": {
+      "post": {
+        "tags": [
+          "casos-ddr"
+        ],
+        "summary": "Aprobar Caso",
+        "operationId": "casos-ddr-aprobar_caso",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/AprobacionInput"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasoDDRPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/casos-ddr/{id}/rechazar": {
+      "post": {
+        "tags": [
+          "casos-ddr"
+        ],
+        "summary": "Rechazar Caso",
+        "operationId": "casos-ddr-rechazar_caso",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RechazoInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasoDDRPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/casos-ddr/{id}/cuestionario": {
+      "get": {
+        "tags": [
+          "casos-ddr"
+        ],
+        "summary": "Get Cuestionario",
+        "operationId": "casos-ddr-get_cuestionario",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuestionarioEBRPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "casos-ddr"
+        ],
+        "summary": "Update Cuestionario",
+        "operationId": "casos-ddr-update_cuestionario",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CuestionarioUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CuestionarioEBRPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/casos-ddr/{id}/documentos": {
+      "post": {
+        "tags": [
+          "casos-ddr"
+        ],
+        "summary": "Upload Documento Ddr",
+        "operationId": "casos-ddr-upload_documento_ddr",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_casos-ddr-upload_documento_ddr"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentoKYCPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "casos-ddr"
+        ],
+        "summary": "List Documentos Ddr",
+        "operationId": "casos-ddr-list_documentos_ddr",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentosDDRPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auditoria/": {
+      "get": {
+        "tags": [
+          "auditoria"
+        ],
+        "summary": "Read Auditoria",
+        "operationId": "auditoria-read_auditoria",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "desde",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Desde"
+            }
+          },
+          {
+            "name": "hasta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hasta"
+            }
+          },
+          {
+            "name": "usuario_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Usuario Id"
+            }
+          },
+          {
+            "name": "modulo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Modulo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditoriasPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/": {
+      "get": {
+        "tags": [
+          "dashboard"
+        ],
+        "summary": "Get Dashboard",
+        "operationId": "dashboard-get_dashboard",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Dashboard-Get Dashboard"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/private/users/": {
+      "post": {
+        "tags": [
+          "private"
+        ],
+        "summary": "Create User",
+        "description": "Create a new user.",
+        "operationId": "private-create_user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrivateUserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AprobacionInput": {
+        "properties": {
+          "observaciones": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observaciones"
+          }
+        },
+        "type": "object",
+        "title": "AprobacionInput"
+      },
+      "AsignarAnalistaInput": {
+        "properties": {
+          "analista_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Analista Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "analista_id"
+        ],
+        "title": "AsignarAnalistaInput"
+      },
+      "AuditoriaPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "usuario_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usuario Id"
+          },
+          "usuario_nombre": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usuario Nombre"
+          },
+          "modulo": {
+            "type": "string",
+            "title": "Modulo"
+          },
+          "accion": {
+            "type": "string",
+            "title": "Accion"
+          },
+          "entidad_tipo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entidad Tipo"
+          },
+          "entidad_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Entidad Id"
+          },
+          "descripcion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Descripcion"
+          },
+          "ip_origen": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip Origen"
+          },
+          "creado_en": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Creado En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "usuario_id",
+          "modulo",
+          "accion",
+          "entidad_tipo",
+          "entidad_id",
+          "descripcion",
+          "ip_origen",
+          "creado_en"
+        ],
+        "title": "AuditoriaPublic"
+      },
+      "AuditoriasPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AuditoriaPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "count"
+        ],
+        "title": "AuditoriasPublic"
+      },
+      "BeneficiarioFinalCreate": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Nombre"
+          },
+          "apellido": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Apellido"
+          },
+          "cedula": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Cedula"
+          },
+          "nacionalidad": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Nacionalidad"
+          },
+          "pais": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Pais"
+          },
+          "fecha_nacimiento": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Fecha Nacimiento"
+          },
+          "porcentaje_participacion": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Porcentaje Participacion",
+            "default": 0
+          },
+          "es_pep": {
+            "type": "boolean",
+            "title": "Es Pep",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "apellido",
+          "cedula",
+          "nacionalidad",
+          "pais",
+          "fecha_nacimiento"
+        ],
+        "title": "BeneficiarioFinalCreate"
+      },
+      "BeneficiarioFinalPublic": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Nombre"
+          },
+          "apellido": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Apellido"
+          },
+          "cedula": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Cedula"
+          },
+          "nacionalidad": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Nacionalidad"
+          },
+          "pais": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Pais"
+          },
+          "fecha_nacimiento": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Fecha Nacimiento"
+          },
+          "porcentaje_participacion": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Porcentaje Participacion",
+            "default": 0
+          },
+          "es_pep": {
+            "type": "boolean",
+            "title": "Es Pep",
+            "default": false
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "apellido",
+          "cedula",
+          "nacionalidad",
+          "pais",
+          "fecha_nacimiento",
+          "id"
+        ],
+        "title": "BeneficiarioFinalPublic"
+      },
+      "Body_casos-ddr-upload_documento_ddr": {
+        "properties": {
+          "tipo": {
+            "$ref": "#/components/schemas/DocumentoTipo"
+          },
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo",
+          "file"
+        ],
+        "title": "Body_casos-ddr-upload_documento_ddr"
+      },
+      "Body_clientes-upload_documento": {
+        "properties": {
+          "tipo": {
+            "$ref": "#/components/schemas/DocumentoTipo"
+          },
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo",
+          "file"
+        ],
+        "title": "Body_clientes-upload_documento"
+      },
+      "Body_login-login_access_token": {
+        "properties": {
+          "grant_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^password$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grant Type"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "title": "Password"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": ""
+          },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "format": "password",
+            "title": "Client Secret"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_login-login_access_token"
+      },
+      "CasoDDRPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "expediente_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Expediente Id"
+          },
+          "nivel_riesgo": {
+            "type": "string",
+            "title": "Nivel Riesgo"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "analista_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analista Id"
+          },
+          "aprobado_por_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aprobado Por Id"
+          },
+          "observaciones_rechazo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observaciones Rechazo"
+          },
+          "fecha_apertura": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Apertura"
+          },
+          "fecha_cierre": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Cierre"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "cliente": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClienteResumen"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "expediente_id",
+          "nivel_riesgo",
+          "status"
+        ],
+        "title": "CasoDDRPublic"
+      },
+      "CasosDDRPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/CasoDDRPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "count"
+        ],
+        "title": "CasosDDRPublic"
+      },
+      "ClientType": {
+        "type": "string",
+        "enum": [
+          "NATURAL",
+          "JURIDICA"
+        ],
+        "title": "ClientType"
+      },
+      "ClienteResumen": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "tipo_cliente": {
+            "type": "string",
+            "title": "Tipo Cliente"
+          },
+          "nombres": {
+            "type": "string",
+            "title": "Nombres"
+          },
+          "apellidos": {
+            "type": "string",
+            "title": "Apellidos"
+          },
+          "tipo_identificacion": {
+            "type": "string",
+            "title": "Tipo Identificacion"
+          },
+          "numero_identificacion": {
+            "type": "string",
+            "title": "Numero Identificacion"
+          },
+          "nivel_riesgo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nivel Riesgo"
+          },
+          "estado": {
+            "type": "string",
+            "title": "Estado"
+          },
+          "es_pep": {
+            "type": "boolean",
+            "title": "Es Pep",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "codigo",
+          "tipo_cliente",
+          "nombres",
+          "apellidos",
+          "tipo_identificacion",
+          "numero_identificacion",
+          "estado"
+        ],
+        "title": "ClienteResumen",
+        "description": "Proyecci\u00f3n m\u00ednima de un expediente KYC para embeber en otras\nrespuestas (casos DDR, dashboard, etc.) y evitar un round-trip extra.\nMantener sincronizado con la vista ``Cliente`` del frontend."
+      },
+      "CuestionarioEBRPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "caso_ddr_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Caso Ddr Id"
+          },
+          "origen_fondos": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origen Fondos"
+          },
+          "proposito_relacion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposito Relacion"
+          },
+          "patrimonio_estimado": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patrimonio Estimado"
+          },
+          "pais_origen_patrimonio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pais Origen Patrimonio"
+          },
+          "tiene_estructura_societaria": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tiene Estructura Societaria"
+          },
+          "familiar_pep": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Familiar Pep"
+          },
+          "completado": {
+            "type": "boolean",
+            "title": "Completado",
+            "default": false
+          },
+          "completado_por": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completado Por"
+          },
+          "completado_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completado En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "caso_ddr_id"
+        ],
+        "title": "CuestionarioEBRPublic"
+      },
+      "CuestionarioUpdate": {
+        "properties": {
+          "origen_fondos": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origen Fondos"
+          },
+          "proposito_relacion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposito Relacion"
+          },
+          "patrimonio_estimado": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patrimonio Estimado"
+          },
+          "pais_origen_patrimonio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pais Origen Patrimonio"
+          },
+          "tiene_estructura_societaria": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tiene Estructura Societaria"
+          },
+          "familiar_pep": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Familiar Pep"
+          }
+        },
+        "type": "object",
+        "title": "CuestionarioUpdate"
+      },
+      "DocumentoEstado": {
+        "type": "string",
+        "enum": [
+          "PENDIENTE",
+          "VALIDADO",
+          "RECHAZADO"
+        ],
+        "title": "DocumentoEstado"
+      },
+      "DocumentoKYCPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "expediente_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Expediente Id"
+          },
+          "caso_ddr_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Caso Ddr Id"
+          },
+          "tipo": {
+            "$ref": "#/components/schemas/DocumentoTipo"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "tamanio": {
+            "type": "integer",
+            "title": "Tamanio"
+          },
+          "mime_type": {
+            "type": "string",
+            "title": "Mime Type"
+          },
+          "estado": {
+            "$ref": "#/components/schemas/DocumentoEstado"
+          },
+          "hash_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hash Sha256"
+          },
+          "fecha_carga": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fecha Carga"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "expediente_id",
+          "tipo",
+          "nombre",
+          "tamanio",
+          "mime_type",
+          "estado"
+        ],
+        "title": "DocumentoKYCPublic"
+      },
+      "DocumentoTipo": {
+        "type": "string",
+        "enum": [
+          "CEDULA_FRONTAL",
+          "CEDULA_POSTERIOR",
+          "PASAPORTE",
+          "RUC",
+          "REGISTRO_MERCANTIL",
+          "ESTADOS_FINANCIEROS",
+          "DECLARACION_RENTA",
+          "ESCRITURA_CONSTITUCION",
+          "PODER_REPRESENTANTE",
+          "OTRO"
+        ],
+        "title": "DocumentoTipo"
+      },
+      "DocumentosDDRPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentoKYCPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "count"
+        ],
+        "title": "DocumentosDDRPublic"
+      },
+      "EstadoCasoDDR": {
+        "type": "string",
+        "enum": [
+          "ABIERTO",
+          "EN_REVISION",
+          "EN_APROBACION",
+          "APROBADO",
+          "RECHAZADO"
+        ],
+        "title": "EstadoCasoDDR"
+      },
+      "ExpedienteKYCCreate": {
+        "properties": {
+          "tipo_cliente": {
+            "$ref": "#/components/schemas/ClientType"
+          },
+          "persona_natural": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonaNaturalCreate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "persona_juridica": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonaJuridicaCreate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "beneficiarios_final": {
+            "items": {
+              "$ref": "#/components/schemas/BeneficiarioFinalCreate"
+            },
+            "type": "array",
+            "title": "Beneficiarios Final"
+          },
+          "enviar_a_revision": {
+            "type": "boolean",
+            "title": "Enviar A Revision",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo_cliente"
+        ],
+        "title": "ExpedienteKYCCreate"
+      },
+      "ExpedienteKYCPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "tipo_cliente": {
+            "$ref": "#/components/schemas/ClientType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/KYCStatus"
+          },
+          "nivel_riesgo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "puntaje_riesgo": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Puntaje Riesgo"
+          },
+          "comentario_rechazo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comentario Rechazo"
+          },
+          "analista_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Analista Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "persona_natural": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonaNaturalPublic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "persona_juridica": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonaJuridicaPublic"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "beneficiarios_final": {
+            "items": {
+              "$ref": "#/components/schemas/BeneficiarioFinalPublic"
+            },
+            "type": "array",
+            "title": "Beneficiarios Final"
+          },
+          "documentos": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentoKYCPublic"
+            },
+            "type": "array",
+            "title": "Documentos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "codigo",
+          "tipo_cliente",
+          "status",
+          "analista_id"
+        ],
+        "title": "ExpedienteKYCPublic"
+      },
+      "ExpedienteKYCUpdate": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KYCStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "comentario_rechazo": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comentario Rechazo"
+          }
+        },
+        "type": "object",
+        "title": "ExpedienteKYCUpdate"
+      },
+      "ExpedientesKYCPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ExpedienteKYCPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "count"
+        ],
+        "title": "ExpedientesKYCPublic"
+      },
+      "FactorRiesgo": {
+        "properties": {
+          "factor": {
+            "type": "string",
+            "title": "Factor"
+          },
+          "peso": {
+            "type": "integer",
+            "title": "Peso"
+          },
+          "valor": {
+            "type": "integer",
+            "title": "Valor"
+          },
+          "contribucion": {
+            "type": "integer",
+            "title": "Contribucion"
+          }
+        },
+        "type": "object",
+        "required": [
+          "factor",
+          "peso",
+          "valor",
+          "contribucion"
+        ],
+        "title": "FactorRiesgo"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ItemCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "ItemCreate"
+      },
+      "ItemPublic": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "owner_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Owner Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "id",
+          "owner_id"
+        ],
+        "title": "ItemPublic"
+      },
+      "ItemUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "title": "ItemUpdate"
+      },
+      "ItemsPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ItemPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "count"
+        ],
+        "title": "ItemsPublic"
+      },
+      "KYCStatus": {
+        "type": "string",
+        "enum": [
+          "BORRADOR",
+          "PENDIENTE",
+          "EN_REVISION",
+          "APROBADO",
+          "RECHAZADO",
+          "DDR_INICIADO"
+        ],
+        "title": "KYCStatus"
+      },
+      "ListaCoincidencia": {
+        "properties": {
+          "lista": {
+            "type": "string",
+            "title": "Lista"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "similitud": {
+            "type": "integer",
+            "title": "Similitud"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lista",
+          "nombre",
+          "similitud"
+        ],
+        "title": "ListaCoincidencia"
+      },
+      "ListasResult": {
+        "properties": {
+          "ofac": {
+            "type": "boolean",
+            "title": "Ofac",
+            "default": false
+          },
+          "onu": {
+            "type": "boolean",
+            "title": "Onu",
+            "default": false
+          },
+          "ue": {
+            "type": "boolean",
+            "title": "Ue",
+            "default": false
+          },
+          "coincidencias": {
+            "items": {
+              "$ref": "#/components/schemas/ListaCoincidencia"
+            },
+            "type": "array",
+            "title": "Coincidencias"
+          }
+        },
+        "type": "object",
+        "title": "ListasResult"
+      },
+      "LoginInput": {
+        "properties": {
+          "correo": {
+            "type": "string",
+            "title": "Correo"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "correo",
+          "password"
+        ],
+        "title": "LoginInput"
+      },
+      "LoginResponse": {
+        "properties": {
+          "access_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "requires_2fa": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Requires 2Fa",
+            "default": false
+          },
+          "temp_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temp Token"
+          },
+          "rol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rol"
+          },
+          "nombre": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nombre"
+          }
+        },
+        "type": "object",
+        "title": "LoginResponse",
+        "description": "Respuesta unificada de ``/auth/login``.\n\nRamas:\n* ``requires_2fa=False`` \u2192 ``access_token`` presente, ``temp_token=None``.\n* ``requires_2fa=\"verify\"`` \u2192 ``temp_token`` para llamar a ``/2fa/verify``.\n* ``requires_2fa=\"setup\"`` \u2192 ``temp_token`` para ``/2fa/setup/{start,confirm}``."
+      },
+      "Message": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "Message"
+      },
+      "NewPassword": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "new_password"
+        ],
+        "title": "NewPassword"
+      },
+      "PersonaJuridicaCreate": {
+        "properties": {
+          "razon_social": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Razon Social"
+          },
+          "ruc": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Ruc"
+          },
+          "tipo_sociedad": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Tipo Sociedad"
+          },
+          "fecha_constitucion": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Fecha Constitucion"
+          },
+          "pais_constitucion": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Pais Constitucion"
+          },
+          "numero_registro_mercantil": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Numero Registro Mercantil"
+          },
+          "nombre_representante": {
+            "type": "string",
+            "maxLength": 150,
+            "title": "Nombre Representante"
+          },
+          "cedula_representante": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Cedula Representante"
+          },
+          "cargo_representante": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Cargo Representante"
+          },
+          "telefono_empresa": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Telefono Empresa"
+          },
+          "email_empresa": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Email Empresa"
+          },
+          "direccion_fiscal": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Direccion Fiscal"
+          },
+          "ciudad": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Ciudad"
+          },
+          "pais": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Pais"
+          },
+          "actividad_economica": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Actividad Economica"
+          },
+          "ingreso_anual_aproximado": {
+            "type": "number",
+            "title": "Ingreso Anual Aproximado",
+            "default": 0
+          },
+          "cantidad_empleados": {
+            "type": "integer",
+            "title": "Cantidad Empleados",
+            "default": 0
+          },
+          "tiene_accionistas_anonimos": {
+            "type": "boolean",
+            "title": "Tiene Accionistas Anonimos",
+            "default": false
+          },
+          "opera_en_paises_alto_riesgo": {
+            "type": "boolean",
+            "title": "Opera En Paises Alto Riesgo",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "razon_social",
+          "ruc",
+          "tipo_sociedad",
+          "fecha_constitucion",
+          "pais_constitucion",
+          "numero_registro_mercantil",
+          "nombre_representante",
+          "cedula_representante",
+          "cargo_representante",
+          "telefono_empresa",
+          "email_empresa",
+          "direccion_fiscal",
+          "ciudad",
+          "pais",
+          "actividad_economica"
+        ],
+        "title": "PersonaJuridicaCreate"
+      },
+      "PersonaJuridicaPublic": {
+        "properties": {
+          "razon_social": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Razon Social"
+          },
+          "ruc": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Ruc"
+          },
+          "tipo_sociedad": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Tipo Sociedad"
+          },
+          "fecha_constitucion": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Fecha Constitucion"
+          },
+          "pais_constitucion": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Pais Constitucion"
+          },
+          "numero_registro_mercantil": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Numero Registro Mercantil"
+          },
+          "nombre_representante": {
+            "type": "string",
+            "maxLength": 150,
+            "title": "Nombre Representante"
+          },
+          "cedula_representante": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Cedula Representante"
+          },
+          "cargo_representante": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Cargo Representante"
+          },
+          "telefono_empresa": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Telefono Empresa"
+          },
+          "email_empresa": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Email Empresa"
+          },
+          "direccion_fiscal": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Direccion Fiscal"
+          },
+          "ciudad": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Ciudad"
+          },
+          "pais": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Pais"
+          },
+          "actividad_economica": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Actividad Economica"
+          },
+          "ingreso_anual_aproximado": {
+            "type": "number",
+            "title": "Ingreso Anual Aproximado",
+            "default": 0
+          },
+          "cantidad_empleados": {
+            "type": "integer",
+            "title": "Cantidad Empleados",
+            "default": 0
+          },
+          "tiene_accionistas_anonimos": {
+            "type": "boolean",
+            "title": "Tiene Accionistas Anonimos",
+            "default": false
+          },
+          "opera_en_paises_alto_riesgo": {
+            "type": "boolean",
+            "title": "Opera En Paises Alto Riesgo",
+            "default": false
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "razon_social",
+          "ruc",
+          "tipo_sociedad",
+          "fecha_constitucion",
+          "pais_constitucion",
+          "numero_registro_mercantil",
+          "nombre_representante",
+          "cedula_representante",
+          "cargo_representante",
+          "telefono_empresa",
+          "email_empresa",
+          "direccion_fiscal",
+          "ciudad",
+          "pais",
+          "actividad_economica",
+          "id"
+        ],
+        "title": "PersonaJuridicaPublic"
+      },
+      "PersonaNaturalCreate": {
+        "properties": {
+          "tipo_documento": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Tipo Documento"
+          },
+          "numero_documento": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Numero Documento"
+          },
+          "fecha_expiracion_doc": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Fecha Expiracion Doc"
+          },
+          "nacionalidad": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Nacionalidad"
+          },
+          "pais_nacimiento": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Pais Nacimiento"
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Nombre"
+          },
+          "apellido": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Apellido"
+          },
+          "fecha_nacimiento": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Fecha Nacimiento"
+          },
+          "genero": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Genero"
+          },
+          "estado_civil": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Estado Civil"
+          },
+          "telefono": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Telefono"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Email"
+          },
+          "direccion": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Direccion"
+          },
+          "ciudad": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Ciudad"
+          },
+          "pais": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Pais"
+          },
+          "ocupacion": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Ocupacion"
+          },
+          "empleador": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Empleador"
+          },
+          "ingreso_mensual_aproximado": {
+            "type": "number",
+            "title": "Ingreso Mensual Aproximado",
+            "default": 0
+          },
+          "fuente_ingresos": {
+            "type": "string",
+            "maxLength": 60,
+            "title": "Fuente Ingresos"
+          },
+          "es_pep": {
+            "type": "boolean",
+            "title": "Es Pep",
+            "default": false
+          },
+          "es_pep_familiar": {
+            "type": "boolean",
+            "title": "Es Pep Familiar",
+            "default": false
+          },
+          "tiene_antecedentes": {
+            "type": "boolean",
+            "title": "Tiene Antecedentes",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo_documento",
+          "numero_documento",
+          "fecha_expiracion_doc",
+          "nacionalidad",
+          "pais_nacimiento",
+          "nombre",
+          "apellido",
+          "fecha_nacimiento",
+          "genero",
+          "estado_civil",
+          "telefono",
+          "email",
+          "direccion",
+          "ciudad",
+          "pais",
+          "ocupacion",
+          "empleador",
+          "fuente_ingresos"
+        ],
+        "title": "PersonaNaturalCreate"
+      },
+      "PersonaNaturalPublic": {
+        "properties": {
+          "tipo_documento": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Tipo Documento"
+          },
+          "numero_documento": {
+            "type": "string",
+            "maxLength": 50,
+            "title": "Numero Documento"
+          },
+          "fecha_expiracion_doc": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Fecha Expiracion Doc"
+          },
+          "nacionalidad": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Nacionalidad"
+          },
+          "pais_nacimiento": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Pais Nacimiento"
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Nombre"
+          },
+          "apellido": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Apellido"
+          },
+          "fecha_nacimiento": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Fecha Nacimiento"
+          },
+          "genero": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Genero"
+          },
+          "estado_civil": {
+            "type": "string",
+            "maxLength": 20,
+            "title": "Estado Civil"
+          },
+          "telefono": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Telefono"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Email"
+          },
+          "direccion": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Direccion"
+          },
+          "ciudad": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Ciudad"
+          },
+          "pais": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Pais"
+          },
+          "ocupacion": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Ocupacion"
+          },
+          "empleador": {
+            "type": "string",
+            "maxLength": 120,
+            "title": "Empleador"
+          },
+          "ingreso_mensual_aproximado": {
+            "type": "number",
+            "title": "Ingreso Mensual Aproximado",
+            "default": 0
+          },
+          "fuente_ingresos": {
+            "type": "string",
+            "maxLength": 60,
+            "title": "Fuente Ingresos"
+          },
+          "es_pep": {
+            "type": "boolean",
+            "title": "Es Pep",
+            "default": false
+          },
+          "es_pep_familiar": {
+            "type": "boolean",
+            "title": "Es Pep Familiar",
+            "default": false
+          },
+          "tiene_antecedentes": {
+            "type": "boolean",
+            "title": "Tiene Antecedentes",
+            "default": false
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tipo_documento",
+          "numero_documento",
+          "fecha_expiracion_doc",
+          "nacionalidad",
+          "pais_nacimiento",
+          "nombre",
+          "apellido",
+          "fecha_nacimiento",
+          "genero",
+          "estado_civil",
+          "telefono",
+          "email",
+          "direccion",
+          "ciudad",
+          "pais",
+          "ocupacion",
+          "empleador",
+          "fuente_ingresos",
+          "id"
+        ],
+        "title": "PersonaNaturalPublic"
+      },
+      "PrivateUserCreate": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "is_verified": {
+            "type": "boolean",
+            "title": "Is Verified",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password",
+          "full_name"
+        ],
+        "title": "PrivateUserCreate"
+      },
+      "RechazoInput": {
+        "properties": {
+          "observaciones": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 20,
+            "title": "Observaciones"
+          }
+        },
+        "type": "object",
+        "required": [
+          "observaciones"
+        ],
+        "title": "RechazoInput"
+      },
+      "RiesgoResult": {
+        "properties": {
+          "nivel": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "puntaje": {
+            "type": "integer",
+            "title": "Puntaje"
+          },
+          "factores": {
+            "items": {
+              "$ref": "#/components/schemas/FactorRiesgo"
+            },
+            "type": "array",
+            "title": "Factores"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nivel",
+          "puntaje"
+        ],
+        "title": "RiesgoResult"
+      },
+      "RiskLevel": {
+        "type": "string",
+        "enum": [
+          "BAJO",
+          "MEDIO",
+          "ALTO",
+          "MUY_ALTO"
+        ],
+        "title": "RiskLevel"
+      },
+      "Token": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token"
+        ],
+        "title": "Token"
+      },
+      "TwoFactorDisableInput": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "TwoFactorDisableInput"
+      },
+      "TwoFactorRegenerateInput": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "TwoFactorRegenerateInput"
+      },
+      "TwoFactorRegenerateResponse": {
+        "properties": {
+          "backup_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Backup Codes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "backup_codes"
+        ],
+        "title": "TwoFactorRegenerateResponse"
+      },
+      "TwoFactorSetupConfirmInput": {
+        "properties": {
+          "temp_token": {
+            "type": "string",
+            "title": "Temp Token"
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 6,
+            "minLength": 6,
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "temp_token",
+          "code"
+        ],
+        "title": "TwoFactorSetupConfirmInput"
+      },
+      "TwoFactorSetupConfirmResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "rol": {
+            "type": "string",
+            "title": "Rol"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "backup_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Backup Codes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "rol",
+          "nombre",
+          "backup_codes"
+        ],
+        "title": "TwoFactorSetupConfirmResponse",
+        "description": "Tras confirmar el setup, el usuario queda autenticado.\n\nEl frontend no necesita llamar a ``/2fa/verify``: ya demostr\u00f3 posesi\u00f3n\ndel secret TOTP al verificar el c\u00f3digo de confirmaci\u00f3n."
+      },
+      "TwoFactorSetupStartResponse": {
+        "properties": {
+          "secret_base32": {
+            "type": "string",
+            "title": "Secret Base32"
+          },
+          "otpauth_url": {
+            "type": "string",
+            "title": "Otpauth Url"
+          },
+          "qr_png_base64": {
+            "type": "string",
+            "title": "Qr Png Base64"
+          }
+        },
+        "type": "object",
+        "required": [
+          "secret_base32",
+          "otpauth_url",
+          "qr_png_base64"
+        ],
+        "title": "TwoFactorSetupStartResponse"
+      },
+      "TwoFactorStatus": {
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "title": "Enabled"
+          },
+          "required_by_role": {
+            "type": "boolean",
+            "title": "Required By Role"
+          },
+          "backup_codes_remaining": {
+            "type": "integer",
+            "title": "Backup Codes Remaining"
+          },
+          "confirmed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confirmed At"
+          },
+          "disabled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disabled At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "enabled",
+          "required_by_role",
+          "backup_codes_remaining"
+        ],
+        "title": "TwoFactorStatus"
+      },
+      "TwoFactorVerifyInput": {
+        "properties": {
+          "temp_token": {
+            "type": "string",
+            "title": "Temp Token"
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 11,
+            "minLength": 6,
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "temp_token",
+          "code"
+        ],
+        "title": "TwoFactorVerifyInput"
+      },
+      "TwoFactorVerifyResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "rol": {
+            "type": "string",
+            "title": "Rol"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "rol",
+          "nombre"
+        ],
+        "title": "TwoFactorVerifyResponse"
+      },
+      "UpdatePassword": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Current Password"
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "UpdatePassword"
+      },
+      "UserCreate": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "format": "email",
+            "title": "Email"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          },
+          "is_superuser": {
+            "type": "boolean",
+            "title": "Is Superuser",
+            "default": false
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole",
+            "default": "OFICIAL_CUMPLIMIENTO"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserCreate"
+      },
+      "UserPublic": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "format": "email",
+            "title": "Email"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          },
+          "is_superuser": {
+            "type": "boolean",
+            "title": "Is Superuser",
+            "default": false
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "role",
+          "id"
+        ],
+        "title": "UserPublic"
+      },
+      "UserRegister": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Password"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserRegister"
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "ADMIN",
+          "OFICIAL_CUMPLIMIENTO",
+          "ANALISTA_DDR",
+          "GERENTE_CUMPLIMIENTO",
+          "COMITE_CUMPLIMIENTO",
+          "AUDITOR"
+        ],
+        "title": "UserRole"
+      },
+      "UserUpdate": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          },
+          "is_superuser": {
+            "type": "boolean",
+            "title": "Is Superuser",
+            "default": false
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "password": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 8
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "title": "UserUpdate"
+      },
+      "UserUpdateMe": {
+        "properties": {
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "format": "email"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "title": "UserUpdateMe"
+      },
+      "UsersPublic": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/UserPublic"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "count"
+        ],
+        "title": "UsersPublic"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/api/v1/login/access-token"
+          }
+        }
+      }
+    }
+  }
+}

@@ -60,8 +60,17 @@ function Login() {
     loginMutation.mutate(
       { username: data.email, password: data.password },
       {
-        onSuccess: () => {
-          navigate({ to: "/" })
+        onSuccess: (result) => {
+          if (result.kind === "authenticated") {
+            navigate({ to: "/" })
+            return
+          }
+          // Requiere 2FA. El hook guardó el temp_token en sessionStorage.
+          if (result.requires_2fa === "setup") {
+            navigate({ to: "/two-factor/setup" })
+          } else {
+            navigate({ to: "/two-factor" })
+          }
         },
         onError: () => {
           const next = attempts + 1

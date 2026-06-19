@@ -9,6 +9,7 @@ from app.api.deps import (
     CurrentUser,
     SessionDep,
     get_current_active_superuser,
+    require_2fa_if_required_by_role,
     require_roles,
 )
 from app.auditoria import registrar_auditoria
@@ -34,7 +35,10 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get(
     "/",
-    dependencies=[Depends(require_roles(UserRole.ADMIN, UserRole.OFICIAL_CUMPLIMIENTO))],
+    dependencies=[
+        Depends(require_roles(UserRole.ADMIN, UserRole.OFICIAL_CUMPLIMIENTO)),
+        Depends(require_2fa_if_required_by_role),
+    ],
     response_model=UsersPublic,
 )
 def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
@@ -53,7 +57,10 @@ def read_users(session: SessionDep, skip: int = 0, limit: int = 100) -> Any:
 
 @router.post(
     "/",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[
+        Depends(get_current_active_superuser),
+        Depends(require_2fa_if_required_by_role),
+    ],
     response_model=UserPublic,
 )
 def create_user(
@@ -164,7 +171,11 @@ def register_user(session: SessionDep, user_in: UserRegister) -> Any:
     return user
 
 
-@router.get("/{user_id}", response_model=UserPublic)
+@router.get(
+    "/{user_id}",
+    dependencies=[Depends(require_2fa_if_required_by_role)],
+    response_model=UserPublic,
+)
 def read_user_by_id(
     user_id: uuid.UUID, session: SessionDep, current_user: CurrentUser
 ) -> Any:
@@ -184,7 +195,10 @@ def read_user_by_id(
 
 @router.patch(
     "/{user_id}",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[
+        Depends(get_current_active_superuser),
+        Depends(require_2fa_if_required_by_role),
+    ],
     response_model=UserPublic,
 )
 def update_user(
@@ -225,7 +239,10 @@ def update_user(
 
 @router.delete(
     "/{user_id}",
-    dependencies=[Depends(get_current_active_superuser)],
+    dependencies=[
+        Depends(get_current_active_superuser),
+        Depends(require_2fa_if_required_by_role),
+    ],
     response_model=Message,
 )
 def delete_user(

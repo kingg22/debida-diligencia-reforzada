@@ -2,6 +2,7 @@ import secrets
 import warnings
 from typing import Annotated, Any, Literal
 
+from cryptography.fernet import Fernet
 from pydantic import (
     AnyUrl,
     BeforeValidator,
@@ -85,10 +86,37 @@ class Settings(BaseSettings):
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
 
+    # ── 2FA (TOTP) ────────────────────────────────────────────────────────
+    # Clave Fernet para cifrar los secrets TOTP en reposo. Si está vacía,
+    # se genera una aleatoria en local (no persistente) y se exige en
+    # staging/production vía ``_enforce_non_default_secrets``.
+    FERNET_KEY: str = ""
+    TWO_FA_ISSUER: str = "PanamaCompliance SGDDR"
+    TWO_FA_BACKUP_CODES_COUNT: int = 10
+    # Ventana de tolerancia para códigos TOTP (±N steps de 30 s).
+    TWO_FA_WINDOW: int = 1
+    # Vida del token temporal entre password y 2FA (minutos).
+    TWO_FA_TEMP_TOKEN_MINUTES: int = 5
+    # Rate limit en /auth/2fa/verify (intentos por ventana).
+    TWO_FA_VERIFY_RATE_LIMIT: int = 10
+    TWO_FA_VERIFY_RATE_WINDOW_SECONDS: int = 300
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def emails_enabled(self) -> bool:
         return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def fernet_key_resolved(self) -> str:
+        """Devuelve la clave Fernet efectiva. Si ``FERNET_KEY`` está vacía
+        y el entorno es local, genera una nueva en memoria (no persistente).
+        En staging/production se exige una clave explícita."""
+        if self.FERNET_KEY:
+            return self.FERNET_KEY
+        if self.ENVIRONMENT == "local":
+            return Fernet.generate_key().decode()
+        return ""
 
     EMAIL_TEST_USER: EmailStr = "test@example.com"
     FIRST_SUPERUSER: EmailStr
@@ -112,6 +140,12 @@ class Settings(BaseSettings):
         self._check_default_secret(
             "FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD
         )
+
+        if not self.FERNET_KEY and self.ENVIRONMENT != "local":
+            raise ValueError(
+                "FERNET_KEY must be set in staging/production "
+                "to encrypt 2FA secrets at rest."
+            )
 
         return self
 

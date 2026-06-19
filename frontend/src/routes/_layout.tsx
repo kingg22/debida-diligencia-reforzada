@@ -1,9 +1,12 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
-import { Clock, LogOut } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { Clock, KeyRound, LogOut, X } from "lucide-react"
 import { useEffect, useState } from "react"
 
+import { AuthService, type TwoFactorStatus } from "@/client"
 import { Footer } from "@/components/Common/Footer"
 import AppSidebar from "@/components/Sidebar/AppSidebar"
+import { Button } from "@/components/ui/button"
 import {
   SidebarInset,
   SidebarProvider,
@@ -11,6 +14,7 @@ import {
 } from "@/components/ui/sidebar"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import { getTokenExpiry } from "@/lib/auth"
+import { roleRequires2FA } from "@/lib/roles"
 import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/_layout")({
@@ -99,6 +103,7 @@ function Layout() {
             <span className="hidden sm:inline">Salir</span>
           </button>
         </header>
+        <TwoFactorBanner />
         <main className="flex-1 p-6 md:p-8">
           <div className="mx-auto max-w-7xl">
             <Outlet />
@@ -107,6 +112,64 @@ function Layout() {
         <Footer />
       </SidebarInset>
     </SidebarProvider>
+  )
+}
+
+/**
+ * Banner persistente para usuarios cuyo rol requiere 2FA pero no lo han
+ * configurado. Aparece debajo del header, encima del contenido, hasta que
+ * activen 2FA. Se descarta (oculta) por sesión con la X.
+ */
+function TwoFactorBanner() {
+  const { user } = useAuth()
+  const [dismissed, setDismissed] = useState(false)
+
+  const showBanner = roleRequires2FA(user?.role)
+
+  const { data } = useQuery<TwoFactorStatus>({
+    queryKey: ["twofa-status"],
+    queryFn: AuthService.twofaStatus,
+    enabled: showBanner,
+    // No reintentar agresivamente: el endpoint puede 403 transitoriamente
+    // mientras se inicializa la sesión.
+    retry: 1,
+  })
+
+  if (!showBanner) return null
+  if (dismissed) return null
+  if (data?.enabled) return null
+  // Mientras carga o si 403 (todavía no inicializó), no mostrar nada para
+  // evitar parpadeos. La X es para "ahora no", no para siempre.
+  if (!data) return null
+
+  return (
+    <div
+      role="alert"
+      className="flex items-center gap-3 border-b px-4 py-2.5"
+      style={{
+        backgroundColor: "rgba(217,119,6,0.08)",
+        borderColor: "rgba(217,119,6,0.30)",
+        color: "#d97706",
+      }}
+    >
+      <KeyRound size={16} className="flex-shrink-0" />
+      <p className="flex-1 text-sm">
+        Tu rol requiere autenticación de dos factores. Configúrala para acceder
+        a todas las funciones del sistema.
+      </p>
+      <Button asChild size="sm" variant="outline" className="h-7">
+        <a href="/two-factor/setup">Configurar ahora</a>
+      </Button>
+      <button
+        type="button"
+        onClick={() => setDismissed(true)}
+        aria-label="Cerrar aviso"
+        className="rounded p-1 transition-colors hover:bg-amber-500/15"
+        style={{ color: "#d97706" }}
+      >
+        <X size={14} />
+      </button>
+    </div>
   )
 }
 
