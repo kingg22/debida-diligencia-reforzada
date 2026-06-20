@@ -9,7 +9,9 @@ import {
   FileText,
   Loader2,
   Pencil,
+  RefreshCw,
   ShieldAlert,
+  ShieldCheck,
   X,
 } from "lucide-react"
 import { useState } from "react"
@@ -17,8 +19,10 @@ import { toast } from "sonner"
 import {
   ClientesRiesgoService,
   ClientesService,
+  ScreeningService,
   type Documento,
   type ExpedienteKYC,
+  type ScreeningResultado,
 } from "@/client/sgddr"
 import { EstadoKYCBadge } from "@/components/Common/EstadoCasoBadge"
 import { NivelRiesgoBadge } from "@/components/Common/NivelRiesgoBadge"
@@ -420,6 +424,173 @@ function TabRiesgo({ expedienteId, rol }: { expedienteId: string; rol?: string }
   )
 }
 
+function SimilitudBar({ value }: { value: number }) {
+  const color =
+    value >= 90 ? "#e05252" : value >= 75 ? "#c9a84c" : "#6b7a99"
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className="h-2 w-24 overflow-hidden rounded-full"
+        style={{ backgroundColor: "rgba(138,155,181,0.18)" }}
+      >
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${value}%`, backgroundColor: color }}
+        />
+      </div>
+      <span className="tabular-nums text-sm font-semibold" style={{ color }}>
+        {value}%
+      </span>
+    </div>
+  )
+}
+
+function TabScreening({
+  expedienteId,
+  rol,
+}: {
+  expedienteId: string
+  rol?: string
+}) {
+  const qc = useQueryClient()
+
+  const { data: resultados, isPending } = useQuery({
+    queryKey: ["screening", expedienteId],
+    queryFn: () => ScreeningService.listar(expedienteId),
+    enabled: !!expedienteId,
+  })
+
+  const verificarMutation = useMutation({
+    mutationFn: () => ScreeningService.verificar(expedienteId),
+    onSuccess: (res) => {
+      toast.success(
+        res.coincidencias.length > 0
+          ? `Screening completado: ${res.coincidencias.length} coincidencia(s) encontrada(s).`
+          : "Screening completado: sin coincidencias.",
+      )
+      qc.invalidateQueries({ queryKey: ["screening", expedienteId] })
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  const falsoPosMutation = useMutation({
+    mutationFn: (resultadoId: string) =>
+      ScreeningService.marcarFalsoPositivo(expedienteId, resultadoId),
+    onSuccess: () => {
+      toast.success("Marcado como falso positivo.")
+      qc.invalidateQueries({ queryKey: ["screening", expedienteId] })
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  const activas = (resultados ?? []).filter((r) => !r.es_falso_positivo)
+  const descartadas = (resultados ?? []).filter((r) => r.es_falso_positivo)
+  const puedeDescartar =
+    rol === "OFICIAL_CUMPLIMIENTO" || rol === "ADMIN"
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="bg-card rounded-lg border px-5 py-3">
+          <p className="text-muted-foreground text-xs">Coincidencias activas</p>
+          <p
+            className="mt-0.5 text-lg font-semibold"
+            style={{ color: activas.length > 0 ? "#e05252" : "#22c55e" }}
+          >
+            {isPending ? "…" : activas.length}
+          </p>
+        </div>
+        <div className="bg-card rounded-lg border px-5 py-3">
+          <p className="text-muted-foreground text-xs">Falsos positivos</p>
+          <p className="text-foreground mt-0.5 text-lg font-semibold">
+            {isPending ? "…" : descartadas.length}
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => verificarMutation.mutate()}
+          disabled={verificarMutation.isPending}
+          className="ml-auto gap-1.5"
+        >
+          {verificarMutation.isPending ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <RefreshCw size={14} />
+          )}
+          Ejecutar screening
+        </Button>
+      </div>
+
+      {resultados === undefined || resultados.length === 0 ? (
+        <EmptyState message="No hay resultados de screening. Ejecuta el screening para verificar contra listas restrictivas." />
+      ) : (
+        <Card title="Resultados del screening">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Lista</TableHead>
+                <TableHead>Nombre en lista</TableHead>
+                <TableHead className="w-40">Similitud</TableHead>
+                <TableHead>Estado</TableHead>
+                {puedeDescartar && (
+                  <TableHead className="text-right w-36">Acción</TableHead>
+                )}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...activas, ...descartadas].map((r: ScreeningResultado) => (
+                <TableRow
+                  key={r.id}
+                  className={r.es_falso_positivo ? "opacity-50" : undefined}
+                >
+                  <TableCell>
+                    <span className="font-mono text-xs font-semibold">
+                      {r.lista}
+                    </span>
+                  </TableCell>
+                  <TableCell>{r.nombre_entrada}</TableCell>
+                  <TableCell>
+                    <SimilitudBar value={r.similitud} />
+                  </TableCell>
+                  <TableCell>
+                    {r.es_falso_positivo ? (
+                      <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                        <ShieldCheck size={12} /> Falso positivo
+                      </span>
+                    ) : (
+                      <span className="text-destructive inline-flex items-center gap-1 text-xs font-semibold">
+                        <AlertTriangle size={12} /> Coincidencia activa
+                      </span>
+                    )}
+                  </TableCell>
+                  {puedeDescartar && (
+                    <TableCell className="text-right">
+                      {!r.es_falso_positivo && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={falsoPosMutation.isPending}
+                          onClick={() => falsoPosMutation.mutate(r.id)}
+                          className="gap-1 text-xs"
+                        >
+                          <X size={12} /> Descartar
+                        </Button>
+                      )}
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+    </div>
+  )
+}
+
 function DetalleBody({
   data,
   rol,
@@ -520,6 +691,7 @@ function DetalleBody({
             Documentos {docs.length > 0 ? `(${docs.length})` : ""}
           </TabsTrigger>
           <TabsTrigger value="riesgo">Evaluación de riesgo</TabsTrigger>
+          <TabsTrigger value="screening">Screening listas</TabsTrigger>
         </TabsList>
 
         {/* ── Tab: Información ─────────────────────────────────────── */}
@@ -793,6 +965,11 @@ function DetalleBody({
         {/* ── Tab: Evaluación de riesgo ─────────────────────────────── */}
         <TabsContent value="riesgo">
           <TabRiesgo expedienteId={data.id} rol={rol} />
+        </TabsContent>
+
+        {/* ── Tab: Screening ────────────────────────────────────────── */}
+        <TabsContent value="screening">
+          <TabScreening expedienteId={data.id} rol={rol} />
         </TabsContent>
 
         {/* ── Tab: Documentos ───────────────────────────────────────── */}

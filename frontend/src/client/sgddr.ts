@@ -575,6 +575,84 @@ export const CasosDdrService = {
     }),
 }
 
+// ── Screening de listas restrictivas ─────────────────────────────────────
+export interface ListaCoincidencia {
+  lista: string
+  nombre: string
+  similitud: number
+}
+
+export interface ListasResult {
+  ofac: boolean
+  onu: boolean
+  ue: boolean
+  coincidencias: ListaCoincidencia[]
+}
+
+export interface ScreeningResultado {
+  id: string
+  expediente_id: string
+  lista: string
+  nombre_entrada: string
+  similitud: number
+  es_falso_positivo: boolean
+  revisado_por_id: string | null
+  revisado_en: string | null
+  creado_en: string
+}
+
+export const ScreeningService = {
+  verificar: (id: string) =>
+    fetchJson<ListasResult>(`/api/v1/clientes/${id}/verificar-listas`, {
+      method: "POST",
+    }),
+  listar: (id: string) =>
+    fetchJson<ScreeningResultado[]>(`/api/v1/clientes/${id}/screening`),
+  marcarFalsoPositivo: (id: string, resultadoId: string) =>
+    fetchJson<ScreeningResultado>(
+      `/api/v1/clientes/${id}/screening/${resultadoId}/falso-positivo`,
+      { method: "PATCH" },
+    ),
+}
+
+// ── Auditoría ─────────────────────────────────────────────────────────────
+export interface AuditoriaEntry {
+  id: string
+  usuario_id: string | null
+  usuario_nombre: string | null
+  modulo: string
+  accion: string
+  entidad_tipo: string | null
+  entidad_id: string | null
+  descripcion: string | null
+  ip_origen: string | null
+  creado_en: string
+}
+
+export interface AuditoriasResult {
+  data: AuditoriaEntry[]
+  count: number
+}
+
+export const AuditoriaService = {
+  list: (params: {
+    skip?: number
+    limit?: number
+    modulo?: string
+    desde?: string
+    hasta?: string
+  } = {}) => {
+    const path = buildUrl("/api/v1/auditoria/", {
+      skip: params.skip ?? 0,
+      limit: params.limit ?? 20,
+      ...(params.modulo ? { modulo: params.modulo } : {}),
+      ...(params.desde ? { desde: params.desde } : {}),
+      ...(params.hasta ? { hasta: params.hasta } : {}),
+    })
+    return fetchJson<AuditoriasResult>(path)
+  },
+}
+
 // ── Factores de riesgo y parámetros ──────────────────────────────────────
 export interface FactorRiesgo {
   factor: string

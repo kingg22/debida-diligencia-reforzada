@@ -21,6 +21,7 @@ import { Route as LayoutUsuariosRouteImport } from './routes/_layout/usuarios'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutParametrosRouteImport } from './routes/_layout/parametros'
+import { Route as LayoutAuditoriaRouteImport } from './routes/_layout/auditoria'
 import { Route as LayoutKycIndexRouteImport } from './routes/_layout/kyc/index'
 import { Route as LayoutClientesIndexRouteImport } from './routes/_layout/clientes/index'
 import { Route as LayoutCasosDdrIndexRouteImport } from './routes/_layout/casos-ddr/index'
@@ -88,6 +89,11 @@ const LayoutParametrosRoute = LayoutParametrosRouteImport.update({
   path: '/parametros',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutAuditoriaRoute = LayoutAuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutKycIndexRoute = LayoutKycIndexRouteImport.update({
   id: '/kyc/',
   path: '/kyc/',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/two-factor': typeof TwoFactorRouteWithChildren
   '/admin': typeof LayoutAdminRoute
   '/parametros': typeof LayoutParametrosRoute
+  '/auditoria': typeof LayoutAuditoriaRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
   '/two-factor/setup': typeof TwoFactorSetupRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/two-factor': typeof TwoFactorRouteWithChildren
   '/admin': typeof LayoutAdminRoute
   '/parametros': typeof LayoutParametrosRoute
+  '/auditoria': typeof LayoutAuditoriaRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
   '/two-factor/setup': typeof TwoFactorSetupRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/two-factor': typeof TwoFactorRouteWithChildren
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/parametros': typeof LayoutParametrosRoute
+  '/_layout/auditoria': typeof LayoutAuditoriaRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/usuarios': typeof LayoutUsuariosRoute
   '/two-factor/setup': typeof TwoFactorSetupRoute
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/two-factor'
     | '/admin'
     | '/parametros'
+    | '/auditoria'
     | '/settings'
     | '/usuarios'
     | '/two-factor/setup'
@@ -217,6 +227,7 @@ export interface FileRouteTypes {
     | '/two-factor'
     | '/admin'
     | '/parametros'
+    | '/auditoria'
     | '/settings'
     | '/usuarios'
     | '/two-factor/setup'
@@ -238,6 +249,7 @@ export interface FileRouteTypes {
     | '/two-factor'
     | '/_layout/admin'
     | '/_layout/parametros'
+    | '/_layout/auditoria'
     | '/_layout/settings'
     | '/_layout/usuarios'
     | '/two-factor/setup'
@@ -395,6 +407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutParametrosRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/auditoria': {
+      id: '/_layout/auditoria'
+      path: '/auditoria'
+      fullPath: '/auditoria'
+      preLoaderRoute: typeof LayoutAuditoriaRouteImport
+      parentRoute: typeof LayoutRoute
+    }
   }
 }
 
@@ -412,6 +431,7 @@ const LayoutCasosDdrIdRouteWithChildren =
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutParametrosRoute: typeof LayoutParametrosRoute
+  LayoutAuditoriaRoute: typeof LayoutAuditoriaRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutUsuariosRoute: typeof LayoutUsuariosRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
@@ -426,6 +446,7 @@ interface LayoutRouteChildren {
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutParametrosRoute: LayoutParametrosRoute,
+  LayoutAuditoriaRoute: LayoutAuditoriaRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutUsuariosRoute: LayoutUsuariosRoute,
   LayoutIndexRoute: LayoutIndexRoute,
