@@ -1,3 +1,4 @@
+import difflib
 import hashlib
 import urllib.parse
 import uuid
@@ -30,11 +31,15 @@ from app.models import (
     ExpedienteKYCUpdate,
     ExpedientesKYCPublic,
     KYCStatus,
+    ListaCoincidencia,
+    ListaRestrictivaSimulada,
     ListasResult,
     Message,
     RiesgoOverrideInput,
     RiesgoResult,
     RiskLevel,
+    ScreeningResultado,
+    ScreeningResultadoPublic,
     User,
     UserRole,
 )
@@ -395,20 +400,146 @@ def evaluar_riesgo(
     return resultado
 
 
-@router.get(
+_SIMILITUD_UMBRAL = 70  # porcentaje mínimo para considerar coincidencia
+
+
+def _similitud(a: str, b: str) -> int:
+    a_n = a.lower().strip()
+    b_n = b.lower().strip()
+    ratio = difflib.SequenceMatcher(None, a_n, b_n).ratio()
+    return round(ratio * 100)
+
+
+def _nombre_expediente(expediente: ExpedienteKYC) -> str:
+    if expediente.tipo_cliente == "NATURAL" and expediente.persona_natural:
+        pn = expediente.persona_natural
+        return f"{pn.nombre} {pn.apellido}".strip()
+    if expediente.persona_juridica:
+        return expediente.persona_juridica.razon_social or ""
+    return ""
+
+
+def _doc_expediente(expediente: ExpedienteKYC) -> str | None:
+    if expediente.tipo_cliente == "NATURAL" and expediente.persona_natural:
+        return expediente.persona_natural.numero_documento
+    if expediente.persona_juridica:
+        return expediente.persona_juridica.ruc
+    return None
+
+
+@router.post(
     "/{id}/verificar-listas", response_model=ListasResult, dependencies=[AccesoKYC]
 )
 def verificar_listas(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID
 ) -> Any:
-    """
-    Verificación contra listas restrictivas (OFAC, ONU, UE).
-    Stub simulado — la administración de listas es de un sprint posterior.
-    """
+    """Screening contra listas restrictivas con similitud fuzzy (difflib)."""
     expediente = _get_expediente_o_404(session, id)
     _verificar_acceso(expediente, current_user)
-    # Sin coincidencias (simulado).
-    return ListasResult(ofac=False, onu=False, ue=False, coincidencias=[])
+
+    nombre = _nombre_expediente(expediente)
+    doc = _doc_expediente(expediente)
+
+    entradas = session.exec(
+        select(ListaRestrictivaSimulada).where(ListaRestrictivaSimulada.activo == True)
+    ).all()
+
+    coincidencias: list[ListaCoincidencia] = []
+    for entrada in entradas:
+        sim = _similitud(nombre, entrada.nombre_completo)
+        if sim < _SIMILITUD_UMBRAL:
+            # Coincidencia exacta por documento
+            if doc and entrada.numero_documento and doc == entrada.numero_documento:
+                sim = 100
+            else:
+                continue
+        coincidencias.append(
+            ListaCoincidencia(lista=entrada.fuente, nombre=entrada.nombre_completo, similitud=sim)
+        )
+
+    # Persistir resultados (reemplaza ejecución anterior)
+    session.exec(  # type: ignore[call-overload]
+        select(ScreeningResultado).where(ScreeningResultado.expediente_id == expediente.id)
+    )
+    viejos = session.exec(
+        select(ScreeningResultado).where(ScreeningResultado.expediente_id == expediente.id)
+    ).all()
+    for v in viejos:
+        session.delete(v)
+
+    for c in coincidencias:
+        session.add(ScreeningResultado(
+            expediente_id=expediente.id,
+            lista=c.lista,
+            nombre_entrada=c.nombre,
+            similitud=c.similitud,
+        ))
+    session.commit()
+
+    fuentes = {c.lista for c in coincidencias}
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="KYC",
+        accion="SCREENING_LISTAS",
+        entidad_tipo="ExpedienteKYC",
+        entidad_id=expediente.id,
+        descripcion=f"Screening ejecutado. Coincidencias: {len(coincidencias)}",
+    )
+    return ListasResult(
+        ofac="OFAC" in fuentes,
+        onu="ONU" in fuentes,
+        ue="UE" in fuentes,
+        coincidencias=coincidencias,
+    )
+
+
+@router.get(
+    "/{id}/screening", response_model=list[ScreeningResultadoPublic], dependencies=[AccesoKYC]
+)
+def listar_screening(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
+) -> Any:
+    """Devuelve los resultados persistidos del último screening."""
+    expediente = _get_expediente_o_404(session, id)
+    _verificar_acceso(expediente, current_user)
+    return session.exec(
+        select(ScreeningResultado)
+        .where(ScreeningResultado.expediente_id == expediente.id)
+        .order_by(ScreeningResultado.similitud.desc())  # type: ignore[attr-defined]
+    ).all()
+
+
+@router.patch(
+    "/{id}/screening/{resultado_id}/falso-positivo",
+    response_model=ScreeningResultadoPublic,
+    dependencies=[Depends(require_roles(UserRole.OFICIAL_CUMPLIMIENTO))],
+)
+def marcar_falso_positivo(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID, resultado_id: uuid.UUID
+) -> Any:
+    """El Oficial de Cumplimiento descarta una coincidencia como falso positivo."""
+    expediente = _get_expediente_o_404(session, id)
+    _verificar_acceso(expediente, current_user)
+    resultado = session.get(ScreeningResultado, resultado_id)
+    if not resultado or resultado.expediente_id != expediente.id:
+        raise HTTPException(status_code=404, detail="Resultado no encontrado")
+    resultado.es_falso_positivo = True
+    resultado.revisado_por_id = current_user.id
+    resultado.revisado_en = datetime.now(timezone.utc)
+    session.add(resultado)
+    session.commit()
+    session.refresh(resultado)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="KYC",
+        accion="FALSO_POSITIVO",
+        entidad_tipo="ScreeningResultado",
+        entidad_id=resultado.id,
+        descripcion=f"Coincidencia '{resultado.nombre_entrada}' ({resultado.lista}) marcada como falso positivo",
+    )
+    return resultado
 
 
 @router.get(

@@ -711,6 +711,37 @@ class ListasResult(SQLModel):
     coincidencias: list[ListaCoincidencia] = Field(default_factory=list)
 
 
+# ── Screening persistido ─────────────────────────────────────────────────────
+
+
+class ScreeningResultado(SQLModel, table=True):
+    __tablename__ = "screening_resultado"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    expediente_id: uuid.UUID = Field(foreign_key="expedientekyc.id", index=True)
+    lista: str = Field(max_length=20)
+    nombre_entrada: str = Field(max_length=200)
+    similitud: int
+    es_falso_positivo: bool = Field(default=False)
+    revisado_por_id: uuid.UUID | None = Field(default=None, foreign_key="user.id")
+    revisado_en: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))  # type: ignore
+    creado_en: datetime = Field(
+        default_factory=get_datetime_utc,
+        sa_type=DateTime(timezone=True),  # type: ignore
+    )
+
+
+class ScreeningResultadoPublic(SQLModel):
+    id: uuid.UUID
+    expediente_id: uuid.UUID
+    lista: str
+    nombre_entrada: str
+    similitud: int
+    es_falso_positivo: bool
+    revisado_por_id: uuid.UUID | None
+    revisado_en: datetime | None
+    creado_en: datetime
+
+
 class RiesgoOverrideInput(SQLModel):
     nivel_riesgo_override: RiskLevel
     justificacion_override: str = Field(min_length=10, max_length=500)
