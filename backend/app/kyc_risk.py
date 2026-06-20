@@ -45,7 +45,25 @@ def _es_alto_riesgo(pais: str | None) -> bool:
     return pais.strip().lower() in _PAISES_ALTO_RIESGO_GAFI
 
 
-def calcular_riesgo(expediente: ExpedienteKYC) -> RiesgoResult:
+_PESOS_DEFAULT: dict[str, int] = {
+    "Cliente PEP": 40,
+    "Familiar de PEP": 20,
+    "Antecedentes penales": 25,
+    "País de residencia de alto riesgo": 20,
+    "Ingresos 25k-50k": 15,
+    "Ingresos 50k+": 15,
+    "Accionistas anónimos": 25,
+    "País de constitución de alto riesgo": 20,
+    "Opera en países de alto riesgo GAFI": 20,
+    "Beneficiarios finales PEP": 15,
+}
+
+
+def calcular_riesgo(
+    expediente: ExpedienteKYC,
+    pesos: dict[str, int] | None = None,
+) -> RiesgoResult:
+    p = {**_PESOS_DEFAULT, **(pesos or {})}
     factores: list[FactorRiesgo] = []
     puntaje = 0
 
@@ -62,42 +80,43 @@ def calcular_riesgo(expediente: ExpedienteKYC) -> RiesgoResult:
 
     pn = expediente.persona_natural
     if pn is not None:
-        add("Cliente PEP", 40, pn.es_pep)
-        add("Familiar de PEP", 20, pn.es_pep_familiar)
-        add("Antecedentes penales", 25, pn.tiene_antecedentes)
+        add("Cliente PEP", p["Cliente PEP"], pn.es_pep)
+        add("Familiar de PEP", p["Familiar de PEP"], pn.es_pep_familiar)
+        add("Antecedentes penales", p["Antecedentes penales"], pn.tiene_antecedentes)
 
         add(
             "País de residencia de alto riesgo",
-            20,
+            p["País de residencia de alto riesgo"],
             _es_alto_riesgo(pn.pais) and not _es_panama(pn.pais),
         )
 
         ingreso = pn.ingreso_mensual_aproximado or 0
-        add("Ingresos 25k-50k", 15, 25000 <= ingreso < 50000)
-        add("Ingresos 50k+", 15, ingreso >= 50000)
+        add("Ingresos 25k-50k", p["Ingresos 25k-50k"], 25000 <= ingreso < 50000)
+        add("Ingresos 50k+", p["Ingresos 50k+"], ingreso >= 50000)
 
     pj = expediente.persona_juridica
     if pj is not None:
-        add("Accionistas anónimos", 25, pj.tiene_accionistas_anonimos)
+        add("Accionistas anónimos", p["Accionistas anónimos"], pj.tiene_accionistas_anonimos)
         add(
             "País de constitución de alto riesgo",
-            20,
+            p["País de constitución de alto riesgo"],
             _es_alto_riesgo(pj.pais_constitucion) and not _es_panama(pj.pais_constitucion),
         )
         add(
             "Opera en países de alto riesgo GAFI",
-            20,
+            p["Opera en países de alto riesgo GAFI"],
             pj.opera_en_paises_alto_riesgo,
         )
 
     bf_pep = sum(1 for bf in expediente.beneficiarios_final if bf.es_pep)
+    peso_bf = p["Beneficiarios finales PEP"]
     if bf_pep:
-        contribucion = min(bf_pep * 15, 45)
+        contribucion = min(bf_pep * peso_bf, peso_bf * 3)
         puntaje += contribucion
         factores.append(
             FactorRiesgo(
                 factor=f"Beneficiarios finales PEP ({bf_pep})",
-                peso=15,
+                peso=peso_bf,
                 valor=bf_pep,
                 contribucion=contribucion,
             )

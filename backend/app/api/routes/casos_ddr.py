@@ -14,6 +14,7 @@ from app.api.deps import (
     require_2fa_if_required_by_role,
     require_roles,
 )
+from app.auditoria import registrar_auditoria
 from app.models import (
     CasoDDR,
     CasoDDRPublic,
@@ -200,6 +201,15 @@ def asignar_analista(
     session.add(caso)
     session.commit()
     session.refresh(caso)
+    registrar_auditoria(
+        session=session,
+        usuario_id=_current_user.id,
+        modulo="DDR",
+        accion="ASIGNAR_ANALISTA",
+        entidad_tipo="CasoDDR",
+        entidad_id=caso.id,
+        descripcion=f"Analista {analista.full_name or analista.email} asignado al caso",
+    )
     return caso
 
 
@@ -236,6 +246,15 @@ def enviar_aprobacion(
     session.add(caso)
     session.commit()
     session.refresh(caso)
+    registrar_auditoria(
+        session=session,
+        usuario_id=_current_user.id,
+        modulo="DDR",
+        accion="ENVIAR_APROBACION",
+        entidad_tipo="CasoDDR",
+        entidad_id=caso.id,
+        descripcion=f"Caso DDR enviado a aprobación (nivel {caso.nivel_riesgo})",
+    )
     return caso
 
 
@@ -303,6 +322,15 @@ def aprobar_caso(
     session.add(caso)
     session.commit()
     session.refresh(caso)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="DDR",
+        accion="APROBAR_CASO",
+        entidad_tipo="CasoDDR",
+        entidad_id=caso.id,
+        descripcion=f"Caso DDR aprobado (nivel {caso.nivel_riesgo})",
+    )
     return caso
 
 
@@ -330,6 +358,15 @@ def rechazar_caso(
     session.add(caso)
     session.commit()
     session.refresh(caso)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="DDR",
+        accion="RECHAZAR_CASO",
+        entidad_tipo="CasoDDR",
+        entidad_id=caso.id,
+        descripcion=f"Caso DDR rechazado (nivel {caso.nivel_riesgo}): {body.observaciones[:80]}",
+    )
     return caso
 
 
@@ -410,6 +447,16 @@ def update_cuestionario(
     session.add(cuestionario)
     session.commit()
     session.refresh(cuestionario)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="DDR",
+        accion="ACTUALIZAR_CUESTIONARIO_EBR",
+        entidad_tipo="CuestionarioEBR",
+        entidad_id=cuestionario.id,
+        descripcion="Cuestionario EBR actualizado"
+        + (" (completado)" if cuestionario.completado else ""),
+    )
     return cuestionario
 
 
@@ -474,6 +521,15 @@ def upload_documento_ddr(
     session.add(documento)
     session.commit()
     session.refresh(documento)
+    registrar_auditoria(
+        session=session,
+        usuario_id=None,
+        modulo="DDR",
+        accion="SUBIR_DOCUMENTO",
+        entidad_tipo="DocumentoKYC",
+        entidad_id=documento.id,
+        descripcion=f"Documento {tipo.value} subido al caso DDR {id}",
+    )
     return documento
 
 

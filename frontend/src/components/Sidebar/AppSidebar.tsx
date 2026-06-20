@@ -3,6 +3,7 @@ import {
   ClipboardList,
   FolderOpen,
   Home,
+  Settings2,
   ShieldCheck,
   Users,
 } from "lucide-react"
@@ -29,7 +30,10 @@ const ddrItems: Item[] = [
   { icon: Briefcase, title: "Casos DDR", path: "/casos-ddr" },
 ]
 
-const adminItems: Item[] = [{ icon: Users, title: "Usuarios", path: "/admin" }]
+const adminItems: Item[] = [
+  { icon: Users, title: "Usuarios", path: "/admin" },
+  { icon: Settings2, title: "Parámetros", path: "/parametros" },
+]
 
 function PanamaComplianceLogo() {
   return (

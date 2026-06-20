@@ -593,6 +593,8 @@ class ExpedienteKYC(SQLModel, table=True):
     status: str = Field(default=KYCStatus.BORRADOR.value, max_length=20)
     nivel_riesgo: str | None = Field(default=None, max_length=20)
     puntaje_riesgo: int | None = Field(default=None)
+    nivel_riesgo_override: str | None = Field(default=None, max_length=20)
+    justificacion_override: str | None = Field(default=None, max_length=500)
     comentario_rechazo: str | None = Field(default=None, max_length=1000)
     analista_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
@@ -665,6 +667,8 @@ class ExpedienteKYCPublic(SQLModel):
     status: KYCStatus
     nivel_riesgo: RiskLevel | None = None
     puntaje_riesgo: int | None = None
+    nivel_riesgo_override: RiskLevel | None = None
+    justificacion_override: str | None = None
     comentario_rechazo: str | None = None
     analista_id: uuid.UUID
     created_at: datetime | None = None
@@ -707,3 +711,33 @@ class ListasResult(SQLModel):
     onu: bool = False
     ue: bool = False
     coincidencias: list[ListaCoincidencia] = Field(default_factory=list)
+
+
+class RiesgoOverrideInput(SQLModel):
+    nivel_riesgo_override: RiskLevel
+    justificacion_override: str = Field(min_length=10, max_length=500)
+
+
+# ── Parámetros de riesgo (tabla configurable) ───────────────────────────────
+
+
+class ParametroRiesgo(SQLModel, table=True):
+    __tablename__ = "parametro_riesgo"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    factor: str = Field(unique=True, index=True, max_length=100)
+    descripcion: str = Field(max_length=300)
+    peso: int = Field(default=0, ge=0, le=100)
+    activo: bool = Field(default=True)
+
+
+class ParametroRiesgoPublic(SQLModel):
+    id: uuid.UUID
+    factor: str
+    descripcion: str
+    peso: int
+    activo: bool
+
+
+class ParametroRiesgoUpdate(SQLModel):
+    peso: int = Field(ge=0, le=100)
+    activo: bool | None = None

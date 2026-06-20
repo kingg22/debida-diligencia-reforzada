@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import {
   AlertTriangle,
@@ -8,11 +8,18 @@ import {
   Eye,
   FileText,
   Loader2,
+  Pencil,
   ShieldAlert,
   X,
 } from "lucide-react"
 import { useState } from "react"
-import { ClientesService, type Documento, type ExpedienteKYC } from "@/client/sgddr"
+import { toast } from "sonner"
+import {
+  ClientesRiesgoService,
+  ClientesService,
+  type Documento,
+  type ExpedienteKYC,
+} from "@/client/sgddr"
 import { EstadoKYCBadge } from "@/components/Common/EstadoCasoBadge"
 import { NivelRiesgoBadge } from "@/components/Common/NivelRiesgoBadge"
 import { PageHeader } from "@/components/Common/PageHeader"
@@ -32,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import useAuth from "@/hooks/useAuth"
 import {
   DOCUMENTO_ESTADO,
   DOCUMENTO_TIPO_LABEL,
@@ -40,7 +48,10 @@ import {
   formatBytes,
   formatFecha,
   formatFechaHora,
+  NIVEL_RIESGO,
+  NIVELES_RIESGO,
   TIPO_CLIENTE_LABELS,
+  type AppUser,
 } from "@/lib/sgddr"
 
 export const Route = createFileRoute("/_layout/clientes/$id")({
@@ -140,6 +151,8 @@ function formatMoneda(value?: number | null): string {
 function ClienteDetallePage() {
   const { id } = useParams({ from: "/_layout/clientes/$id" })
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const rol = (user as AppUser | null | undefined)?.role
   const [previewDoc, setPreviewDoc] = useState<Documento | null>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
@@ -187,6 +200,7 @@ function ClienteDetallePage() {
       ) : data ? (
         <DetalleBody
           data={data}
+          rol={rol}
           downloadingId={downloadingId}
           onPreview={setPreviewDoc}
           onDownload={handleDownload}
@@ -205,13 +219,216 @@ function ClienteDetallePage() {
 
 // ── Cuerpo: header + tabs ───────────────────────────────────────────────
 
+function TabRiesgo({ expedienteId, rol }: { expedienteId: string; rol?: string }) {
+  const qc = useQueryClient()
+  const { data, isPending, isError, error, refetch } = useQuery({
+    queryKey: ["factores-riesgo", expedienteId],
+    queryFn: () => ClientesRiesgoService.factores(expedienteId),
+    enabled: !!expedienteId,
+  })
+
+  const [showOverride, setShowOverride] = useState(false)
+  const [nivelOverride, setNivelOverride] = useState("MEDIO")
+  const [justificacion, setJustificacion] = useState("")
+
+  const overrideMutation = useMutation({
+    mutationFn: () =>
+      ClientesRiesgoService.overrideRiesgo(
+        expedienteId,
+        nivelOverride,
+        justificacion,
+      ),
+    onSuccess: () => {
+      toast.success("Nivel de riesgo ajustado correctamente.")
+      setShowOverride(false)
+      setJustificacion("")
+      qc.invalidateQueries({ queryKey: ["expediente", expedienteId] })
+    },
+    onError: (e: Error) => toast.error(e.message),
+  })
+
+  if (isPending) return <LoadingState label="Calculando factores…" />
+  if (isError)
+    return (
+      <ErrorState
+        message={(error as Error)?.message}
+        onRetry={() => refetch()}
+      />
+    )
+
+  const factores = data?.factores ?? []
+  const mayorContribuyente = factores.length
+    ? Math.max(...factores.map((f) => f.contribucion))
+    : 0
+
+  return (
+    <div className="space-y-4">
+      {/* Resumen */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="bg-card rounded-lg border px-5 py-3">
+          <p className="text-muted-foreground text-xs">Nivel calculado</p>
+          <p className="text-foreground mt-0.5 text-lg font-semibold">
+            {data?.nivel ?? "—"}
+          </p>
+        </div>
+        <div className="bg-card rounded-lg border px-5 py-3">
+          <p className="text-muted-foreground text-xs">Puntaje total</p>
+          <p className="text-foreground mt-0.5 text-lg font-semibold tabular-nums">
+            {data?.puntaje ?? 0} pts
+          </p>
+        </div>
+        {rol === "OFICIAL_CUMPLIMIENTO" && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setShowOverride(true)}
+            className="ml-auto gap-1.5"
+          >
+            <Pencil size={14} /> Ajustar nivel
+          </Button>
+        )}
+      </div>
+
+      {/* Tabla de factores */}
+      {factores.length === 0 ? (
+        <EmptyState message="No hay factores activos para este expediente." />
+      ) : (
+        <Card title="Factores que contribuyen al nivel de riesgo">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Factor</TableHead>
+                <TableHead className="text-right w-20">Peso</TableHead>
+                <TableHead className="text-right w-20">Valor</TableHead>
+                <TableHead className="text-right w-24">Contribución</TableHead>
+                <TableHead className="w-40">Aporte</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {factores.map((f) => {
+                const pct =
+                  mayorContribuyente > 0
+                    ? (f.contribucion / mayorContribuyente) * 100
+                    : 0
+                return (
+                  <TableRow key={f.factor}>
+                    <TableCell className="font-medium">{f.factor}</TableCell>
+                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                      {f.peso}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {f.valor}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums font-semibold">
+                      {f.contribucion}
+                    </TableCell>
+                    <TableCell>
+                      <div
+                        className="h-2 w-full rounded-full"
+                        style={{ backgroundColor: "rgba(138,155,181,0.18)" }}
+                      >
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${pct}%`,
+                            backgroundColor: "#c9a84c",
+                          }}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
+
+      {/* Dialog de override (solo OFICIAL) */}
+      {showOverride && (
+        <div className="bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
+          <div className="bg-card w-full max-w-md rounded-xl border p-6 shadow-lg">
+            <h2 className="text-foreground mb-4 text-base font-semibold">
+              Ajuste manual de nivel de riesgo
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-muted-foreground mb-1 block text-xs font-medium">
+                  Nuevo nivel
+                </label>
+                <select
+                  value={nivelOverride}
+                  onChange={(e) => setNivelOverride(e.target.value)}
+                  className="border-input bg-background text-foreground focus:border-ring w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                >
+                  {NIVELES_RIESGO.map((n) => (
+                    <option key={n} value={n}>
+                      {NIVEL_RIESGO[n]?.label ?? n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-muted-foreground mb-1 block text-xs font-medium">
+                  Justificación (mínimo 10 caracteres)
+                </label>
+                <textarea
+                  rows={3}
+                  value={justificacion}
+                  onChange={(e) => setJustificacion(e.target.value)}
+                  placeholder="Describe el motivo del ajuste manual…"
+                  className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-ring w-full rounded-lg border px-3 py-2 text-sm outline-none resize-none"
+                  maxLength={500}
+                />
+                <p className="text-muted-foreground mt-0.5 text-right text-xs">
+                  {justificacion.length}/500
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowOverride(false)
+                    setJustificacion("")
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  disabled={
+                    justificacion.trim().length < 10 ||
+                    overrideMutation.isPending
+                  }
+                  onClick={() => overrideMutation.mutate()}
+                >
+                  {overrideMutation.isPending ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Check size={14} />
+                  )}{" "}
+                  Confirmar
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function DetalleBody({
   data,
+  rol,
   downloadingId,
   onPreview,
   onDownload,
 }: {
   data: ExpedienteKYC
+  rol?: string
   downloadingId: string | null
   onPreview: (d: Documento) => void
   onDownload: (d: Documento) => void
@@ -302,6 +519,7 @@ function DetalleBody({
           <TabsTrigger value="documentos">
             Documentos {docs.length > 0 ? `(${docs.length})` : ""}
           </TabsTrigger>
+          <TabsTrigger value="riesgo">Evaluación de riesgo</TabsTrigger>
         </TabsList>
 
         {/* ── Tab: Información ─────────────────────────────────────── */}
@@ -570,6 +788,11 @@ function DetalleBody({
               </div>
             </Card>
           )}
+        </TabsContent>
+
+        {/* ── Tab: Evaluación de riesgo ─────────────────────────────── */}
+        <TabsContent value="riesgo">
+          <TabRiesgo expedienteId={data.id} rol={rol} />
         </TabsContent>
 
         {/* ── Tab: Documentos ───────────────────────────────────────── */}

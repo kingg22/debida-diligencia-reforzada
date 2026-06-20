@@ -16,6 +16,7 @@ from app.api.deps import (
     require_2fa_if_required_by_role,
     require_roles,
 )
+from app.auditoria import registrar_auditoria
 from app.kyc_risk import calcular_riesgo
 from app.models import (
     ClientType,
@@ -31,6 +32,7 @@ from app.models import (
     KYCStatus,
     ListasResult,
     Message,
+    RiesgoOverrideInput,
     RiesgoResult,
     RiskLevel,
     User,
@@ -100,6 +102,15 @@ def create_cliente(
         session=session,
         expediente_in=expediente_in,
         analista_id=current_user.id,
+    )
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="KYC",
+        accion="CREAR_EXPEDIENTE",
+        entidad_tipo="ExpedienteKYC",
+        entidad_id=expediente.id,
+        descripcion=f"Expediente KYC creado ({expediente.tipo_cliente}, código {expediente.codigo})",
     )
     return expediente
 
@@ -201,6 +212,15 @@ def update_cliente(
     session.add(expediente)
     session.commit()
     session.refresh(expediente)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="KYC",
+        accion="ACTUALIZAR_ESTADO_EXPEDIENTE",
+        entidad_tipo="ExpedienteKYC",
+        entidad_id=expediente.id,
+        descripcion=f"Estado actualizado a {expediente.status}",
+    )
     return expediente
 
 
@@ -257,6 +277,15 @@ def upload_documento(
     session.add(documento)
     session.commit()
     session.refresh(documento)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="KYC",
+        accion="SUBIR_DOCUMENTO",
+        entidad_tipo="DocumentoKYC",
+        entidad_id=documento.id,
+        descripcion=f"Documento {tipo.value} subido al expediente {id}",
+    )
     return documento
 
 
@@ -284,6 +313,15 @@ def delete_documento(
 
     session.delete(documento)
     session.commit()
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="KYC",
+        accion="ELIMINAR_DOCUMENTO",
+        entidad_tipo="DocumentoKYC",
+        entidad_id=doc_id,
+        descripcion=f"Documento eliminado del expediente {id}",
+    )
     return Message(message="Documento eliminado")
 
 
@@ -342,8 +380,18 @@ def evaluar_riesgo(
     expediente = _get_expediente_o_404(session, id)
     _verificar_acceso(expediente, current_user)
 
-    resultado = calcular_riesgo(expediente)
+    pesos = crud.get_pesos_riesgo(session)
+    resultado = calcular_riesgo(expediente, pesos)
     crud.recalcular_riesgo_expediente(session=session, expediente=expediente)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="KYC",
+        accion="EVALUAR_RIESGO",
+        entidad_tipo="ExpedienteKYC",
+        entidad_id=id,
+        descripcion=f"Riesgo calculado: {resultado.nivel} (puntaje {resultado.puntaje})",
+    )
     return resultado
 
 
@@ -361,3 +409,48 @@ def verificar_listas(
     _verificar_acceso(expediente, current_user)
     # Sin coincidencias (simulado).
     return ListasResult(ofac=False, onu=False, ue=False, coincidencias=[])
+
+
+@router.get(
+    "/{id}/factores-riesgo", response_model=RiesgoResult, dependencies=[AccesoKYC]
+)
+def factores_riesgo(
+    session: SessionDep, current_user: CurrentUser, id: uuid.UUID
+) -> Any:
+    """Desglose de factores del cálculo de riesgo actual (solo lectura, no persiste)."""
+    expediente = _get_expediente_o_404(session, id)
+    _verificar_acceso(expediente, current_user)
+    pesos = crud.get_pesos_riesgo(session)
+    return calcular_riesgo(expediente, pesos)
+
+
+@router.patch(
+    "/{id}/override-riesgo",
+    response_model=ExpedienteKYCPublic,
+    dependencies=[Depends(require_roles(UserRole.OFICIAL_CUMPLIMIENTO))],
+)
+def override_riesgo(
+    *,
+    session: SessionDep,
+    current_user: CurrentUser,
+    id: uuid.UUID,
+    body: RiesgoOverrideInput,
+) -> Any:
+    """El Oficial de Cumplimiento puede ajustar manualmente el nivel de riesgo con justificación."""
+    expediente = _get_expediente_o_404(session, id)
+    expediente.nivel_riesgo_override = body.nivel_riesgo_override.value
+    expediente.justificacion_override = body.justificacion_override
+    expediente.updated_at = datetime.now(timezone.utc)
+    session.add(expediente)
+    session.commit()
+    session.refresh(expediente)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="KYC",
+        accion="OVERRIDE_RIESGO",
+        entidad_tipo="ExpedienteKYC",
+        entidad_id=expediente.id,
+        descripcion=f"Nivel de riesgo ajustado manualmente a {body.nivel_riesgo_override.value}",
+    )
+    return expediente
