@@ -200,9 +200,7 @@ class AuditoriasPublic(SQLModel):
 
 # Roles del sistema para los que el 2FA es **obligatorio** desde el primer
 # login. El resto de roles puede activarlo voluntariamente desde Settings.
-REQUIRES_2FA_ROLES: frozenset[UserRole] = frozenset(
-    {UserRole.ADMIN, UserRole.OFICIAL_CUMPLIMIENTO}
-)
+REQUIRES_2FA_ROLES: frozenset[UserRole] = frozenset()
 
 
 class TwoFactorAuth(SQLModel, table=True):
