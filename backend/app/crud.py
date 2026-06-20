@@ -18,6 +18,7 @@ from app.models import (
     Item,
     ItemCreate,
     KYCStatus,
+    ParametroRiesgo,
     PersonaJuridica,
     PersonaNatural,
     RiskLevel,
@@ -25,6 +26,15 @@ from app.models import (
     UserCreate,
     UserUpdate,
 )
+
+
+def get_pesos_riesgo(session: Session) -> dict[str, int]:
+    """Devuelve el mapa factor→peso desde la BD; usa defaults si la tabla está vacía."""
+    from app.kyc_risk import _PESOS_DEFAULT
+    rows = session.exec(select(ParametroRiesgo).where(ParametroRiesgo.activo == True)).all()  # noqa: E712
+    if not rows:
+        return {}
+    return {r.factor: r.peso for r in rows if r.factor in _PESOS_DEFAULT}
 
 _RE_CEDULA_PA = re.compile(r"^\d{1,2}-\d{1,4}-\d{1,4}$")
 
@@ -165,7 +175,8 @@ def create_expediente(
             for bf in expediente_in.beneficiarios_final
         ]
 
-    resultado = calcular_riesgo(expediente)
+    pesos = get_pesos_riesgo(session)
+    resultado = calcular_riesgo(expediente, pesos)
     expediente.nivel_riesgo = resultado.nivel.value
     expediente.puntaje_riesgo = resultado.puntaje
 
@@ -201,7 +212,8 @@ def get_expediente(
 def recalcular_riesgo_expediente(
     *, session: Session, expediente: ExpedienteKYC
 ) -> ExpedienteKYC:
-    resultado = calcular_riesgo(expediente)
+    pesos = get_pesos_riesgo(session)
+    resultado = calcular_riesgo(expediente, pesos)
     expediente.nivel_riesgo = resultado.nivel.value
     expediente.puntaje_riesgo = resultado.puntaje
     expediente.updated_at = datetime.now(timezone.utc)

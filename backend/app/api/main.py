@@ -8,6 +8,7 @@ from app.api.routes import (
     dashboard,
     items,
     login,
+    parametros,
     private,
     users,
     utils,
@@ -24,6 +25,7 @@ api_router.include_router(clientes.router)
 api_router.include_router(casos_ddr.router)
 api_router.include_router(auditoria.router)
 api_router.include_router(dashboard.router)
+api_router.include_router(parametros.router)
 
 
 if settings.ENVIRONMENT == "local":

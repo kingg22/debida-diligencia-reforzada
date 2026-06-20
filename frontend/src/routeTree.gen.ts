@@ -20,6 +20,7 @@ import { Route as TwoFactorSetupRouteImport } from './routes/two-factor.setup'
 import { Route as LayoutUsuariosRouteImport } from './routes/_layout/usuarios'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutParametrosRouteImport } from './routes/_layout/parametros'
 import { Route as LayoutKycIndexRouteImport } from './routes/_layout/kyc/index'
 import { Route as LayoutClientesIndexRouteImport } from './routes/_layout/clientes/index'
 import { Route as LayoutCasosDdrIndexRouteImport } from './routes/_layout/casos-ddr/index'
@@ -82,6 +83,11 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutParametrosRoute = LayoutParametrosRouteImport.update({
+  id: '/parametros',
+  path: '/parametros',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutKycIndexRoute = LayoutKycIndexRouteImport.update({
   id: '/kyc/',
   path: '/kyc/',
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/two-factor': typeof TwoFactorRouteWithChildren
   '/admin': typeof LayoutAdminRoute
+  '/parametros': typeof LayoutParametrosRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
   '/two-factor/setup': typeof TwoFactorSetupRoute
@@ -145,6 +152,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/two-factor': typeof TwoFactorRouteWithChildren
   '/admin': typeof LayoutAdminRoute
+  '/parametros': typeof LayoutParametrosRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
   '/two-factor/setup': typeof TwoFactorSetupRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/two-factor': typeof TwoFactorRouteWithChildren
   '/_layout/admin': typeof LayoutAdminRoute
+  '/_layout/parametros': typeof LayoutParametrosRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/usuarios': typeof LayoutUsuariosRoute
   '/two-factor/setup': typeof TwoFactorSetupRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/two-factor'
     | '/admin'
+    | '/parametros'
     | '/settings'
     | '/usuarios'
     | '/two-factor/setup'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/two-factor'
     | '/admin'
+    | '/parametros'
     | '/settings'
     | '/usuarios'
     | '/two-factor/setup'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/two-factor'
     | '/_layout/admin'
+    | '/_layout/parametros'
     | '/_layout/settings'
     | '/_layout/usuarios'
     | '/two-factor/setup'
@@ -376,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCasosDdrIdEvaluacionRouteImport
       parentRoute: typeof LayoutCasosDdrIdRoute
     }
+    '/_layout/parametros': {
+      id: '/_layout/parametros'
+      path: '/parametros'
+      fullPath: '/parametros'
+      preLoaderRoute: typeof LayoutParametrosRouteImport
+      parentRoute: typeof LayoutRoute
+    }
   }
 }
 
@@ -392,6 +411,7 @@ const LayoutCasosDdrIdRouteWithChildren =
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
+  LayoutParametrosRoute: typeof LayoutParametrosRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutUsuariosRoute: typeof LayoutUsuariosRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
@@ -405,6 +425,7 @@ interface LayoutRouteChildren {
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
+  LayoutParametrosRoute: LayoutParametrosRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutUsuariosRoute: LayoutUsuariosRoute,
   LayoutIndexRoute: LayoutIndexRoute,

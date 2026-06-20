@@ -6,6 +6,7 @@ from app.core.config import settings
 from app.core.security import get_password_hash
 from app.models import (
     ListaRestrictivaSimulada,
+    ParametroRiesgo,
     PepSimulado,
     User,
     UserRole,
@@ -272,8 +273,34 @@ def _seed_lista_restrictiva(session: Session) -> None:
     session.commit()
 
 
+_PARAMETROS_RIESGO_DEFAULT = [
+    ("Cliente PEP", "Persona Expuesta Políticamente (Ley 23/2015)", 40),
+    ("Familiar de PEP", "Cónyuge o familiar directo de un PEP", 20),
+    ("Antecedentes penales", "Cliente con antecedentes penales registrados", 25),
+    ("País de residencia de alto riesgo", "Reside en país listado por GAFI como jurisdicción de alto riesgo", 20),
+    ("Ingresos 25k-50k", "Ingreso mensual entre $25,000 y $50,000", 15),
+    ("Ingresos 50k+", "Ingreso mensual mayor a $50,000", 15),
+    ("Accionistas anónimos", "Empresa con acciones al portador o accionistas anónimos", 25),
+    ("País de constitución de alto riesgo", "Empresa constituida en jurisdicción de alto riesgo GAFI", 20),
+    ("Opera en países de alto riesgo GAFI", "Empresa con operaciones en países de alto riesgo", 20),
+    ("Beneficiarios finales PEP", "Beneficiario final identificado como PEP (peso por cada uno, máx ×3)", 15),
+]
+
+
+def _seed_parametros_riesgo(session: Session) -> None:
+    for factor, descripcion, peso in _PARAMETROS_RIESGO_DEFAULT:
+        existing = session.exec(
+            select(ParametroRiesgo).where(ParametroRiesgo.factor == factor)
+        ).first()
+        if existing:
+            continue
+        session.add(ParametroRiesgo(factor=factor, descripcion=descripcion, peso=peso))
+    session.commit()
+
+
 def init_db(session: Session) -> None:
     """Inicializa la base de datos con datos demo (idempotente)."""
     _seed_usuarios(session)
     _seed_peps(session)
     _seed_lista_restrictiva(session)
+    _seed_parametros_riesgo(session)
