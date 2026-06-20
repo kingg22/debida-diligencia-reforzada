@@ -16,7 +16,6 @@ import {
   ESTADO_CASO,
   ESTADOS_CASO,
   NIVEL_RIESGO,
-  NIVELES_RIESGO,
 } from "@/lib/sgddr"
 
 export const Route = createFileRoute("/_layout/casos-ddr/")({
@@ -81,7 +80,7 @@ function CasosDdrPage() {
           className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:border-ring h-10 rounded-lg border px-3 text-sm outline-none transition-all"
         >
           <option value="">Todos los niveles</option>
-          {NIVELES_RIESGO.map((n) => (
+          {(["ALTO", "MUY_ALTO"] as const).map((n) => (
             <option key={n} value={n}>
               {NIVEL_RIESGO[n].label}
             </option>
