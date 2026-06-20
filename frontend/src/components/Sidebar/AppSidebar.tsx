@@ -22,11 +22,6 @@ import { User } from "./User"
 
 const baseItems: Item[] = [{ icon: Home, title: "Inicio", path: "/" }]
 
-const kycItems: Item[] = [
-  { icon: ClipboardList, title: "Nuevo Cliente KYC", path: "/kyc/nuevo" },
-  { icon: FolderOpen, title: "Clientes", path: "/clientes" },
-]
-
 const ddrItems: Item[] = [
   { icon: Briefcase, title: "Casos DDR", path: "/casos-ddr" },
 ]
@@ -65,10 +60,14 @@ export function AppSidebar() {
   const { user } = useAuth()
   const role = user?.role
 
-  const canKyc =
+  const canRegistrar = role === "ADMIN" || role === "ANALISTA_DDR"
+  const canVerClientes =
     role === "ADMIN" ||
     role === "ANALISTA_DDR" ||
-    role === "OFICIAL_CUMPLIMIENTO"
+    role === "OFICIAL_CUMPLIMIENTO" ||
+    role === "GERENTE_CUMPLIMIENTO" ||
+    role === "COMITE_CUMPLIMIENTO" ||
+    role === "AUDITOR"
   const canDdr =
     role === "ADMIN" ||
     role === "ANALISTA_DDR" ||
@@ -76,18 +75,21 @@ export function AppSidebar() {
     role === "GERENTE_CUMPLIMIENTO" ||
     role === "COMITE_CUMPLIMIENTO"
   const isAdmin = role === "ADMIN"
-  const isAuditor = role === "AUDITOR"
-
-  const auditorItems: Item[] = [
-    { icon: FileSearch, title: "Bitácora", path: "/auditoria" },
-  ]
+  const canBitacora = role === "ADMIN" || role === "AUDITOR"
 
   const items = [
     ...baseItems,
-    ...(canKyc ? kycItems : []),
+    ...(canRegistrar
+      ? [{ icon: ClipboardList, title: "Nuevo Cliente KYC", path: "/kyc/nuevo" }]
+      : []),
+    ...(canVerClientes
+      ? [{ icon: FolderOpen, title: "Clientes", path: "/clientes" }]
+      : []),
     ...(canDdr ? ddrItems : []),
     ...(isAdmin ? adminItems : []),
-    ...(isAuditor ? auditorItems : []),
+    ...(canBitacora
+      ? [{ icon: FileSearch, title: "Bitácora", path: "/auditoria" }]
+      : []),
   ]
 
   const sidebarUser = user
