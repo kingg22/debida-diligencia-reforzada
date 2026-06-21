@@ -67,6 +67,43 @@ export const Route = createFileRoute("/_layout/clientes/$id")({
 
 // ── Helpers de UI ────────────────────────────────────────────────────────
 
+const ETIQUETAS: Record<string, string> = {
+  // Género
+  MASCULINO: "Masculino",
+  FEMENINO: "Femenino",
+  OTRO: "Otro",
+  // Estado civil
+  SOLTERO: "Soltero/a",
+  CASADO: "Casado/a",
+  DIVORCIADO: "Divorciado/a",
+  VIUDO: "Viudo/a",
+  UNION_LIBRE: "Unión libre",
+  // Tipo documento
+  CEDULA_PA: "Cédula Panameña",
+  PASAPORTE: "Pasaporte",
+  // Fuente de ingresos
+  EMPLEO: "Empleo / Salario",
+  NEGOCIO_PROPIO: "Negocio propio",
+  INVERSIONES: "Inversiones",
+  BIENES_RAICES: "Bienes raíces / Alquileres",
+  PENSION: "Pensión / Jubilación",
+  REMESAS: "Remesas",
+  HERENCIA: "Herencia / Donación",
+  // Tipo sociedad
+  SOCIEDAD_ANONIMA: "Sociedad Anónima (S.A.)",
+  SOCIEDAD_RESPONSABILIDAD_LIMITADA: "S.R.L.",
+  SOCIEDAD_COLECTIVA: "Sociedad Colectiva",
+  SOCIEDAD_EN_COMANDITA: "Sociedad en Comandita",
+  FUNDACION: "Fundación",
+  ASOCIACION: "Asociación sin fines de lucro",
+  // Cargo representante
+  REPRESENTANTE_LEGAL: "Representante Legal",
+  PRESIDENTE: "Presidente",
+  GERENTE_GENERAL: "Gerente General",
+  DIRECTOR: "Director",
+  APODERADO: "Apoderado",
+}
+
 function Campo({
   label,
   value,
@@ -74,12 +111,14 @@ function Campo({
   label: string
   value?: string | number | null
 }) {
+  const display =
+    value === null || value === undefined || value === ""
+      ? "—"
+      : ETIQUETAS[String(value)] ?? String(value)
   return (
     <div>
       <p className="text-muted-foreground text-xs">{label}</p>
-      <p className="text-foreground mt-0.5 text-sm">
-        {value === null || value === undefined || value === "" ? "—" : String(value)}
-      </p>
+      <p className="text-foreground mt-0.5 text-sm">{display}</p>
     </div>
   )
 }
