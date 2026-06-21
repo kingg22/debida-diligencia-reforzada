@@ -950,8 +950,10 @@ function KYCNuevoCliente() {
               <StyledSelect
                 value={tipoIdNatural}
                 onChange={(e) => {
-                  setTipoIdNatural(e.target.value as "CEDULA_PA" | "PASAPORTE")
+                  const v = e.target.value as "CEDULA_PA" | "PASAPORTE"
+                  setTipoIdNatural(v)
                   setNumIdNatural("")
+                  if (v === "CEDULA_PA") setNacionalidad("Panamá")
                 }}
               >
                 <option value="CEDULA_PA">Cédula Panameña</option>
@@ -1083,10 +1085,21 @@ function KYCNuevoCliente() {
           />
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Nacionalidad" required>
+            <Field
+              label="Nacionalidad"
+              required
+              hint={tipoIdNatural === "CEDULA_PA" ? "La cédula panameña requiere nacionalidad panameña" : undefined}
+            >
               <StyledSelect
                 value={nacionalidad}
-                onChange={(e) => setNacionalidad(e.target.value)}
+                disabled={tipoIdNatural === "CEDULA_PA"}
+                onChange={(e) => {
+                  setNacionalidad(e.target.value)
+                  if (e.target.value !== "Panamá" && tipoIdNatural === "CEDULA_PA") {
+                    setTipoIdNatural("PASAPORTE")
+                    setNumIdNatural("")
+                  }
+                }}
               >
                 {PAISES.map((p) => (
                   <option key={p}>{p}</option>
