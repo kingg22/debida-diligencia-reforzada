@@ -518,6 +518,8 @@ function KYCNuevoCliente() {
   const [correo, setCorreo] = useState("")
   const [telefono, setTelefono] = useState("+507-")
   const [ocupacion, setOcupacion] = useState("")
+  const [ingresoMensual, setIngresoMensual] = useState("")
+  const [fuenteIngresos, setFuenteIngresos] = useState("")
   const [esPep, setEsPep] = useState(false)
 
   // ── Paso 2 — Jurídica ──
@@ -612,6 +614,9 @@ function KYCNuevoCliente() {
       if (!telefono.trim() || telefono === "+507-")
         e.telefono = "El teléfono es requerido"
       if (!ocupacion.trim()) e.ocupacion = "La ocupación es requerida"
+      if (!ingresoMensual || parseFloat(ingresoMensual) < 0)
+        e.ingresoMensual = "Ingresa un ingreso mensual válido"
+      if (!fuenteIngresos) e.fuenteIngresos = "Selecciona la fuente de ingresos"
     } else {
       if (!actividadEconomica)
         e.actividadEconomica = "La actividad económica es requerida"
@@ -736,8 +741,8 @@ function KYCNuevoCliente() {
             pais: paisResidencia,
             ocupacion,
             empleador: "—",
-            ingreso_mensual_aproximado: 0,
-            fuente_ingresos: "OTRO",
+            ingreso_mensual_aproximado: parseFloat(ingresoMensual) || 0,
+            fuente_ingresos: fuenteIngresos || "OTRO",
             es_pep: esPep,
             es_pep_familiar: false,
             tiene_antecedentes: false,
@@ -1153,6 +1158,46 @@ function KYCNuevoCliente() {
                 placeholder="Abogado, Comerciante…"
                 error={errors.ocupacion}
               />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field
+              label="Ingreso mensual aproximado (USD)"
+              required
+              error={errors.ingresoMensual}
+              hint="Monto en dólares americanos"
+            >
+              <StyledInput
+                type="number"
+                min="0"
+                step="100"
+                value={ingresoMensual}
+                onChange={(e) => setIngresoMensual(e.target.value)}
+                placeholder="0"
+                error={errors.ingresoMensual}
+              />
+            </Field>
+            <Field
+              label="Fuente de ingresos"
+              required
+              error={errors.fuenteIngresos}
+            >
+              <StyledSelect
+                value={fuenteIngresos}
+                onChange={(e) => setFuenteIngresos(e.target.value)}
+                error={errors.fuenteIngresos}
+              >
+                <option value="">Selecciona una fuente</option>
+                <option value="EMPLEO">Empleo / Salario</option>
+                <option value="NEGOCIO_PROPIO">Negocio propio</option>
+                <option value="INVERSIONES">Inversiones</option>
+                <option value="BIENES_RAICES">Bienes raíces / Alquileres</option>
+                <option value="PENSION">Pensión / Jubilación</option>
+                <option value="REMESAS">Remesas</option>
+                <option value="HERENCIA">Herencia / Donación</option>
+                <option value="OTRO">Otro</option>
+              </StyledSelect>
             </Field>
           </div>
 
@@ -1845,6 +1890,11 @@ function KYCNuevoCliente() {
               <Row label="Correo electrónico" value={correo} />
               <Row label="Teléfono" value={telefono} />
               <Row label="Ocupación" value={ocupacion} />
+              <Row
+                label="Ingreso mensual"
+                value={ingresoMensual ? `$${parseFloat(ingresoMensual).toLocaleString()} USD` : "—"}
+              />
+              <Row label="Fuente de ingresos" value={fuenteIngresos || "—"} />
               <Row
                 label="PEP"
                 value={
