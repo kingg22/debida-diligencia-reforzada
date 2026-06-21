@@ -523,6 +523,7 @@ function KYCNuevoCliente() {
   const [ingresoMensual, setIngresoMensual] = useState("")
   const [fuenteIngresos, setFuenteIngresos] = useState("")
   const [esPep, setEsPep] = useState(false)
+  const [esPepFamiliar, setEsPepFamiliar] = useState(false)
 
   // ── Paso 2 — Jurídica ──
   const [paisConstitucion, setPaisConstitucion] = useState("Panamá")
@@ -746,7 +747,7 @@ function KYCNuevoCliente() {
             ingreso_mensual_aproximado: parseFloat(ingresoMensual) || 0,
             fuente_ingresos: fuenteIngresos || "OTRO",
             es_pep: esPep,
-            es_pep_familiar: false,
+            es_pep_familiar: esPepFamiliar,
             tiene_antecedentes: false,
           },
           beneficiarios_final: [],
@@ -1281,6 +1282,42 @@ function KYCNuevoCliente() {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* Familiar PEP */}
+          <div
+            className="rounded-xl p-4"
+            style={{
+              backgroundColor: esPepFamiliar ? "rgba(224,82,82,0.06)" : "#0a1628",
+              border: `1px solid ${esPepFamiliar ? "rgba(224,82,82,0.30)" : "#1b2e4a"}`,
+            }}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <ShieldAlert
+                  size={18}
+                  className="mt-0.5 flex-shrink-0"
+                  style={{ color: esPepFamiliar ? "#e05252" : "#4a6080" }}
+                />
+                <div>
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: esPepFamiliar ? "#e05252" : "#f0ede8" }}
+                  >
+                    Familiar o asociado cercano de PEP
+                  </p>
+                  <p className="mt-0.5 text-xs leading-relaxed" style={{ color: "#8a9bb5" }}>
+                    Cónyuge, hijo/a, padre, madre o socio de negocio de una PEP.{" "}
+                    <span style={{ color: "#c9a84c" }}>Ley 23/2015 Art. 24</span>
+                  </p>
+                </div>
+              </div>
+              <Toggle
+                checked={esPepFamiliar}
+                onChange={() => setEsPepFamiliar((p) => !p)}
+                danger
+              />
+            </div>
           </div>
         </>
       ) : (
@@ -1931,6 +1968,16 @@ function KYCNuevoCliente() {
                 value={
                   esPep ? (
                     <span style={{ color: "#e05252" }}>Sí — DDR requerida</span>
+                  ) : (
+                    "No"
+                  )
+                }
+              />
+              <Row
+                label="Familiar / asociado de PEP"
+                value={
+                  esPepFamiliar ? (
+                    <span style={{ color: "#e05252" }}>Sí</span>
                   ) : (
                     "No"
                   )
