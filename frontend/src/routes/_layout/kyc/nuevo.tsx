@@ -517,6 +517,8 @@ function KYCNuevoCliente() {
   const [paisResidencia, setPaisResidencia] = useState("Panamá")
   const [correo, setCorreo] = useState("")
   const [telefono, setTelefono] = useState("+507-")
+  const [genero, setGenero] = useState<"MASCULINO" | "FEMENINO" | "OTRO">("MASCULINO")
+  const [estadoCivil, setEstadoCivil] = useState("SOLTERO")
   const [ocupacion, setOcupacion] = useState("")
   const [ingresoMensual, setIngresoMensual] = useState("")
   const [fuenteIngresos, setFuenteIngresos] = useState("")
@@ -732,8 +734,8 @@ function KYCNuevoCliente() {
             nombre: nombres,
             apellido: apellidos,
             fecha_nacimiento: fechaNacimiento,
-            genero: "OTRO",
-            estado_civil: "SOLTERO",
+            genero,
+            estado_civil: estadoCivil,
             telefono,
             email: correo,
             direccion: "—",
@@ -1019,6 +1021,33 @@ function KYCNuevoCliente() {
               error={errors.fechaNacimiento}
             />
           </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Género" required>
+              <StyledSelect
+                value={genero}
+                onChange={(e) =>
+                  setGenero(e.target.value as "MASCULINO" | "FEMENINO" | "OTRO")
+                }
+              >
+                <option value="MASCULINO">Masculino</option>
+                <option value="FEMENINO">Femenino</option>
+                <option value="OTRO">Otro / Prefiero no indicar</option>
+              </StyledSelect>
+            </Field>
+            <Field label="Estado civil" required>
+              <StyledSelect
+                value={estadoCivil}
+                onChange={(e) => setEstadoCivil(e.target.value)}
+              >
+                <option value="SOLTERO">Soltero/a</option>
+                <option value="CASADO">Casado/a</option>
+                <option value="DIVORCIADO">Divorciado/a</option>
+                <option value="VIUDO">Viudo/a</option>
+                <option value="UNION_LIBRE">Unión libre</option>
+              </StyledSelect>
+            </Field>
+          </div>
         </div>
       )}
 
@@ -1885,6 +1914,8 @@ function KYCNuevoCliente() {
                 value={`${tipoIdNatural === "CEDULA_PA" ? "Cédula PA" : "Pasaporte"}: ${numIdNatural}`}
               />
               <Row label="Fecha de nacimiento" value={fechaNacimiento} />
+              <Row label="Género" value={{ MASCULINO: "Masculino", FEMENINO: "Femenino", OTRO: "Otro" }[genero]} />
+              <Row label="Estado civil" value={{ SOLTERO: "Soltero/a", CASADO: "Casado/a", DIVORCIADO: "Divorciado/a", VIUDO: "Viudo/a", UNION_LIBRE: "Unión libre" }[estadoCivil]} />
               <Row label="Nacionalidad" value={nacionalidad} />
               <Row label="País de residencia" value={paisResidencia} />
               <Row label="Correo electrónico" value={correo} />
