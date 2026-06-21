@@ -1,7 +1,6 @@
 import {
   Briefcase,
   ClipboardList,
-  FileSearch,
   FolderOpen,
   Home,
   Settings2,
@@ -75,8 +74,6 @@ export function AppSidebar() {
     role === "GERENTE_CUMPLIMIENTO" ||
     role === "COMITE_CUMPLIMIENTO"
   const isAdmin = role === "ADMIN"
-  const canBitacora = role === "ADMIN" || role === "AUDITOR"
-
   const items = [
     ...baseItems,
     ...(canRegistrar
@@ -87,9 +84,6 @@ export function AppSidebar() {
       : []),
     ...(canDdr ? ddrItems : []),
     ...(isAdmin ? adminItems : []),
-    ...(canBitacora
-      ? [{ icon: FileSearch, title: "Bitácora", path: "/auditoria" }]
-      : []),
   ]
 
   const sidebarUser = user
