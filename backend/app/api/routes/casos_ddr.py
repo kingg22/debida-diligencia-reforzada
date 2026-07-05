@@ -27,6 +27,7 @@ from app.models import (
     DocumentoTipo,
     EstadoCasoDDR,
     ExpedienteKYC,
+    ExpedienteKYCPublic,
     User,
     UserRole,
 )
@@ -167,6 +168,22 @@ def read_caso_ddr(session: SessionDep, id: uuid.UUID) -> Any:
     return public
 
 
+@router.get(
+    "/{id}/expediente",
+    response_model=ExpedienteKYCPublic,
+    dependencies=[AccesoDDR],
+)
+def read_expediente_del_caso(session: SessionDep, id: uuid.UUID) -> Any:
+    """Expediente KYC completo del caso, para que quien revisa o decide
+    (Oficial, Gerente, Comité, Auditor) tenga toda la información del
+    cliente sin depender de los permisos del módulo KYC."""
+    caso = _get_caso_o_404(session, id)
+    expediente = session.get(ExpedienteKYC, caso.expediente_id)
+    if expediente is None:
+        raise HTTPException(status_code=404, detail="Expediente no encontrado")
+    return expediente
+
+
 class AsignarAnalistaInput(BaseModel):
     analista_id: uuid.UUID
 
@@ -192,6 +209,18 @@ def asignar_analista(
         raise HTTPException(
             status_code=400,
             detail="El usuario referenciado debe ser ANALISTA_DDR",
+        )
+
+    # Segregación de funciones (cuatro ojos): el analista que investiga el
+    # caso NO puede ser el mismo que registró el expediente KYC.
+    expediente = session.get(ExpedienteKYC, caso.expediente_id)
+    if expediente is not None and expediente.analista_id == body.analista_id:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Conflicto de interés: este analista registró el expediente "
+                "y no puede investigar su propio caso. Asigne otro analista."
+            ),
         )
 
     caso.analista_id = body.analista_id
@@ -226,22 +255,34 @@ def enviar_aprobacion(
     session: SessionDep,
     _current_user: CurrentUser,
 ) -> Any:
+    """El analista termina su investigación y envía el caso a revisión
+    del Oficial de Cumplimiento (cuatro ojos: el analista investiga,
+    el Oficial valida, el Gerente/Comité decide)."""
     caso = _get_caso_o_404(session, id)
 
     if caso.status != EstadoCasoDDR.EN_REVISION.value:
         raise HTTPException(
             status_code=409,
-            detail="El caso debe estar en EN_REVISION para enviar a aprobación",
+            detail="El caso debe estar en EN_REVISION para enviarse al Oficial",
+        )
+
+    # Solo el analista asignado al caso puede enviarlo
+    if caso.analista_id != _current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Solo el analista asignado puede enviar este caso",
         )
 
     # Verificar cuestionario EBR completo
     if not caso.cuestionario or not caso.cuestionario.completado:
         raise HTTPException(
             status_code=400,
-            detail="El cuestionario EBR debe estar completado antes de enviar a aprobación",
+            detail="El cuestionario EBR debe estar completado antes de enviar",
         )
 
-    caso.status = EstadoCasoDDR.EN_APROBACION.value
+    caso.status = EstadoCasoDDR.EN_REVISION_OFICIAL.value
+    # Limpia observaciones de una devolución previa: el caso vuelve limpio
+    caso.observaciones_oficial = None
     caso.updated_at = datetime.now(timezone.utc)
     session.add(caso)
     session.commit()
@@ -250,10 +291,97 @@ def enviar_aprobacion(
         session=session,
         usuario_id=_current_user.id,
         modulo="DDR",
-        accion="ENVIAR_APROBACION",
+        accion="ENVIAR_REVISION_OFICIAL",
         entidad_tipo="CasoDDR",
         entidad_id=caso.id,
-        descripcion=f"Caso DDR enviado a aprobación (nivel {caso.nivel_riesgo})",
+        descripcion=f"Caso DDR enviado a revisión del Oficial (nivel {caso.nivel_riesgo})",
+    )
+    return caso
+
+
+# ── Revisión del Oficial de Cumplimiento (cuatro ojos) ─────────────────────
+
+
+OficialRol = Depends(require_roles(UserRole.OFICIAL_CUMPLIMIENTO, UserRole.ADMIN))
+
+
+class DevolucionInput(BaseModel):
+    observaciones: str = Field(min_length=10, max_length=1000)
+
+
+@router.post(
+    "/{id}/validar",
+    response_model=CasoDDRPublic,
+    dependencies=[OficialRol],
+)
+def validar_caso(
+    id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Any:
+    """El Oficial valida el trabajo del analista y escala el caso a la
+    instancia de aprobación (Gerente si ALTO, Comité si MUY_ALTO)."""
+    caso = _get_caso_o_404(session, id)
+
+    if caso.status != EstadoCasoDDR.EN_REVISION_OFICIAL.value:
+        raise HTTPException(
+            status_code=409,
+            detail="El caso debe estar en revisión del Oficial para validarse",
+        )
+
+    caso.status = EstadoCasoDDR.EN_APROBACION.value
+    caso.validado_por_id = current_user.id
+    caso.updated_at = datetime.now(timezone.utc)
+    session.add(caso)
+    session.commit()
+    session.refresh(caso)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="DDR",
+        accion="VALIDAR_CASO",
+        entidad_tipo="CasoDDR",
+        entidad_id=caso.id,
+        descripcion=f"Oficial validó el caso y lo escaló a aprobación (nivel {caso.nivel_riesgo})",
+    )
+    return caso
+
+
+@router.post(
+    "/{id}/devolver",
+    response_model=CasoDDRPublic,
+    dependencies=[OficialRol],
+)
+def devolver_caso(
+    id: uuid.UUID,
+    body: DevolucionInput,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Any:
+    """El Oficial devuelve el caso al analista con observaciones para que
+    complete o corrija la investigación."""
+    caso = _get_caso_o_404(session, id)
+
+    if caso.status != EstadoCasoDDR.EN_REVISION_OFICIAL.value:
+        raise HTTPException(
+            status_code=409,
+            detail="El caso debe estar en revisión del Oficial para devolverse",
+        )
+
+    caso.status = EstadoCasoDDR.EN_REVISION.value
+    caso.observaciones_oficial = body.observaciones
+    caso.updated_at = datetime.now(timezone.utc)
+    session.add(caso)
+    session.commit()
+    session.refresh(caso)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="DDR",
+        accion="DEVOLVER_CASO",
+        entidad_tipo="CasoDDR",
+        entidad_id=caso.id,
+        descripcion=f"Oficial devolvió el caso al analista: {body.observaciones[:80]}",
     )
     return caso
 
@@ -475,11 +603,12 @@ class DocumentosDDRPublic(SQLModel):
 @router.post(
     "/{id}/documentos",
     response_model=DocumentoKYCPublic,
-    dependencies=[AccesoDDR],
+    dependencies=[AnalistaRol],
 )
 def upload_documento_ddr(
     *,
     session: SessionDep,
+    current_user: CurrentUser,
     id: uuid.UUID,
     tipo: DocumentoTipo = Form(...),
     file: UploadFile = File(...),
@@ -523,7 +652,7 @@ def upload_documento_ddr(
     session.refresh(documento)
     registrar_auditoria(
         session=session,
-        usuario_id=None,
+        usuario_id=current_user.id,
         modulo="DDR",
         accion="SUBIR_DOCUMENTO",
         entidad_tipo="DocumentoKYC",

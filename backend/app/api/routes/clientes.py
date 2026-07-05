@@ -55,15 +55,33 @@ UPLOAD_DIR = Path("uploads")
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 ALLOWED_MIME = {"application/pdf", "image/jpeg", "image/png"}
 
-# Roles que pueden registrar clientes y los que pueden revisar.
+# Roles que pueden registrar clientes y los que pueden revisar/mutar.
 RegistraCliente = Depends(require_roles(UserRole.ANALISTA_DDR))
 AccesoKYC = Depends(
     require_roles(UserRole.ANALISTA_DDR, UserRole.OFICIAL_CUMPLIMIENTO)
 )
+# Lectura: los roles que revisan o auditan también necesitan consultar
+# expedientes (Gerente/Comité deciden casos DDR; el Auditor examina todo).
+LecturaKYC = Depends(
+    require_roles(
+        UserRole.ANALISTA_DDR,
+        UserRole.OFICIAL_CUMPLIMIENTO,
+        UserRole.GERENTE_CUMPLIMIENTO,
+        UserRole.COMITE_CUMPLIMIENTO,
+        UserRole.AUDITOR,
+    )
+)
+
+_ROLES_VEN_TODO = {
+    UserRole.OFICIAL_CUMPLIMIENTO,
+    UserRole.GERENTE_CUMPLIMIENTO,
+    UserRole.COMITE_CUMPLIMIENTO,
+    UserRole.AUDITOR,
+}
 
 
 def _puede_ver_todos(user: User) -> bool:
-    return user.is_superuser or user.role == UserRole.OFICIAL_CUMPLIMIENTO
+    return user.is_superuser or user.role in _ROLES_VEN_TODO
 
 
 def _get_expediente_o_404(
@@ -120,7 +138,7 @@ def create_cliente(
     return expediente
 
 
-@router.get("/", response_model=ExpedientesKYCPublic, dependencies=[AccesoKYC])
+@router.get("/", response_model=ExpedientesKYCPublic, dependencies=[LecturaKYC])
 def read_clientes(
     session: SessionDep,
     current_user: CurrentUser,
@@ -164,7 +182,7 @@ def read_clientes(
     )
 
 
-@router.get("/{id}", response_model=ExpedienteKYCPublic, dependencies=[AccesoKYC])
+@router.get("/{id}", response_model=ExpedienteKYCPublic, dependencies=[LecturaKYC])
 def read_cliente(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID
 ) -> Any:
@@ -208,7 +226,7 @@ def update_cliente(
                 status_code=400,
                 detail="El rechazo requiere un comentario",
             )
-        expediente.status = nuevo_status.value()
+        expediente.status = nuevo_status.value
 
     if update_in.comentario_rechazo is not None:
         expediente.comentario_rechazo = update_in.comentario_rechazo
@@ -332,7 +350,7 @@ def delete_documento(
 
 @router.get(
     "/{id}/documentos/{doc_id}/descargar",
-    dependencies=[AccesoKYC],
+    dependencies=[LecturaKYC],
 )
 def descargar_documento(
     session: SessionDep,
@@ -495,7 +513,7 @@ def verificar_listas(
 
 
 @router.get(
-    "/{id}/screening", response_model=list[ScreeningResultadoPublic], dependencies=[AccesoKYC]
+    "/{id}/screening", response_model=list[ScreeningResultadoPublic], dependencies=[LecturaKYC]
 )
 def listar_screening(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID
@@ -543,7 +561,7 @@ def marcar_falso_positivo(
 
 
 @router.get(
-    "/{id}/factores-riesgo", response_model=RiesgoResult, dependencies=[AccesoKYC]
+    "/{id}/factores-riesgo", response_model=RiesgoResult, dependencies=[LecturaKYC]
 )
 def factores_riesgo(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID
