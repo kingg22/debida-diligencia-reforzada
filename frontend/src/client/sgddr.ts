@@ -347,9 +347,17 @@ export interface CasoDDR {
   id: string
   expediente_id: string
   nivel_riesgo: string
-  status: "ABIERTO" | "EN_REVISION" | "EN_APROBACION" | "APROBADO" | "RECHAZADO"
+  status:
+    | "ABIERTO"
+    | "EN_REVISION"
+    | "EN_REVISION_OFICIAL"
+    | "EN_APROBACION"
+    | "APROBADO"
+    | "RECHAZADO"
   analista_id: string | null
   aprobado_por_id: string | null
+  validado_por_id: string | null
+  observaciones_oficial: string | null
   observaciones_rechazo: string | null
   fecha_apertura: string | null
   fecha_cierre: string | null
@@ -565,6 +573,18 @@ export const CasosDdrService = {
   enviarAprobacion: (id: string) =>
     fetchJson<CasoDDR>(Endpoints.casosDdr.enviarAprobacion(id), {
       method: "POST",
+    }),
+  // Expediente KYC completo del caso (para el revisor: Oficial/Gerente/Comité)
+  expediente: (id: string) =>
+    fetchJson<ExpedienteKYC>(Endpoints.casosDdr.expediente(id)),
+  // El Oficial valida el trabajo del analista y escala a aprobación
+  validar: (id: string) =>
+    fetchJson<CasoDDR>(Endpoints.casosDdr.validar(id), { method: "POST" }),
+  // El Oficial devuelve el caso al analista con observaciones
+  devolver: (id: string, body: RechazoInput) =>
+    fetchJson<CasoDDR>(Endpoints.casosDdr.devolver(id), {
+      method: "POST",
+      body: JSON.stringify(body),
     }),
   aprobar: (id: string) =>
     fetchJson<CasoDDR>(Endpoints.casosDdr.aprobar(id), { method: "POST" }),

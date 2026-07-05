@@ -65,9 +65,12 @@ export const Endpoints = {
   casosDdr: {
     list: () => `${API_VERSION}/casos-ddr/`,
     get: (id: string) => `${API_VERSION}/casos-ddr/${id}`,
+    expediente: (id: string) => `${API_VERSION}/casos-ddr/${id}/expediente`,
     asignar: (id: string) => `${API_VERSION}/casos-ddr/${id}/asignar`,
     enviarAprobacion: (id: string) =>
       `${API_VERSION}/casos-ddr/${id}/enviar-aprobacion`,
+    validar: (id: string) => `${API_VERSION}/casos-ddr/${id}/validar`,
+    devolver: (id: string) => `${API_VERSION}/casos-ddr/${id}/devolver`,
     aprobar: (id: string) => `${API_VERSION}/casos-ddr/${id}/aprobar`,
     rechazar: (id: string) => `${API_VERSION}/casos-ddr/${id}/rechazar`,
     cuestionario: (id: string) => `${API_VERSION}/casos-ddr/${id}/cuestionario`,
