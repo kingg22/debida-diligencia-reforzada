@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_layout/kyc/nuevo")({
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type TipoPersona = "NATURAL" | "JURIDICA"
-type NivelRiesgo = "ALTO" | "MEDIO" | "BAJO"
+type NivelRiesgo = "MUY_ALTO" | "ALTO" | "MEDIO" | "BAJO"
 type FormErrors = Record<string, string>
 
 interface BeneficiarioFinalForm {
@@ -126,19 +126,77 @@ const STEPS = [
 ]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function calcularNivelRiesgo(params: {
-  esPep: boolean
-  nacionalidad: string
+// Países de alto riesgo GAFI presentes en el catálogo PAISES. Espejo del
+// listado del backend (kyc_risk._PAISES_ALTO_RIESGO_GAFI); si se modifica
+// uno, mantener el otro sincronizado.
+const PAISES_ALTO_RIESGO = new Set([
+  "Colombia",
+  "México",
+  "Venezuela",
+  "Argentina",
+  "Brasil",
+  "Chile",
+  "Perú",
+  "Ecuador",
+  "Costa Rica",
+  "Guatemala",
+  "Honduras",
+  "El Salvador",
+  "Nicaragua",
+  "Cuba",
+  "República Dominicana",
+])
+
+// Estimación del riesgo con la MISMA fórmula y pesos default del backend
+// (kyc_risk.calcular_riesgo). El valor definitivo lo persiste el backend al
+// crear el expediente (los pesos son configurables en Parámetros), por eso
+// en la UI se presenta como "estimado".
+function estimarRiesgo(params: {
   tipoPersona: TipoPersona
+  esPep: boolean
+  esPepFamiliar: boolean
+  tieneAntecedentes: boolean
+  paisResidencia: string
+  ingresoMensual: number
+  accionistasAnonimos: boolean
+  paisConstitucion: string
+  operaPaisesAltoRiesgo: boolean
   beneficiarios: BeneficiarioFinalForm[]
-}): NivelRiesgo {
-  if (params.esPep) return "ALTO"
-  if (params.beneficiarios.some((b) => b.es_pep)) return "ALTO"
-  if (params.tipoPersona === "NATURAL" && params.nacionalidad !== "Panamá")
-    return "MEDIO"
-  if (params.tipoPersona === "JURIDICA" && params.beneficiarios.length > 2)
-    return "MEDIO"
-  return "BAJO"
+}): { nivel: NivelRiesgo; puntaje: number } {
+  let puntaje = 0
+  if (params.tipoPersona === "NATURAL") {
+    if (params.esPep) puntaje += 40
+    if (params.esPepFamiliar) puntaje += 20
+    if (params.tieneAntecedentes) puntaje += 25
+    if (
+      PAISES_ALTO_RIESGO.has(params.paisResidencia) &&
+      params.paisResidencia !== "Panamá"
+    )
+      puntaje += 20
+    if (params.ingresoMensual >= 25000 && params.ingresoMensual < 50000)
+      puntaje += 15
+    if (params.ingresoMensual >= 50000) puntaje += 15
+  } else {
+    if (params.accionistasAnonimos) puntaje += 25
+    if (
+      PAISES_ALTO_RIESGO.has(params.paisConstitucion) &&
+      params.paisConstitucion !== "Panamá"
+    )
+      puntaje += 20
+    if (params.operaPaisesAltoRiesgo) puntaje += 20
+    const bfPep = params.beneficiarios.filter((b) => b.es_pep).length
+    puntaje += Math.min(bfPep * 15, 45)
+  }
+  puntaje = Math.min(100, puntaje)
+  const nivel: NivelRiesgo =
+    puntaje <= 20
+      ? "BAJO"
+      : puntaje <= 40
+        ? "MEDIO"
+        : puntaje <= 70
+          ? "ALTO"
+          : "MUY_ALTO"
+  return { nivel, puntaje }
 }
 
 function validarCedulaPA(v: string) {
@@ -319,6 +377,11 @@ function Toggle({
 
 function RiskBadge({ nivel }: { nivel: NivelRiesgo }) {
   const cfg = {
+    MUY_ALTO: {
+      c: "#B71C1C",
+      bg: "rgba(183,28,28,0.14)",
+      label: "Riesgo Muy Alto",
+    },
     ALTO: { c: "#e05252", bg: "rgba(224,82,82,0.12)", label: "Alto Riesgo" },
     MEDIO: { c: "#d97706", bg: "rgba(217,119,6,0.12)", label: "Riesgo Medio" },
     BAJO: { c: "#22c55e", bg: "rgba(34,197,94,0.12)", label: "Riesgo Bajo" },
@@ -503,6 +566,7 @@ function KYCNuevoCliente() {
     "CEDULA_PA",
   )
   const [numIdNatural, setNumIdNatural] = useState("")
+  const [fechaExpiracionDoc, setFechaExpiracionDoc] = useState("")
   const [nombres, setNombres] = useState("")
   const [apellidos, setApellidos] = useState("")
   const [fechaNacimiento, setFechaNacimiento] = useState("")
@@ -519,11 +583,15 @@ function KYCNuevoCliente() {
   const [telefono, setTelefono] = useState("+507-")
   const [genero, setGenero] = useState<"MASCULINO" | "FEMENINO" | "OTRO">("MASCULINO")
   const [estadoCivil, setEstadoCivil] = useState("SOLTERO")
+  const [direccion, setDireccion] = useState("")
+  const [ciudad, setCiudad] = useState("")
   const [ocupacion, setOcupacion] = useState("")
+  const [empleador, setEmpleador] = useState("")
   const [ingresoMensual, setIngresoMensual] = useState("")
   const [fuenteIngresos, setFuenteIngresos] = useState("")
   const [esPep, setEsPep] = useState(false)
   const [esPepFamiliar, setEsPepFamiliar] = useState(false)
+  const [tieneAntecedentes, setTieneAntecedentes] = useState(false)
 
   // ── Paso 2 — Jurídica ──
   const [paisConstitucion, setPaisConstitucion] = useState("Panamá")
@@ -537,6 +605,10 @@ function KYCNuevoCliente() {
   const [representanteLegal, setRepresentanteLegal] = useState("")
   const [idRepresentante, setIdRepresentante] = useState("")
   const [cargoRepresentante, setCargoRepresentante] = useState("REPRESENTANTE_LEGAL")
+  const [ingresoAnual, setIngresoAnual] = useState("")
+  const [cantidadEmpleados, setCantidadEmpleados] = useState("")
+  const [accionistasAnonimos, setAccionistasAnonimos] = useState(false)
+  const [operaPaisesAltoRiesgo, setOperaPaisesAltoRiesgo] = useState(false)
   // Los beneficiarios finales son obligatorios para Persona Jurídica
   // (Ley 254/2021 Art. 3). Se siembra con una fila vacía al elegir JURIDICA.
   const [beneficiarios, setBeneficiarios] = useState<BeneficiarioFinalForm[]>([])
@@ -548,12 +620,20 @@ function KYCNuevoCliente() {
   const [docPoder, setDocPoder] = useState<File | null>(null)
 
   // ── Computed ──
-  const nivelRiesgo: NivelRiesgo = calcularNivelRiesgo({
-    esPep,
-    nacionalidad,
+  const riesgoEstimado = estimarRiesgo({
     tipoPersona: tipoPersona ?? "NATURAL",
+    esPep,
+    esPepFamiliar,
+    tieneAntecedentes,
+    paisResidencia,
+    ingresoMensual: parseFloat(ingresoMensual) || 0,
+    accionistasAnonimos,
+    paisConstitucion,
+    operaPaisesAltoRiesgo,
     beneficiarios,
   })
+  const nivelRiesgo: NivelRiesgo = riesgoEstimado.nivel
+  const activaDdr = nivelRiesgo === "ALTO" || nivelRiesgo === "MUY_ALTO"
 
   const totalPorcentajeBF = beneficiarios.reduce(
     (s, b) => s + (parseFloat(b.porcentaje_participacion) || 0),
@@ -596,6 +676,10 @@ function KYCNuevoCliente() {
         e.fechaNacimiento = "La fecha de nacimiento es requerida"
       else if (calcularEdad(fechaNacimiento) < 18)
         e.fechaNacimiento = "El cliente debe ser mayor de 18 años"
+      if (!fechaExpiracionDoc)
+        e.fechaExpiracionDoc = "La fecha de expiración es requerida"
+      else if (new Date(fechaExpiracionDoc) <= new Date())
+        e.fechaExpiracionDoc = "El documento está vencido; debe estar vigente"
     } else {
       if (!razonSocial.trim()) e.razonSocial = "La razón social es requerida"
       if (!ruc.trim()) e.ruc = "El RUC es requerido"
@@ -616,6 +700,8 @@ function KYCNuevoCliente() {
         e.correo = "Formato de correo inválido"
       if (!telefono.trim() || telefono === "+507-")
         e.telefono = "El teléfono es requerido"
+      if (!direccion.trim()) e.direccion = "La dirección es requerida"
+      if (!ciudad.trim()) e.ciudad = "La ciudad es requerida"
       if (!ocupacion.trim()) e.ocupacion = "La ocupación es requerida"
       if (!ingresoMensual || parseFloat(ingresoMensual) < 0)
         e.ingresoMensual = "Ingresa un ingreso mensual válido"
@@ -639,6 +725,14 @@ function KYCNuevoCliente() {
         e.representanteLegal = "El nombre del representante es requerido"
       if (!idRepresentante.trim())
         e.idRepresentante = "La identificación del representante es requerida"
+      if (!ingresoAnual || parseFloat(ingresoAnual) < 0)
+        e.ingresoAnual = "Ingresa un ingreso anual válido"
+      if (
+        cantidadEmpleados === "" ||
+        parseInt(cantidadEmpleados, 10) < 0 ||
+        Number.isNaN(parseInt(cantidadEmpleados, 10))
+      )
+        e.cantidadEmpleados = "Ingresa la cantidad de empleados"
 
       // Beneficiarios finales: Ley 254/2021 — obligatorios para Persona Jurídica.
       if (beneficiarios.length === 0)
@@ -729,7 +823,7 @@ function KYCNuevoCliente() {
           persona_natural: {
             tipo_documento: tipoIdNatural,
             numero_documento: numIdNatural,
-            fecha_expiracion_doc: "",
+            fecha_expiracion_doc: fechaExpiracionDoc,
             nacionalidad,
             pais_nacimiento: paisResidencia,
             nombre: nombres,
@@ -739,16 +833,16 @@ function KYCNuevoCliente() {
             estado_civil: estadoCivil,
             telefono,
             email: correo,
-            direccion: "—",
-            ciudad: "—",
+            direccion,
+            ciudad,
             pais: paisResidencia,
             ocupacion,
-            empleador: "—",
+            empleador: empleador.trim() || "Independiente",
             ingreso_mensual_aproximado: parseFloat(ingresoMensual) || 0,
             fuente_ingresos: fuenteIngresos || "OTRO",
             es_pep: esPep,
             es_pep_familiar: esPepFamiliar,
-            tiene_antecedentes: false,
+            tiene_antecedentes: tieneAntecedentes,
           },
           beneficiarios_final: [],
         }
@@ -772,10 +866,10 @@ function KYCNuevoCliente() {
             ciudad: ciudadEmpresa,
             pais: paisConstitucion,
             actividad_economica: actividadEconomica,
-            ingreso_anual_aproximado: 0,
-            cantidad_empleados: 0,
-            tiene_accionistas_anonimos: false,
-            opera_en_paises_alto_riesgo: false,
+            ingreso_anual_aproximado: parseFloat(ingresoAnual) || 0,
+            cantidad_empleados: parseInt(cantidadEmpleados, 10) || 0,
+            tiene_accionistas_anonimos: accionistasAnonimos,
+            opera_en_paises_alto_riesgo: operaPaisesAltoRiesgo,
           },
           beneficiarios_final: baseBeneficiarios,
         }
@@ -1008,20 +1102,36 @@ function KYCNuevoCliente() {
             </Field>
           </div>
 
-          <Field
-            label="Fecha de nacimiento"
-            required
-            error={errors.fechaNacimiento}
-            hint="Debe ser mayor de 18 años (Ley 23/2015 Art. 18)"
-          >
-            <StyledInput
-              type="date"
-              value={fechaNacimiento}
-              onChange={(e) => setFechaNacimiento(e.target.value)}
-              max={maxFechaNac()}
+          <div className="grid grid-cols-2 gap-4">
+            <Field
+              label="Fecha de nacimiento"
+              required
               error={errors.fechaNacimiento}
-            />
-          </Field>
+              hint="Debe ser mayor de 18 años (Ley 23/2015 Art. 18)"
+            >
+              <StyledInput
+                type="date"
+                value={fechaNacimiento}
+                onChange={(e) => setFechaNacimiento(e.target.value)}
+                max={maxFechaNac()}
+                error={errors.fechaNacimiento}
+              />
+            </Field>
+            <Field
+              label="Expiración del documento"
+              required
+              error={errors.fechaExpiracionDoc}
+              hint="El documento debe estar vigente (RV-07)"
+            >
+              <StyledInput
+                type="date"
+                value={fechaExpiracionDoc}
+                onChange={(e) => setFechaExpiracionDoc(e.target.value)}
+                min={new Date().toISOString().split("T")[0]}
+                error={errors.fechaExpiracionDoc}
+              />
+            </Field>
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Género" required>
@@ -1177,6 +1287,30 @@ function KYCNuevoCliente() {
                 error={errors.telefono}
               />
             </Field>
+            <Field label="Ciudad" required error={errors.ciudad}>
+              <StyledInput
+                value={ciudad}
+                onChange={(e) => setCiudad(e.target.value)}
+                placeholder="Ciudad de Panamá"
+                error={errors.ciudad}
+              />
+            </Field>
+          </div>
+
+          <Field
+            label="Dirección de residencia"
+            required
+            error={errors.direccion}
+          >
+            <StyledInput
+              value={direccion}
+              onChange={(e) => setDireccion(e.target.value)}
+              placeholder="Calle 50, Edif. Global, Apto. 10B"
+              error={errors.direccion}
+            />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-4">
             <Field
               label="Ocupación / Profesión"
               required
@@ -1187,6 +1321,16 @@ function KYCNuevoCliente() {
                 onChange={(e) => setOcupacion(e.target.value)}
                 placeholder="Abogado, Comerciante…"
                 error={errors.ocupacion}
+              />
+            </Field>
+            <Field
+              label="Empleador"
+              hint="Déjalo vacío si es independiente"
+            >
+              <StyledInput
+                value={empleador}
+                onChange={(e) => setEmpleador(e.target.value)}
+                placeholder="Nombre de la empresa"
               />
             </Field>
           </div>
@@ -1315,6 +1459,47 @@ function KYCNuevoCliente() {
               <Toggle
                 checked={esPepFamiliar}
                 onChange={() => setEsPepFamiliar((p) => !p)}
+                danger
+              />
+            </div>
+          </div>
+
+          {/* Antecedentes penales */}
+          <div
+            className="rounded-xl p-4"
+            style={{
+              backgroundColor: tieneAntecedentes
+                ? "rgba(224,82,82,0.06)"
+                : "#0a1628",
+              border: `1px solid ${tieneAntecedentes ? "rgba(224,82,82,0.30)" : "#1b2e4a"}`,
+            }}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <ShieldAlert
+                  size={18}
+                  className="mt-0.5 flex-shrink-0"
+                  style={{ color: tieneAntecedentes ? "#e05252" : "#4a6080" }}
+                />
+                <div>
+                  <p
+                    className="text-sm font-medium"
+                    style={{ color: tieneAntecedentes ? "#e05252" : "#f0ede8" }}
+                  >
+                    Antecedentes penales declarados
+                  </p>
+                  <p
+                    className="mt-0.5 text-xs leading-relaxed"
+                    style={{ color: "#8a9bb5" }}
+                  >
+                    El cliente declara tener antecedentes penales o procesos
+                    judiciales en curso. Suma al puntaje de riesgo EBR.
+                  </p>
+                </div>
+              </div>
+              <Toggle
+                checked={tieneAntecedentes}
+                onChange={() => setTieneAntecedentes((p) => !p)}
                 danger
               />
             </div>
@@ -1484,6 +1669,126 @@ function KYCNuevoCliente() {
               <option value="OTRO">Otro</option>
             </StyledSelect>
           </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field
+              label="Ingreso anual aproximado (USD)"
+              required
+              error={errors.ingresoAnual}
+            >
+              <StyledInput
+                type="number"
+                min="0"
+                step="1000"
+                value={ingresoAnual}
+                onChange={(e) => setIngresoAnual(e.target.value)}
+                placeholder="0"
+                error={errors.ingresoAnual}
+              />
+            </Field>
+            <Field
+              label="Cantidad de empleados"
+              required
+              error={errors.cantidadEmpleados}
+            >
+              <StyledInput
+                type="number"
+                min="0"
+                step="1"
+                value={cantidadEmpleados}
+                onChange={(e) => setCantidadEmpleados(e.target.value)}
+                placeholder="0"
+                error={errors.cantidadEmpleados}
+              />
+            </Field>
+          </div>
+
+          {/* Factores de riesgo societario */}
+          <div
+            className="rounded-xl p-4"
+            style={{
+              backgroundColor: accionistasAnonimos
+                ? "rgba(224,82,82,0.06)"
+                : "#0a1628",
+              border: `1px solid ${accionistasAnonimos ? "rgba(224,82,82,0.30)" : "#1b2e4a"}`,
+            }}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <ShieldAlert
+                  size={18}
+                  className="mt-0.5 flex-shrink-0"
+                  style={{ color: accionistasAnonimos ? "#e05252" : "#4a6080" }}
+                />
+                <div>
+                  <p
+                    className="text-sm font-medium"
+                    style={{
+                      color: accionistasAnonimos ? "#e05252" : "#f0ede8",
+                    }}
+                  >
+                    Acciones al portador o accionistas anónimos
+                  </p>
+                  <p
+                    className="mt-0.5 text-xs leading-relaxed"
+                    style={{ color: "#8a9bb5" }}
+                  >
+                    La sociedad tiene acciones cuyo titular no está plenamente
+                    identificado. Suma al puntaje de riesgo EBR.
+                  </p>
+                </div>
+              </div>
+              <Toggle
+                checked={accionistasAnonimos}
+                onChange={() => setAccionistasAnonimos((p) => !p)}
+                danger
+              />
+            </div>
+          </div>
+
+          <div
+            className="rounded-xl p-4"
+            style={{
+              backgroundColor: operaPaisesAltoRiesgo
+                ? "rgba(224,82,82,0.06)"
+                : "#0a1628",
+              border: `1px solid ${operaPaisesAltoRiesgo ? "rgba(224,82,82,0.30)" : "#1b2e4a"}`,
+            }}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <ShieldAlert
+                  size={18}
+                  className="mt-0.5 flex-shrink-0"
+                  style={{
+                    color: operaPaisesAltoRiesgo ? "#e05252" : "#4a6080",
+                  }}
+                />
+                <div>
+                  <p
+                    className="text-sm font-medium"
+                    style={{
+                      color: operaPaisesAltoRiesgo ? "#e05252" : "#f0ede8",
+                    }}
+                  >
+                    Opera en países de alto riesgo (listas GAFI)
+                  </p>
+                  <p
+                    className="mt-0.5 text-xs leading-relaxed"
+                    style={{ color: "#8a9bb5" }}
+                  >
+                    La empresa mantiene operaciones o relaciones comerciales en
+                    jurisdicciones señaladas por el GAFI. Suma al puntaje EBR.
+                  </p>
+                </div>
+              </div>
+              <Toggle
+                checked={operaPaisesAltoRiesgo}
+                onChange={() => setOperaPaisesAltoRiesgo((p) => !p)}
+                danger
+              />
+            </div>
+          </div>
 
           {/* Beneficiarios Finales — OBLIGATORIO para Persona Jurídica */}
           <div
@@ -1896,17 +2201,18 @@ function KYCNuevoCliente() {
         >
           <div>
             <p className="text-sm font-semibold" style={{ color: "#f0ede8" }}>
-              Nivel de riesgo calculado
+              Nivel de riesgo estimado · {riesgoEstimado.puntaje} pts
             </p>
             <p className="mt-0.5 text-xs" style={{ color: "#4a6080" }}>
-              Motor EBR — Ley 23/2015 Art. 22
+              Motor EBR — Ley 23/2015 Art. 22. El valor definitivo lo asigna
+              el sistema al crear el expediente.
             </p>
           </div>
           <RiskBadge nivel={nivelRiesgo} />
         </div>
 
         {/* Alerta DDR */}
-        {(esPep || beneficiarios.some((b) => b.es_pep)) && (
+        {activaDdr && (
           <div
             className="flex items-start gap-3 rounded-xl p-4"
             style={{
@@ -1955,14 +2261,30 @@ function KYCNuevoCliente() {
               <Row label="Estado civil" value={{ SOLTERO: "Soltero/a", CASADO: "Casado/a", DIVORCIADO: "Divorciado/a", VIUDO: "Viudo/a", UNION_LIBRE: "Unión libre" }[estadoCivil]} />
               <Row label="Nacionalidad" value={nacionalidad} />
               <Row label="País de residencia" value={paisResidencia} />
+              <Row label="Dirección" value={`${direccion}, ${ciudad}`} />
               <Row label="Correo electrónico" value={correo} />
               <Row label="Teléfono" value={telefono} />
               <Row label="Ocupación" value={ocupacion} />
+              <Row label="Empleador" value={empleador.trim() || "Independiente"} />
               <Row
                 label="Ingreso mensual"
                 value={ingresoMensual ? `$${parseFloat(ingresoMensual).toLocaleString()} USD` : "—"}
               />
-              <Row label="Fuente de ingresos" value={fuenteIngresos || "—"} />
+              <Row
+                label="Fuente de ingresos"
+                value={
+                  {
+                    EMPLEO: "Empleo / Salario",
+                    NEGOCIO_PROPIO: "Negocio propio",
+                    INVERSIONES: "Inversiones",
+                    BIENES_RAICES: "Bienes raíces / Alquileres",
+                    PENSION: "Pensión / Jubilación",
+                    REMESAS: "Remesas",
+                    HERENCIA: "Herencia / Donación",
+                    OTRO: "Otro",
+                  }[fuenteIngresos] ?? "—"
+                }
+              />
               <Row
                 label="PEP"
                 value={
@@ -1983,6 +2305,16 @@ function KYCNuevoCliente() {
                   )
                 }
               />
+              <Row
+                label="Antecedentes penales"
+                value={
+                  tieneAntecedentes ? (
+                    <span style={{ color: "#e05252" }}>Sí</span>
+                  ) : (
+                    "No"
+                  )
+                }
+              />
             </>
           ) : (
             <>
@@ -1993,6 +2325,35 @@ function KYCNuevoCliente() {
               <Row label="Actividad económica" value={actividadEconomica} />
               <Row label="Representante legal" value={representanteLegal} />
               <Row label="ID Representante" value={idRepresentante} />
+              <Row
+                label="Ingreso anual"
+                value={
+                  ingresoAnual
+                    ? `$${parseFloat(ingresoAnual).toLocaleString()} USD`
+                    : "—"
+                }
+              />
+              <Row label="Empleados" value={cantidadEmpleados || "—"} />
+              <Row
+                label="Accionistas anónimos"
+                value={
+                  accionistasAnonimos ? (
+                    <span style={{ color: "#e05252" }}>Sí</span>
+                  ) : (
+                    "No"
+                  )
+                }
+              />
+              <Row
+                label="Opera en países de alto riesgo"
+                value={
+                  operaPaisesAltoRiesgo ? (
+                    <span style={{ color: "#e05252" }}>Sí</span>
+                  ) : (
+                    "No"
+                  )
+                }
+              />
               <Row
                 label="Beneficiarios finales"
                 value={
