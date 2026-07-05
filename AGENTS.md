@@ -116,3 +116,35 @@ Mientras tanto, usar stubs o prints para no bloquear el desarrollo.
 - Sin comentarios a menos que se soliciten
 - Código simple, funcional, fácil de mantener
 - No sobreingeniarizar
+
+## Flujo DDR — cuatro ojos (actualizado)
+El flujo de casos DDR aplica segregación de funciones. Ver detalle en
+`docs/FLUJO_DDR.md`. Reglas duras que el backend valida:
+- El caso DDR nace **sin analista** (`crud.create_expediente`).
+- El Oficial no puede asignar al analista que registró el expediente (409).
+- Solo el analista asignado puede enviar el caso a revisión.
+- El envío va a `EN_REVISION_OFICIAL`; el Oficial `POST /validar` (escala) o
+  `POST /devolver` (regresa a `EN_REVISION` con `observaciones_oficial`).
+- Gerente aprueba casos ALTO; Comité aprueba MUY_ALTO.
+
+## Reglas de trabajo para agentes (IMPORTANTES)
+- **Commits en español, sin `Co-Authored-By` ni menciones de IA/herramientas.**
+- El frontend en Docker es un **build estático de Nginx**: cada cambio requiere
+  `docker compose build frontend && docker compose up -d frontend`. No hay HMR.
+- **NUNCA correr el suite completo de tests contra la BD viva del contenedor**:
+  los tests de users borran la tabla `user` (incluidos los usuarios demo).
+  Correr solo los módulos afectados, o restaurar con:
+  `docker compose exec backend python -c "from app.core.db import engine, init_db; from sqlmodel import Session; init_db(Session(engine))"`
+- Los tests no están en la imagen backend; copiarlos antes de correr:
+  `docker cp backend/tests debida-diligencia-reforzada-backend-1:/app/backend/`
+
+## Usuarios demo (contraseñas en `backend/app/core/db.py`)
+| Correo | Rol |
+|---|---|
+| admin@sgddr.pa | ADMIN |
+| rosa@sgddr.pa | OFICIAL_CUMPLIMIENTO |
+| carlos@sgddr.pa | ANALISTA_DDR |
+| maria@sgddr.pa | ANALISTA_DDR |
+| luis@sgddr.pa | GERENTE_CUMPLIMIENTO |
+| comite@sgddr.pa | COMITE_CUMPLIMIENTO |
+| ana@sgddr.pa | AUDITOR |
