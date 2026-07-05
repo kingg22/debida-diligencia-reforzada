@@ -31,6 +31,9 @@ USUARIOS_DEMO = [
     ("admin@sgddr.pa", "Admin SGDDR", "Admin123!", UserRole.ADMIN, True),
     ("rosa@sgddr.pa", "Rosa Méndez", "Demo123!", UserRole.OFICIAL_CUMPLIMIENTO, False),
     ("carlos@sgddr.pa", "Carlos Ruiz", "Demo123!", UserRole.ANALISTA_DDR, False),
+    # Dos analistas como mínimo: quien registra un expediente no puede
+    # investigar su propio caso DDR (segregación de funciones).
+    ("maria@sgddr.pa", "María Gómez", "Demo123!", UserRole.ANALISTA_DDR, False),
     ("luis@sgddr.pa", "Luis Pérez", "Demo123!", UserRole.GERENTE_CUMPLIMIENTO, False),
     ("comite@sgddr.pa", "Comité SGDDR", "Demo123!", UserRole.COMITE_CUMPLIMIENTO, False),
     ("ana@sgddr.pa", "Ana Castillo", "Demo123!", UserRole.AUDITOR, False),
