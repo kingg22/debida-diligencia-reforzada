@@ -545,11 +545,13 @@ def update_cuestionario(
             detail="No se puede editar el cuestionario en el estado actual",
         )
 
+    # El cuestionario se crea al primer guardado (los casos DDR nacen sin él)
     cuestionario = caso.cuestionario
     if not cuestionario:
-        raise HTTPException(
-            status_code=404, detail="Cuestionario no encontrado"
-        )
+        from app.models import CuestionarioEBR
+
+        cuestionario = CuestionarioEBR(caso_ddr_id=caso.id)
+        session.add(cuestionario)
 
     datos = body.model_dump(exclude_unset=True)
     for campo, valor in datos.items():
