@@ -15,6 +15,7 @@ import {
   diasDesde,
   ESTADO_CASO,
   ESTADOS_CASO,
+  formatIdentificacion,
   NIVEL_RIESGO,
 } from "@/lib/sgddr"
 
@@ -140,8 +141,9 @@ function CasosDdrPage() {
                             className="text-xs"
                             style={{ color: "#8a9bb5" }}
                           >
-                            {caso.cliente.tipo_identificacion}{" "}
-                            {caso.cliente.numero_identificacion}
+                            {formatIdentificacion(
+                              caso.cliente.numero_identificacion,
+                            )}
                           </span>
                         )}
                       </div>
