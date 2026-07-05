@@ -63,6 +63,7 @@ export const NIVEL_RIESGO: Record<
 export type EstadoCaso =
   | "ABIERTO"
   | "EN_REVISION"
+  | "EN_REVISION_OFICIAL"
   | "EN_APROBACION"
   | "APROBADO"
   | "RECHAZADO"
@@ -73,9 +74,14 @@ export const ESTADO_CASO: Record<
 > = {
   ABIERTO: { label: "Abierto", color: "#60a5fa", bg: "rgba(96,165,250,0.14)" },
   EN_REVISION: {
-    label: "En revisión",
+    label: "En investigación",
     color: "#eab308",
     bg: "rgba(234,179,8,0.14)",
+  },
+  EN_REVISION_OFICIAL: {
+    label: "Revisión del Oficial",
+    color: "#c9a84c",
+    bg: "rgba(201,168,76,0.14)",
   },
   EN_APROBACION: {
     label: "En aprobación",
@@ -180,6 +186,7 @@ export const ESTADOS_CLIENTE: EstadoCliente[] = [
 export const ESTADOS_CASO: EstadoCaso[] = [
   "ABIERTO",
   "EN_REVISION",
+  "EN_REVISION_OFICIAL",
   "EN_APROBACION",
   "APROBADO",
   "RECHAZADO",

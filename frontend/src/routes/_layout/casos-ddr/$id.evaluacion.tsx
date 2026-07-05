@@ -139,7 +139,9 @@ function EvaluacionPage() {
   const enviar = useMutation({
     mutationFn: () => CasosDdrService.enviarAprobacion(id),
     onSuccess: () => {
-      toast.success("Caso enviado a aprobación.")
+      toast.success(
+        "Investigación enviada al Oficial de Cumplimiento para su revisión.",
+      )
       navigate({ to: "/casos-ddr/$id", params: { id } })
     },
     onError: (e: Error) => toast.error(e.message),
@@ -313,7 +315,7 @@ function EvaluacionPage() {
               className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
               style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
             >
-              {enviar.isPending ? "Enviando…" : "Enviar a aprobación"}
+              {enviar.isPending ? "Enviando…" : "Enviar al Oficial de Cumplimiento"}
             </button>
           </div>
         </div>
