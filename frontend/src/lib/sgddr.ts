@@ -201,6 +201,22 @@ export const ESTADOS_KYC: EstadoKYC[] = [
 ]
 
 // ── Helpers de formato ─────────────────────────────────────────────────────────
+
+// `numero_identificacion` llega como "CEDULA_PA 8-123-4567" (tipo + número).
+// Reemplaza el prefijo enum por su etiqueta legible.
+const TIPO_DOC_LABEL: Record<string, string> = {
+  CEDULA_PA: "Cédula",
+  PASAPORTE: "Pasaporte",
+  RUC: "RUC",
+  CEDULA: "Cédula",
+}
+
+export function formatIdentificacion(s?: string | null): string {
+  if (!s) return "—"
+  const [prefijo, ...resto] = s.split(" ")
+  const label = TIPO_DOC_LABEL[prefijo]
+  return label ? `${label} ${resto.join(" ")}`.trim() : s
+}
 export function formatFecha(iso?: string | null): string {
   if (!iso) return "—"
   const d = new Date(iso)

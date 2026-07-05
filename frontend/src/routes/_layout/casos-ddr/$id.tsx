@@ -25,6 +25,7 @@ import {
   formatBytes,
   formatFecha,
   formatFechaHora,
+  formatIdentificacion,
 } from "@/lib/sgddr"
 
 export const Route = createFileRoute("/_layout/casos-ddr/$id")({
@@ -412,7 +413,7 @@ function CasoDetallePage() {
             }
             subtitle={
               cliente
-                ? `${cliente.numero_identificacion} · Expediente ${cliente.codigo}`
+                ? `${formatIdentificacion(cliente.numero_identificacion)} · Expediente ${cliente.codigo}`
                 : `Caso #${caso.id.slice(0, 8)}`
             }
             action={
@@ -802,10 +803,10 @@ function CasoDetallePage() {
               <p className="mb-4 text-sm" style={{ color: "#8a9bb5" }}>
                 Revisa el expediente, las respuestas del cuestionario EBR y la
                 documentación de soporte. Si la investigación está completa,
-                valida el caso para escalarlo a{" "}
+                valida el caso para escalarlo al{" "}
                 {caso.nivel_riesgo === "MUY_ALTO"
-                  ? "el Comité de Cumplimiento"
-                  : "el Gerente de Cumplimiento"}
+                  ? "Comité de Cumplimiento"
+                  : "Gerente de Cumplimiento"}
                 . Si falta información, devuélvelo al analista.
               </p>
               <div className="flex flex-wrap gap-3">
