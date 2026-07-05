@@ -191,11 +191,13 @@ def create_expediente(
     session.refresh(expediente)
 
     if resultado.nivel in (RiskLevel.ALTO, RiskLevel.MUY_ALTO):
+        # Segregación de funciones (cuatro ojos): el caso se crea SIN analista.
+        # El Oficial de Cumplimiento debe asignar uno distinto al que registró
+        # el expediente (validado en el endpoint de asignación).
         caso = CasoDDR(
             expediente_id=expediente.id,
             nivel_riesgo=resultado.nivel.value,
             status=EstadoCasoDDR.ABIERTO.value,
-            analista_id=analista_id,
         )
         session.add(caso)
         session.commit()

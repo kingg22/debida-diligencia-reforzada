@@ -314,8 +314,18 @@ class DocumentoEstado(str, Enum):
 
 
 class EstadoCasoDDR(str, Enum):
+    """Flujo DDR con segregación de funciones (cuatro ojos):
+
+    ABIERTO → el Oficial asigna un analista (distinto al que registró)
+    EN_REVISION → el analista investiga (EBR + documentos)
+    EN_REVISION_OFICIAL → el Oficial valida el trabajo del analista
+    EN_APROBACION → Gerente (ALTO) o Comité (MUY_ALTO) decide
+    APROBADO / RECHAZADO → cierre
+    """
+
     ABIERTO = "ABIERTO"
     EN_REVISION = "EN_REVISION"
+    EN_REVISION_OFICIAL = "EN_REVISION_OFICIAL"
     EN_APROBACION = "EN_APROBACION"
     APROBADO = "APROBADO"
     RECHAZADO = "RECHAZADO"
@@ -489,6 +499,10 @@ class CasoDDR(SQLModel, table=True):
     status: str = Field(default=EstadoCasoDDR.ABIERTO.value, max_length=20)
     analista_id: uuid.UUID | None = Field(default=None, foreign_key="user.id")
     aprobado_por_id: uuid.UUID | None = Field(default=None, foreign_key="user.id")
+    # Revisión del Oficial de Cumplimiento (paso previo a la aprobación):
+    # quién validó el trabajo del analista y sus observaciones al devolverlo.
+    validado_por_id: uuid.UUID | None = Field(default=None, foreign_key="user.id")
+    observaciones_oficial: str | None = Field(default=None, max_length=1000)
     observaciones_rechazo: str | None = Field(default=None, max_length=1000)
     fecha_apertura: datetime = Field(
         default_factory=get_datetime_utc,
@@ -511,6 +525,8 @@ class CasoDDRPublic(SQLModel):
     status: str
     analista_id: uuid.UUID | None = None
     aprobado_por_id: uuid.UUID | None = None
+    validado_por_id: uuid.UUID | None = None
+    observaciones_oficial: str | None = None
     observaciones_rechazo: str | None = None
     fecha_apertura: datetime | None = None
     fecha_cierre: datetime | None = None

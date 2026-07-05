@@ -122,19 +122,25 @@ class TestCasosDDRGet:
         assert data["data"] == []
 
     def test_list_con_datos(self, client: TestClient, db: Session):
-        analista = _create_analista(db)
+        # Cuatro ojos: el caso nace sin analista; el investigador asignado
+        # (distinto al registrador) es quien lo ve en su lista.
+        registrador = _create_analista(db)
+        investigador = _create_analista(db)
         expediente = crud.create_expediente(
             session=db,
             expediente_in=_make_pep_expediente_data(),
-            analista_id=analista.id,
+            analista_id=registrador.id,
         )
         caso = db.exec(
             select(CasoDDR).where(CasoDDR.expediente_id == expediente.id)
         ).first()
         assert caso is not None
+        caso.analista_id = investigador.id
+        db.add(caso)
+        db.commit()
 
         headers = user_authentication_headers(
-            client=client, email=analista.email, password=TEST_PASSWORD
+            client=client, email=investigador.email, password=TEST_PASSWORD
         )
         r = client.get(f"{settings.API_V1_STR}/casos-ddr/", headers=headers)
         assert r.status_code == 200
@@ -255,6 +261,7 @@ class TestEnviarAprobacion:
         )
         db.add(cuestionario)
         caso.status = EstadoCasoDDR.EN_REVISION.value
+        caso.analista_id = analista.id
         db.add(caso)
         db.commit()
         db.refresh(caso)
@@ -267,7 +274,8 @@ class TestEnviarAprobacion:
             headers=headers,
         )
         assert r.status_code == 200
-        assert r.json()["status"] == EstadoCasoDDR.EN_APROBACION.value
+        # Cuatro ojos: el analista envía al Oficial, no directo a aprobación
+        assert r.json()["status"] == EstadoCasoDDR.EN_REVISION_OFICIAL.value
 
     def test_enviar_cuestionario_incompleto_falla(self, client: TestClient, db: Session):
         analista = _create_analista(db)
@@ -282,6 +290,7 @@ class TestEnviarAprobacion:
         assert caso is not None
 
         caso.status = EstadoCasoDDR.EN_REVISION.value
+        caso.analista_id = analista.id
         db.add(caso)
         db.commit()
 
@@ -293,6 +302,103 @@ class TestEnviarAprobacion:
             headers=headers,
         )
         assert r.status_code == 400
+
+
+class TestCuatroOjos:
+    """Segregación de funciones: registrador ≠ investigador, y el Oficial
+    valida antes de escalar a la instancia de aprobación."""
+
+    def _caso_de(self, db: Session, analista_registrador) -> CasoDDR:
+        expediente = crud.create_expediente(
+            session=db,
+            expediente_in=_make_pep_expediente_data(),
+            analista_id=analista_registrador.id,
+        )
+        caso = db.exec(
+            select(CasoDDR).where(CasoDDR.expediente_id == expediente.id)
+        ).first()
+        assert caso is not None
+        return caso
+
+    def test_caso_se_crea_sin_analista(self, client: TestClient, db: Session):
+        analista = _create_analista(db)
+        caso = self._caso_de(db, analista)
+        assert caso.analista_id is None
+
+    def test_asignar_mismo_registrador_falla(
+        self, client: TestClient, db: Session
+    ):
+        oficial = _create_oficial(db)
+        analista = _create_analista(db)
+        caso = self._caso_de(db, analista)
+
+        headers = user_authentication_headers(
+            client=client, email=oficial.email, password=TEST_PASSWORD
+        )
+        r = client.patch(
+            f"{settings.API_V1_STR}/casos-ddr/{caso.id}/asignar",
+            headers=headers,
+            json={"analista_id": str(analista.id)},
+        )
+        assert r.status_code == 409
+
+    def test_oficial_valida_y_escala(self, client: TestClient, db: Session):
+        oficial = _create_oficial(db)
+        analista = _create_analista(db)
+        caso = self._caso_de(db, analista)
+        caso.status = EstadoCasoDDR.EN_REVISION_OFICIAL.value
+        db.add(caso)
+        db.commit()
+
+        headers = user_authentication_headers(
+            client=client, email=oficial.email, password=TEST_PASSWORD
+        )
+        r = client.post(
+            f"{settings.API_V1_STR}/casos-ddr/{caso.id}/validar",
+            headers=headers,
+        )
+        assert r.status_code == 200
+        body = r.json()
+        assert body["status"] == EstadoCasoDDR.EN_APROBACION.value
+        assert body["validado_por_id"] == str(oficial.id)
+
+    def test_oficial_devuelve_al_analista(self, client: TestClient, db: Session):
+        oficial = _create_oficial(db)
+        analista = _create_analista(db)
+        caso = self._caso_de(db, analista)
+        caso.status = EstadoCasoDDR.EN_REVISION_OFICIAL.value
+        db.add(caso)
+        db.commit()
+
+        headers = user_authentication_headers(
+            client=client, email=oficial.email, password=TEST_PASSWORD
+        )
+        r = client.post(
+            f"{settings.API_V1_STR}/casos-ddr/{caso.id}/devolver",
+            headers=headers,
+            json={"observaciones": "Falta la referencia bancaria del cliente"},
+        )
+        assert r.status_code == 200
+        body = r.json()
+        assert body["status"] == EstadoCasoDDR.EN_REVISION.value
+        assert "referencia bancaria" in body["observaciones_oficial"]
+
+    def test_analista_no_puede_validar(self, client: TestClient, db: Session):
+        analista = _create_analista(db)
+        otro = _create_analista(db)
+        caso = self._caso_de(db, analista)
+        caso.status = EstadoCasoDDR.EN_REVISION_OFICIAL.value
+        db.add(caso)
+        db.commit()
+
+        headers = user_authentication_headers(
+            client=client, email=otro.email, password=TEST_PASSWORD
+        )
+        r = client.post(
+            f"{settings.API_V1_STR}/casos-ddr/{caso.id}/validar",
+            headers=headers,
+        )
+        assert r.status_code == 403
 
 
 class TestCuestionarioEBR:
