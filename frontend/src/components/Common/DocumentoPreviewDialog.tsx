@@ -67,7 +67,7 @@ function DocPreviewContent({
           src={objectUrl}
           title={doc.nombre}
           className="h-[70vh] w-full rounded border"
-          style={{ borderColor: "#1b2e4a", backgroundColor: "#0a1628" }}
+          style={{ borderColor: "var(--border)", backgroundColor: "var(--card)" }}
         />
       )
     }
@@ -83,13 +83,13 @@ function DocPreviewContent({
     return (
       <div
         className="flex flex-col items-center justify-center gap-3 rounded border py-16 text-center"
-        style={{ borderColor: "#1b2e4a", backgroundColor: "rgba(15,31,58,0.4)" }}
+        style={{ borderColor: "var(--border)", backgroundColor: "rgba(15,31,58,0.4)" }}
       >
-        <FileText size={28} style={{ color: "#8a9bb5" }} />
-        <p style={{ color: "#f0ede8" }} className="text-sm">
+        <FileText size={28} style={{ color: "var(--muted-foreground)" }} />
+        <p style={{ color: "var(--foreground)" }} className="text-sm">
           Vista previa no disponible para este tipo de archivo.
         </p>
-        <p style={{ color: "#8a9bb5" }} className="text-xs">
+        <p style={{ color: "var(--muted-foreground)" }} className="text-xs">
           {doc.mime_type || "tipo desconocido"} · {formatBytes(doc.tamanio)}
         </p>
       </div>
@@ -125,7 +125,7 @@ function DocPreviewContent({
         : (err as Error)?.message || "No se pudo cargar el documento."
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
-        <p className="text-sm" style={{ color: "#e05252" }}>
+        <p className="text-sm" style={{ color: "var(--destructive)" }}>
           {msg}
         </p>
         <Button type="button" variant="outline" size="sm" onClick={() => query.refetch()}>
@@ -139,9 +139,9 @@ function DocPreviewContent({
     return (
       <div
         className="flex flex-col items-center justify-center gap-3 py-16"
-        style={{ color: "#8a9bb5" }}
+        style={{ color: "var(--muted-foreground)" }}
       >
-        <Loader2 size={22} className="animate-spin" style={{ color: "#c9a84c" }} />
+        <Loader2 size={22} className="animate-spin" style={{ color: "var(--primary)" }} />
         <p className="text-sm">Cargando documento…</p>
       </div>
     )
@@ -158,8 +158,8 @@ function DocPreviewContent({
           disabled={downloading}
           className="gap-2"
           style={{
-            borderColor: "#c9a84c",
-            color: "#c9a84c",
+            borderColor: "var(--primary)",
+            color: "var(--primary)",
             backgroundColor: "transparent",
           }}
         >
@@ -187,17 +187,17 @@ export function DocumentoPreviewDialog({
         className="max-w-3xl"
         showCloseButton={false}
         style={{
-          backgroundColor: "#0a1628",
-          border: "1px solid #1b2e4a",
-          color: "#f0ede8",
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+          color: "var(--foreground)",
         }}
       >
         <DialogHeader>
           <DialogTitle
             className="flex items-center gap-2"
-            style={{ color: "#f0ede8" }}
+            style={{ color: "var(--foreground)" }}
           >
-            <FileText size={18} style={{ color: "#c9a84c" }} />
+            <FileText size={18} style={{ color: "var(--primary)" }} />
             <span className="truncate">{documento?.nombre ?? "Documento"}</span>
           </DialogTitle>
         </DialogHeader>
@@ -223,7 +223,7 @@ function DialogCloseX({
       aria-label="Cerrar"
       onClick={() => onOpenChange(false)}
       className="absolute top-4 right-4 rounded p-1 transition-colors"
-      style={{ color: "#8a9bb5" }}
+      style={{ color: "var(--muted-foreground)" }}
     >
       <X size={16} />
     </button>

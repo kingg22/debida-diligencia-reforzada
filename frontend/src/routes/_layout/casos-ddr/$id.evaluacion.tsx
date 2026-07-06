@@ -51,7 +51,7 @@ const VACIO: Form = {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <label className="mb-1.5 block text-sm" style={{ color: "#8a9bb5" }}>
+    <label className="mb-1.5 block text-sm" style={{ color: "var(--muted-foreground)" }}>
       {children}
     </label>
   )
@@ -78,11 +78,11 @@ function RadioSiNo({
           style={
             value === v
               ? {
-                  borderColor: "#c9a84c",
+                  borderColor: "var(--primary)",
                   backgroundColor: "rgba(201,168,76,0.1)",
-                  color: "#c9a84c",
+                  color: "var(--primary)",
                 }
-              : { borderColor: "#1b2e4a", color: "#8a9bb5" }
+              : { borderColor: "var(--border)", color: "var(--muted-foreground)" }
           }
         >
           {l}
@@ -154,8 +154,8 @@ function EvaluacionPage() {
       <button
         type="button"
         onClick={() => navigate({ to: "/casos-ddr/$id", params: { id } })}
-        className="flex items-center gap-1.5 text-sm transition-colors hover:text-[#c9a84c]"
-        style={{ color: "#8a9bb5" }}
+        className="flex items-center gap-1.5 text-sm transition-colors hover:text-primary"
+        style={{ color: "var(--muted-foreground)" }}
       >
         <ArrowLeft size={15} /> Volver al caso
       </button>
@@ -167,7 +167,7 @@ function EvaluacionPage() {
 
       <div
         className="rounded-xl p-6"
-        style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+        style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
       >
         <WizardProgress
           steps={["Cuestionario EBR", "Documentos"]}
@@ -178,7 +178,7 @@ function EvaluacionPage() {
       {etapa === 0 ? (
         <div
           className="space-y-5 rounded-xl p-6"
-          style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+          style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
         >
           <div>
             <Label>Describa el origen de los fondos del cliente</Label>
@@ -186,8 +186,8 @@ function EvaluacionPage() {
               rows={3}
               value={form.origen_fondos}
               onChange={(e) => set("origen_fondos", e.target.value)}
-              className="w-full rounded-lg border p-3 text-sm text-[#f0ede8] outline-none border-[#1b2e4a] focus:border-[#c9a84c]"
-              style={{ backgroundColor: "#0f1f3a" }}
+              className="w-full rounded-lg border p-3 text-sm text-foreground outline-none border-border focus:border-primary"
+              style={{ backgroundColor: "var(--secondary)" }}
             />
             <p
               className="mt-1 text-xs"
@@ -195,7 +195,7 @@ function EvaluacionPage() {
                 color:
                   form.origen_fondos.trim().length >= 20
                     ? "#22c55e"
-                    : "#4a6080",
+                    : "var(--dim-foreground)",
               }}
             >
               {form.origen_fondos.trim().length}/20 caracteres mínimos
@@ -208,8 +208,8 @@ function EvaluacionPage() {
               rows={3}
               value={form.proposito_relacion}
               onChange={(e) => set("proposito_relacion", e.target.value)}
-              className="w-full rounded-lg border p-3 text-sm text-[#f0ede8] outline-none border-[#1b2e4a] focus:border-[#c9a84c]"
-              style={{ backgroundColor: "#0f1f3a" }}
+              className="w-full rounded-lg border p-3 text-sm text-foreground outline-none border-border focus:border-primary"
+              style={{ backgroundColor: "var(--secondary)" }}
             />
             <p
               className="mt-1 text-xs"
@@ -217,7 +217,7 @@ function EvaluacionPage() {
                 color:
                   form.proposito_relacion.trim().length >= 20
                     ? "#22c55e"
-                    : "#4a6080",
+                    : "var(--dim-foreground)",
               }}
             >
               {form.proposito_relacion.trim().length}/20 caracteres mínimos
@@ -230,10 +230,10 @@ function EvaluacionPage() {
               <select
                 value={form.patrimonio_estimado}
                 onChange={(e) => set("patrimonio_estimado", e.target.value)}
-                className="h-10 w-full rounded-lg border px-3 text-sm outline-none border-[#1b2e4a] focus:border-[#c9a84c]"
+                className="h-10 w-full rounded-lg border px-3 text-sm outline-none border-border focus:border-primary"
                 style={{
-                  backgroundColor: "#0f1f3a",
-                  color: form.patrimonio_estimado ? "#f0ede8" : "#4a6080",
+                  backgroundColor: "var(--secondary)",
+                  color: form.patrimonio_estimado ? "var(--foreground)" : "var(--dim-foreground)",
                 }}
               >
                 <option value="">Selecciona…</option>
@@ -250,8 +250,8 @@ function EvaluacionPage() {
                 type="text"
                 value={form.pais_origen_patrimonio}
                 onChange={(e) => set("pais_origen_patrimonio", e.target.value)}
-                className="h-10 w-full rounded-lg border px-3 text-sm text-[#f0ede8] outline-none border-[#1b2e4a] focus:border-[#c9a84c]"
-                style={{ backgroundColor: "#0f1f3a" }}
+                className="h-10 w-full rounded-lg border px-3 text-sm text-foreground outline-none border-border focus:border-primary"
+                style={{ backgroundColor: "var(--secondary)" }}
                 placeholder="Ej. Panamá"
               />
             </div>
@@ -280,7 +280,7 @@ function EvaluacionPage() {
               disabled={!cuestionarioValido || guardarCuestionario.isPending}
               onClick={() => guardarCuestionario.mutate()}
               className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-              style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
+              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
             >
               {guardarCuestionario.isPending
                 ? "Guardando…"
@@ -291,7 +291,7 @@ function EvaluacionPage() {
       ) : (
         <div
           className="space-y-5 rounded-xl p-6"
-          style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+          style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
         >
           {DOCS_DDR.map((d) => (
             <DropZone
@@ -313,7 +313,7 @@ function EvaluacionPage() {
               disabled={!todosLosDocs || enviar.isPending}
               onClick={() => enviar.mutate()}
               className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-              style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
+              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
             >
               {enviar.isPending ? "Enviando…" : "Enviar al Oficial de Cumplimiento"}
             </button>

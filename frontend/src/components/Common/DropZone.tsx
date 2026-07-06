@@ -49,14 +49,14 @@ export function DropZone({
 
   return (
     <div>
-      <p className="mb-1.5 text-sm" style={{ color: "#8a9bb5" }}>
+      <p className="mb-1.5 text-sm" style={{ color: "var(--muted-foreground)" }}>
         {label}
       </p>
 
       {file || done ? (
         <div
           className="flex items-center gap-3 rounded-lg border px-4 py-3"
-          style={{ borderColor: "#1b2e4a", backgroundColor: "#0f1f3a" }}
+          style={{ borderColor: "var(--border)", backgroundColor: "var(--secondary)" }}
         >
           <div
             className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg"
@@ -66,19 +66,19 @@ export function DropZone({
               <Loader2
                 size={16}
                 className="animate-spin"
-                style={{ color: "#c9a84c" }}
+                style={{ color: "var(--primary)" }}
               />
             ) : (
               <Check size={16} style={{ color: "#22c55e" }} />
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm" style={{ color: "#f0ede8" }}>
+            <p className="truncate text-sm" style={{ color: "var(--foreground)" }}>
               {file?.name ?? "Documento cargado"}
             </p>
             <p
               className="truncate text-xs font-mono"
-              style={{ color: "#4a6080" }}
+              style={{ color: "var(--dim-foreground)" }}
             >
               {file ? formatTamano(file.size) : ""}
               {hash ? ` · ${hash.slice(0, 16)}…` : ""}
@@ -89,8 +89,8 @@ export function DropZone({
               type="button"
               onClick={onClear}
               aria-label="Quitar archivo"
-              className="rounded-lg p-1.5 transition-colors hover:bg-[#1b2e4a]"
-              style={{ color: "#8a9bb5" }}
+              className="rounded-lg p-1.5 transition-colors hover:bg-accent"
+              style={{ color: "var(--muted-foreground)" }}
             >
               <X size={15} />
             </button>
@@ -115,19 +115,19 @@ export function DropZone({
             "flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-6 transition-colors",
           )}
           style={{
-            borderColor: dragging ? "#c9a84c" : "#1b2e4a",
-            backgroundColor: dragging ? "rgba(201,168,76,0.06)" : "#0a1628",
+            borderColor: dragging ? "var(--primary)" : "var(--accent)",
+            backgroundColor: dragging ? "rgba(201,168,76,0.06)" : "var(--card)",
           }}
         >
           {dragging ? (
-            <Upload size={20} style={{ color: "#c9a84c" }} />
+            <Upload size={20} style={{ color: "var(--primary)" }} />
           ) : (
-            <FileText size={20} style={{ color: "#4a6080" }} />
+            <FileText size={20} style={{ color: "var(--dim-foreground)" }} />
           )}
-          <span className="text-xs" style={{ color: "#8a9bb5" }}>
+          <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
             Arrastra un archivo o haz clic para seleccionar
           </span>
-          <span className="text-[11px]" style={{ color: "#4a6080" }}>
+          <span className="text-[11px]" style={{ color: "var(--dim-foreground)" }}>
             PDF, JPG o PNG · máx. 20 MB
           </span>
         </button>
@@ -146,7 +146,7 @@ export function DropZone({
       />
 
       {error && (
-        <p role="alert" className="mt-1.5 text-xs" style={{ color: "#e05252" }}>
+        <p role="alert" className="mt-1.5 text-xs" style={{ color: "var(--destructive)" }}>
           {error}
         </p>
       )}

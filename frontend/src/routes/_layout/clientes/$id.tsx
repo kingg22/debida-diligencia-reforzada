@@ -147,7 +147,7 @@ function BoolPill({ value }: { value?: boolean | null }) {
       className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
       style={{
         backgroundColor: isTrue ? "rgba(34,197,94,0.14)" : "rgba(224,82,82,0.10)",
-        color: isTrue ? "#22c55e" : "#8a9bb5",
+        color: isTrue ? "#22c55e" : "var(--muted-foreground)",
       }}
     >
       {isTrue ? <Check size={12} /> : <X size={12} />}
@@ -163,7 +163,7 @@ function DocumentoEstadoBadge({ estado }: { estado?: string | null }) {
     return (
       <span
         className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-        style={{ backgroundColor: "rgba(138,155,181,0.12)", color: "#8a9bb5" }}
+        style={{ backgroundColor: "rgba(138,155,181,0.12)", color: "var(--muted-foreground)" }}
       >
         {estado || "—"}
       </span>
@@ -375,7 +375,7 @@ function TabRiesgo({ expedienteId, rol }: { expedienteId: string; rol?: string }
                           className="h-full rounded-full"
                           style={{
                             width: `${pct}%`,
-                            backgroundColor: "#c9a84c",
+                            backgroundColor: "var(--primary)",
                           }}
                         />
                       </div>
@@ -465,7 +465,7 @@ function TabRiesgo({ expedienteId, rol }: { expedienteId: string; rol?: string }
 
 function SimilitudBar({ value }: { value: number }) {
   const color =
-    value >= 90 ? "#e05252" : value >= 75 ? "#c9a84c" : "#6b7a99"
+    value >= 90 ? "var(--destructive)" : value >= 75 ? "var(--primary)" : "#6b7a99"
   return (
     <div className="flex items-center gap-2">
       <div
@@ -534,7 +534,7 @@ function TabScreening({
           <p className="text-muted-foreground text-xs">Coincidencias activas</p>
           <p
             className="mt-0.5 text-lg font-semibold"
-            style={{ color: activas.length > 0 ? "#e05252" : "#22c55e" }}
+            style={{ color: activas.length > 0 ? "var(--destructive)" : "#22c55e" }}
           >
             {isPending ? "…" : activas.length}
           </p>
@@ -687,7 +687,7 @@ function DetalleBody({
           style={{
             backgroundColor: "rgba(224,82,82,0.10)",
             borderColor: "rgba(224,82,82,0.35)",
-            color: "#e05252",
+            color: "var(--destructive)",
           }}
         >
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
@@ -706,7 +706,7 @@ function DetalleBody({
           style={{
             backgroundColor: "rgba(201,168,76,0.10)",
             borderColor: "rgba(201,168,76,0.35)",
-            color: "#c9a84c",
+            color: "var(--primary)",
           }}
         >
           <ShieldAlert size={16} className="mt-0.5 shrink-0" />
@@ -978,7 +978,7 @@ function DetalleBody({
                   </span>
                   <span
                     className="font-semibold"
-                    style={{ color: porcentajeOk ? "#22c55e" : "#e05252" }}
+                    style={{ color: porcentajeOk ? "#22c55e" : "var(--destructive)" }}
                   >
                     {totalPorcentaje.toFixed(2)}%
                     {porcentajeOk ? " ✓" : " — suma incorrecta"}
@@ -992,7 +992,7 @@ function DetalleBody({
                     className="h-full transition-all"
                     style={{
                       width: `${Math.min(100, totalPorcentaje)}%`,
-                      backgroundColor: porcentajeOk ? "#c9a84c" : "#e05252",
+                      backgroundColor: porcentajeOk ? "var(--primary)" : "var(--destructive)",
                     }}
                   />
                 </div>

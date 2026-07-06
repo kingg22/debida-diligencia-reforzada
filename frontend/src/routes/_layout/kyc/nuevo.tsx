@@ -254,18 +254,18 @@ function Field({
     <div>
       <label
         className="mb-1.5 block text-sm font-medium"
-        style={{ color: "#8a9bb5" }}
+        style={{ color: "var(--muted-foreground)" }}
       >
-        {label} {required && <span style={{ color: "#e05252" }}>*</span>}
+        {label} {required && <span style={{ color: "var(--destructive)" }}>*</span>}
       </label>
       {children}
       {hint && !error && (
-        <p className="mt-1 text-xs" style={{ color: "#4a6080" }}>
+        <p className="mt-1 text-xs" style={{ color: "var(--dim-foreground)" }}>
           {hint}
         </p>
       )}
       {error && (
-        <p className="mt-1 text-xs" style={{ color: "#e05252" }}>
+        <p className="mt-1 text-xs" style={{ color: "var(--destructive)" }}>
           {error}
         </p>
       )}
@@ -281,14 +281,14 @@ function StyledInput({
     <input
       {...props}
       className={cn(
-        "h-11 w-full rounded-lg border px-4 text-sm text-[#f0ede8] placeholder:text-[#4a6080]",
-        "outline-none transition-all focus:ring-[3px] focus:ring-[rgba(201,168,76,0.18)]",
+        "h-11 w-full rounded-lg border px-4 text-sm text-foreground placeholder:text-muted-foreground/60",
+        "outline-none transition-all focus:ring-[3px] focus:ring-primary/20",
         "disabled:opacity-50",
         error
-          ? "border-[#e05252] focus:border-[#e05252]"
-          : "border-[#1b2e4a] focus:border-[#c9a84c]",
+          ? "border-destructive focus:border-destructive"
+          : "border-border focus:border-primary",
       )}
-      style={{ backgroundColor: "#0f1f3a" }}
+      style={{ backgroundColor: "var(--secondary)" }}
     />
   )
 }
@@ -302,13 +302,13 @@ function StyledSelect({
     <select
       {...props}
       className={cn(
-        "h-11 w-full rounded-lg border px-4 text-sm text-[#f0ede8]",
-        "outline-none transition-all focus:ring-[3px] focus:ring-[rgba(201,168,76,0.18)]",
+        "h-11 w-full rounded-lg border px-4 text-sm text-foreground",
+        "outline-none transition-all focus:ring-[3px] focus:ring-primary/20",
         error
-          ? "border-[#e05252] focus:border-[#e05252]"
-          : "border-[#1b2e4a] focus:border-[#c9a84c]",
+          ? "border-destructive focus:border-destructive"
+          : "border-border focus:border-primary",
       )}
-      style={{ backgroundColor: "#0f1f3a" }}
+      style={{ backgroundColor: "var(--secondary)" }}
     >
       {children}
     </select>
@@ -333,14 +333,14 @@ function SectionHeader({
           border: "1px solid rgba(201,168,76,0.25)",
         }}
       >
-        <Icon size={16} style={{ color: "#c9a84c" }} />
+        <Icon size={16} style={{ color: "var(--primary)" }} />
       </div>
       <div>
-        <p className="text-sm font-semibold" style={{ color: "#f0ede8" }}>
+        <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
           {title}
         </p>
         {subtitle && (
-          <p className="text-xs" style={{ color: "#4a6080" }}>
+          <p className="text-xs" style={{ color: "var(--dim-foreground)" }}>
             {subtitle}
           </p>
         )}
@@ -364,7 +364,7 @@ function Toggle({
       onClick={onChange}
       className="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors"
       style={{
-        backgroundColor: checked ? (danger ? "#e05252" : "#c9a84c") : "#1b2e4a",
+        backgroundColor: checked ? (danger ? "var(--destructive)" : "var(--primary)") : "var(--accent)",
       }}
     >
       <span
@@ -382,7 +382,7 @@ function RiskBadge({ nivel }: { nivel: NivelRiesgo }) {
       bg: "rgba(183,28,28,0.14)",
       label: "Riesgo Muy Alto",
     },
-    ALTO: { c: "#e05252", bg: "rgba(224,82,82,0.12)", label: "Alto Riesgo" },
+    ALTO: { c: "var(--destructive)", bg: "rgba(224,82,82,0.12)", label: "Alto Riesgo" },
     MEDIO: { c: "#d97706", bg: "rgba(217,119,6,0.12)", label: "Riesgo Medio" },
     BAJO: { c: "#22c55e", bg: "rgba(34,197,94,0.12)", label: "Riesgo Bajo" },
   }[nivel]
@@ -439,14 +439,14 @@ function DropZone({
         onClick={() => ref.current?.click()}
         className={cn(
           "flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed p-6 transition-all",
-          "hover:border-[#c9a84c]",
+          "hover:border-primary",
           file
-            ? "border-[#22c55e]"
+            ? "border-green-500"
             : error
-              ? "border-[#e05252]"
-              : "border-[#1b2e4a]",
+              ? "border-destructive"
+              : "border-border",
         )}
-        style={{ backgroundColor: "#0a1628" }}
+        style={{ backgroundColor: "var(--card)" }}
       >
         {file ? (
           <>
@@ -460,7 +460,7 @@ function DropZone({
               <p className="text-sm font-medium" style={{ color: "#22c55e" }}>
                 {file.name}
               </p>
-              <p className="text-xs" style={{ color: "#4a6080" }}>
+              <p className="text-xs" style={{ color: "var(--dim-foreground)" }}>
                 {(file.size / 1024).toFixed(0)} KB · Haz clic para cambiar
               </p>
             </div>
@@ -469,15 +469,15 @@ function DropZone({
           <>
             <div
               className="flex h-10 w-10 items-center justify-center rounded-full"
-              style={{ backgroundColor: "#0f1f3a" }}
+              style={{ backgroundColor: "var(--secondary)" }}
             >
-              <Upload size={18} style={{ color: "#4a6080" }} />
+              <Upload size={18} style={{ color: "var(--dim-foreground)" }} />
             </div>
             <div className="text-center">
-              <p className="text-sm" style={{ color: "#8a9bb5" }}>
+              <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
                 Haz clic para seleccionar
               </p>
-              <p className="text-xs" style={{ color: "#4a6080" }}>
+              <p className="text-xs" style={{ color: "var(--dim-foreground)" }}>
                 {hint}
               </p>
             </div>
@@ -508,7 +508,7 @@ function StepIndicator({ current }: { current: number }) {
                 s.num < current
                   ? ""
                   : s.num === current
-                    ? "ring-2 ring-[#c9a84c] ring-offset-2 ring-offset-[#040d1c]"
+                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
                     : "",
               )}
               style={{
@@ -516,10 +516,10 @@ function StepIndicator({ current }: { current: number }) {
                   s.num < current
                     ? "#22c55e"
                     : s.num === current
-                      ? "#c9a84c"
-                      : "#0a1628",
-                color: s.num <= current ? "#040d1c" : "#4a6080",
-                border: s.num > current ? "1px solid #1b2e4a" : "none",
+                      ? "var(--primary)"
+                      : "var(--card)",
+                color: s.num <= current ? "var(--primary-foreground)" : "var(--dim-foreground)",
+                border: s.num > current ? "1px solid var(--border)" : "none",
               }}
             >
               {s.num < current ? <CheckCircle size={15} /> : s.num}
@@ -529,10 +529,10 @@ function StepIndicator({ current }: { current: number }) {
               style={{
                 color:
                   s.num === current
-                    ? "#c9a84c"
+                    ? "var(--primary)"
                     : s.num < current
                       ? "#22c55e"
-                      : "#4a6080",
+                      : "var(--dim-foreground)",
               }}
             >
               {s.label}
@@ -542,7 +542,7 @@ function StepIndicator({ current }: { current: number }) {
             <div
               className="mx-3 mb-5 h-px flex-1 transition-all"
               style={{
-                backgroundColor: s.num < current ? "#22c55e" : "#1b2e4a",
+                backgroundColor: s.num < current ? "#22c55e" : "var(--accent)",
               }}
             />
           )}
@@ -957,8 +957,8 @@ function KYCNuevoCliente() {
     <div className="space-y-6">
       {/* Tipo persona selector */}
       <div>
-        <p className="mb-3 text-sm font-medium" style={{ color: "#8a9bb5" }}>
-          Tipo de persona <span style={{ color: "#e05252" }}>*</span>
+        <p className="mb-3 text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>
+          Tipo de persona <span style={{ color: "var(--destructive)" }}>*</span>
         </p>
         <div className="grid grid-cols-2 gap-4">
           {(
@@ -992,14 +992,14 @@ function KYCNuevoCliente() {
               className={cn(
                 "flex flex-col items-center gap-2 rounded-xl border p-5 text-left transition-all",
                 tipoPersona === opt.value
-                  ? "border-[#c9a84c] ring-2 ring-[rgba(201,168,76,0.20)]"
-                  : "border-[#1b2e4a] hover:border-[#2a4060]",
+                  ? "border-[#c9a84c] ring-2 ring-primary/20"
+                  : "border-border hover:border-muted-foreground/50",
               )}
               style={{
                 backgroundColor:
                   tipoPersona === opt.value
                     ? "rgba(201,168,76,0.07)"
-                    : "#0a1628",
+                    : "var(--card)",
               }}
             >
               <div
@@ -1008,13 +1008,13 @@ function KYCNuevoCliente() {
                   backgroundColor:
                     tipoPersona === opt.value
                       ? "rgba(201,168,76,0.15)"
-                      : "#0f1f3a",
+                      : "var(--secondary)",
                 }}
               >
                 <opt.icon
                   size={22}
                   style={{
-                    color: tipoPersona === opt.value ? "#c9a84c" : "#4a6080",
+                    color: tipoPersona === opt.value ? "var(--primary)" : "var(--dim-foreground)",
                   }}
                 />
               </div>
@@ -1022,12 +1022,12 @@ function KYCNuevoCliente() {
                 <p
                   className="text-sm font-semibold"
                   style={{
-                    color: tipoPersona === opt.value ? "#c9a84c" : "#f0ede8",
+                    color: tipoPersona === opt.value ? "var(--primary)" : "var(--foreground)",
                   }}
                 >
                   {opt.label}
                 </p>
-                <p className="text-xs" style={{ color: "#4a6080" }}>
+                <p className="text-xs" style={{ color: "var(--dim-foreground)" }}>
                   {opt.desc}
                 </p>
               </div>
@@ -1035,7 +1035,7 @@ function KYCNuevoCliente() {
           ))}
         </div>
         {errors.tipoPersona && (
-          <p className="mt-2 text-xs" style={{ color: "#e05252" }}>
+          <p className="mt-2 text-xs" style={{ color: "var(--destructive)" }}>
             {errors.tipoPersona}
           </p>
         )}
@@ -1045,7 +1045,7 @@ function KYCNuevoCliente() {
       {tipoPersona === "NATURAL" && (
         <div
           className="space-y-4 border-t pt-6"
-          style={{ borderColor: "#1b2e4a" }}
+          style={{ borderColor: "var(--border)" }}
         >
           <SectionHeader
             icon={User}
@@ -1172,7 +1172,7 @@ function KYCNuevoCliente() {
       {tipoPersona === "JURIDICA" && (
         <div
           className="space-y-4 border-t pt-6"
-          style={{ borderColor: "#1b2e4a" }}
+          style={{ borderColor: "var(--border)" }}
         >
           <SectionHeader
             icon={Building2}
@@ -1396,8 +1396,8 @@ function KYCNuevoCliente() {
           <div
             className="rounded-xl p-4"
             style={{
-              backgroundColor: esPep ? "rgba(224,82,82,0.06)" : "#0a1628",
-              border: `1px solid ${esPep ? "rgba(224,82,82,0.30)" : "#1b2e4a"}`,
+              backgroundColor: esPep ? "rgba(224,82,82,0.06)" : "var(--card)",
+              border: `1px solid ${esPep ? "rgba(224,82,82,0.30)" : "var(--accent)"}`,
             }}
           >
             <div className="flex items-start justify-between gap-4">
@@ -1405,22 +1405,22 @@ function KYCNuevoCliente() {
                 <ShieldAlert
                   size={18}
                   className="mt-0.5 flex-shrink-0"
-                  style={{ color: esPep ? "#e05252" : "#4a6080" }}
+                  style={{ color: esPep ? "var(--destructive)" : "var(--dim-foreground)" }}
                 />
                 <div>
                   <p
                     className="text-sm font-medium"
-                    style={{ color: esPep ? "#e05252" : "#f0ede8" }}
+                    style={{ color: esPep ? "var(--destructive)" : "var(--foreground)" }}
                   >
                     Persona Expuesta Políticamente (PEP)
                   </p>
                   <p
                     className="mt-0.5 text-xs leading-relaxed"
-                    style={{ color: "#8a9bb5" }}
+                    style={{ color: "var(--muted-foreground)" }}
                   >
                     Desempeña o ha desempeñado funciones públicas prominentes.
                     Activa DDR obligatoria —{" "}
-                    <span style={{ color: "#c9a84c" }}>
+                    <span style={{ color: "var(--primary)" }}>
                       Ley 23/2015 Art. 24
                     </span>
                   </p>
@@ -1437,7 +1437,7 @@ function KYCNuevoCliente() {
                 className="mt-3 rounded-lg p-3"
                 style={{ backgroundColor: "rgba(224,82,82,0.08)" }}
               >
-                <p className="text-xs" style={{ color: "#e05252" }}>
+                <p className="text-xs" style={{ color: "var(--destructive)" }}>
                   ⚠ Este cliente requiere completar Debida Diligencia Reforzada
                   (DDR) antes de ser activado.
                 </p>
@@ -1449,8 +1449,8 @@ function KYCNuevoCliente() {
           <div
             className="rounded-xl p-4"
             style={{
-              backgroundColor: esPepFamiliar ? "rgba(224,82,82,0.06)" : "#0a1628",
-              border: `1px solid ${esPepFamiliar ? "rgba(224,82,82,0.30)" : "#1b2e4a"}`,
+              backgroundColor: esPepFamiliar ? "rgba(224,82,82,0.06)" : "var(--card)",
+              border: `1px solid ${esPepFamiliar ? "rgba(224,82,82,0.30)" : "var(--accent)"}`,
             }}
           >
             <div className="flex items-start justify-between gap-4">
@@ -1458,18 +1458,18 @@ function KYCNuevoCliente() {
                 <ShieldAlert
                   size={18}
                   className="mt-0.5 flex-shrink-0"
-                  style={{ color: esPepFamiliar ? "#e05252" : "#4a6080" }}
+                  style={{ color: esPepFamiliar ? "var(--destructive)" : "var(--dim-foreground)" }}
                 />
                 <div>
                   <p
                     className="text-sm font-medium"
-                    style={{ color: esPepFamiliar ? "#e05252" : "#f0ede8" }}
+                    style={{ color: esPepFamiliar ? "var(--destructive)" : "var(--foreground)" }}
                   >
                     Familiar o asociado cercano de PEP
                   </p>
-                  <p className="mt-0.5 text-xs leading-relaxed" style={{ color: "#8a9bb5" }}>
+                  <p className="mt-0.5 text-xs leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
                     Cónyuge, hijo/a, padre, madre o socio de negocio de una PEP.{" "}
-                    <span style={{ color: "#c9a84c" }}>Ley 23/2015 Art. 24</span>
+                    <span style={{ color: "var(--primary)" }}>Ley 23/2015 Art. 24</span>
                   </p>
                 </div>
               </div>
@@ -1487,8 +1487,8 @@ function KYCNuevoCliente() {
             style={{
               backgroundColor: tieneAntecedentes
                 ? "rgba(224,82,82,0.06)"
-                : "#0a1628",
-              border: `1px solid ${tieneAntecedentes ? "rgba(224,82,82,0.30)" : "#1b2e4a"}`,
+                : "var(--card)",
+              border: `1px solid ${tieneAntecedentes ? "rgba(224,82,82,0.30)" : "var(--accent)"}`,
             }}
           >
             <div className="flex items-start justify-between gap-4">
@@ -1496,18 +1496,18 @@ function KYCNuevoCliente() {
                 <ShieldAlert
                   size={18}
                   className="mt-0.5 flex-shrink-0"
-                  style={{ color: tieneAntecedentes ? "#e05252" : "#4a6080" }}
+                  style={{ color: tieneAntecedentes ? "var(--destructive)" : "var(--dim-foreground)" }}
                 />
                 <div>
                   <p
                     className="text-sm font-medium"
-                    style={{ color: tieneAntecedentes ? "#e05252" : "#f0ede8" }}
+                    style={{ color: tieneAntecedentes ? "var(--destructive)" : "var(--foreground)" }}
                   >
                     Antecedentes penales declarados
                   </p>
                   <p
                     className="mt-0.5 text-xs leading-relaxed"
-                    style={{ color: "#8a9bb5" }}
+                    style={{ color: "var(--muted-foreground)" }}
                   >
                     El cliente declara tener antecedentes penales o procesos
                     judiciales en curso. Suma al puntaje de riesgo EBR.
@@ -1726,8 +1726,8 @@ function KYCNuevoCliente() {
             style={{
               backgroundColor: accionistasAnonimos
                 ? "rgba(224,82,82,0.06)"
-                : "#0a1628",
-              border: `1px solid ${accionistasAnonimos ? "rgba(224,82,82,0.30)" : "#1b2e4a"}`,
+                : "var(--card)",
+              border: `1px solid ${accionistasAnonimos ? "rgba(224,82,82,0.30)" : "var(--accent)"}`,
             }}
           >
             <div className="flex items-start justify-between gap-4">
@@ -1735,20 +1735,20 @@ function KYCNuevoCliente() {
                 <ShieldAlert
                   size={18}
                   className="mt-0.5 flex-shrink-0"
-                  style={{ color: accionistasAnonimos ? "#e05252" : "#4a6080" }}
+                  style={{ color: accionistasAnonimos ? "var(--destructive)" : "var(--dim-foreground)" }}
                 />
                 <div>
                   <p
                     className="text-sm font-medium"
                     style={{
-                      color: accionistasAnonimos ? "#e05252" : "#f0ede8",
+                      color: accionistasAnonimos ? "var(--destructive)" : "var(--foreground)",
                     }}
                   >
                     Acciones al portador o accionistas anónimos
                   </p>
                   <p
                     className="mt-0.5 text-xs leading-relaxed"
-                    style={{ color: "#8a9bb5" }}
+                    style={{ color: "var(--muted-foreground)" }}
                   >
                     La sociedad tiene acciones cuyo titular no está plenamente
                     identificado. Suma al puntaje de riesgo EBR.
@@ -1768,8 +1768,8 @@ function KYCNuevoCliente() {
             style={{
               backgroundColor: operaPaisesAltoRiesgo
                 ? "rgba(224,82,82,0.06)"
-                : "#0a1628",
-              border: `1px solid ${operaPaisesAltoRiesgo ? "rgba(224,82,82,0.30)" : "#1b2e4a"}`,
+                : "var(--card)",
+              border: `1px solid ${operaPaisesAltoRiesgo ? "rgba(224,82,82,0.30)" : "var(--accent)"}`,
             }}
           >
             <div className="flex items-start justify-between gap-4">
@@ -1778,21 +1778,21 @@ function KYCNuevoCliente() {
                   size={18}
                   className="mt-0.5 flex-shrink-0"
                   style={{
-                    color: operaPaisesAltoRiesgo ? "#e05252" : "#4a6080",
+                    color: operaPaisesAltoRiesgo ? "var(--destructive)" : "var(--dim-foreground)",
                   }}
                 />
                 <div>
                   <p
                     className="text-sm font-medium"
                     style={{
-                      color: operaPaisesAltoRiesgo ? "#e05252" : "#f0ede8",
+                      color: operaPaisesAltoRiesgo ? "var(--destructive)" : "var(--foreground)",
                     }}
                   >
                     Opera en países de alto riesgo (listas GAFI)
                   </p>
                   <p
                     className="mt-0.5 text-xs leading-relaxed"
-                    style={{ color: "#8a9bb5" }}
+                    style={{ color: "var(--muted-foreground)" }}
                   >
                     La empresa mantiene operaciones o relaciones comerciales en
                     jurisdicciones señaladas por el GAFI. Suma al puntaje EBR.
@@ -1817,22 +1817,22 @@ function KYCNuevoCliente() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-medium" style={{ color: "#f0ede8" }}>
+                <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
                   Beneficiarios Finales{" "}
-                  <span style={{ color: "#e05252" }}>*</span>
+                  <span style={{ color: "var(--destructive)" }}>*</span>
                 </p>
-                <p className="mt-0.5 text-xs" style={{ color: "#8a9bb5" }}>
+                <p className="mt-0.5 text-xs" style={{ color: "var(--muted-foreground)" }}>
                   Personas naturales con participación directa o indirecta. La
                   suma debe ser{" "}
-                  <strong style={{ color: "#c9a84c" }}>exactamente 100%</strong>{" "}
-                  — <span style={{ color: "#c9a84c" }}>Ley 254/2021 Art. 3</span>
+                  <strong style={{ color: "var(--primary)" }}>exactamente 100%</strong>{" "}
+                  — <span style={{ color: "var(--primary)" }}>Ley 254/2021 Art. 3</span>
                 </p>
               </div>
             </div>
 
             <div className="mt-5 space-y-4">
               {errors.beneficiarios && (
-                <p className="text-xs" style={{ color: "#e05252" }}>
+                <p className="text-xs" style={{ color: "var(--destructive)" }}>
                   {errors.beneficiarios}
                 </p>
               )}
@@ -1844,7 +1844,7 @@ function KYCNuevoCliente() {
                     border: "1px solid rgba(224,82,82,0.25)",
                   }}
                 >
-                  <p className="text-xs" style={{ color: "#e05252" }}>
+                  <p className="text-xs" style={{ color: "var(--destructive)" }}>
                     {errors.totalPct}
                   </p>
                 </div>
@@ -1855,14 +1855,14 @@ function KYCNuevoCliente() {
                   key={bf.id}
                   className="rounded-xl p-4"
                   style={{
-                    backgroundColor: "#040d1c",
-                    border: "1px solid #1b2e4a",
+                    backgroundColor: "var(--background)",
+                    border: "1px solid var(--border)",
                   }}
                 >
                   <div className="mb-3 flex items-center justify-between">
                     <p
                       className="text-xs font-semibold uppercase tracking-wide"
-                      style={{ color: "#c9a84c" }}
+                      style={{ color: "var(--primary)" }}
                     >
                       Beneficiario Final #{i + 1}
                     </p>
@@ -1871,7 +1871,7 @@ function KYCNuevoCliente() {
                         type="button"
                         onClick={() => removeBeneficiario(bf.id)}
                         className="rounded p-1 transition-colors hover:text-[#e05252]"
-                        style={{ color: "#4a6080" }}
+                        style={{ color: "var(--dim-foreground)" }}
                       >
                         <Trash2 size={14} />
                       </button>
@@ -2026,7 +2026,7 @@ function KYCNuevoCliente() {
                       />
                       <span
                         className="text-xs"
-                        style={{ color: bf.es_pep ? "#e05252" : "#8a9bb5" }}
+                        style={{ color: bf.es_pep ? "var(--destructive)" : "var(--muted-foreground)" }}
                       >
                         Es Persona Expuesta Políticamente (PEP)
                       </span>
@@ -2040,7 +2040,7 @@ function KYCNuevoCliente() {
                 <div
                   className="flex items-center justify-between rounded-lg px-4 py-3"
                   style={{
-                    backgroundColor: "#040d1c",
+                    backgroundColor: "var(--background)",
                     border: `1px solid ${
                       totalPorcentajeBF > 100
                         ? "rgba(224,82,82,0.40)"
@@ -2052,10 +2052,10 @@ function KYCNuevoCliente() {
                   aria-live="polite"
                 >
                   <div>
-                    <span className="text-xs" style={{ color: "#8a9bb5" }}>
+                    <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                       Total participación
                     </span>
-                    <p className="mt-0.5 text-[10px]" style={{ color: "#4a6080" }}>
+                    <p className="mt-0.5 text-[10px]" style={{ color: "var(--dim-foreground)" }}>
                       Debe sumar exactamente 100% (Ley 254/2021)
                     </p>
                   </div>
@@ -2064,7 +2064,7 @@ function KYCNuevoCliente() {
                     style={{
                       color:
                         totalPorcentajeBF > 100
-                          ? "#e05252"
+                          ? "var(--destructive)"
                           : totalPorcentajeBF === 100
                             ? "#22c55e"
                             : "#d97706",
@@ -2078,11 +2078,11 @@ function KYCNuevoCliente() {
               <button
                 type="button"
                 onClick={addBeneficiario}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border py-3 text-sm transition-all hover:border-[#c9a84c] hover:text-[#c9a84c]"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border py-3 text-sm transition-all hover:border-primary hover:text-primary"
                 style={{
-                  borderColor: "#1b2e4a",
+                  borderColor: "var(--border)",
                   borderStyle: "dashed",
-                  color: "#8a9bb5",
+                  color: "var(--muted-foreground)",
                 }}
               >
                 <Plus size={15} />
@@ -2116,13 +2116,13 @@ function KYCNuevoCliente() {
         <Info
           size={14}
           className="mt-0.5 flex-shrink-0"
-          style={{ color: "#c9a84c" }}
+          style={{ color: "var(--primary)" }}
         />
-        <p className="text-xs leading-relaxed" style={{ color: "#8a9bb5" }}>
+        <p className="text-xs leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
           Los documentos deben estar{" "}
-          <strong style={{ color: "#f0ede8" }}>vigentes</strong>. El comprobante
+          <strong style={{ color: "var(--foreground)" }}>vigentes</strong>. El comprobante
           de domicilio no puede tener más de{" "}
-          <strong style={{ color: "#f0ede8" }}>90 días</strong> de antigüedad —
+          <strong style={{ color: "var(--foreground)" }}>90 días</strong> de antigüedad —
           RV-07.
         </p>
       </div>
@@ -2182,14 +2182,14 @@ function KYCNuevoCliente() {
     }) => (
       <div
         className="flex items-start justify-between gap-4 py-2.5"
-        style={{ borderBottom: "1px solid #0f1f3a" }}
+        style={{ borderBottom: "1px solid var(--border)" }}
       >
-        <span className="flex-shrink-0 text-sm" style={{ color: "#8a9bb5" }}>
+        <span className="flex-shrink-0 text-sm" style={{ color: "var(--muted-foreground)" }}>
           {label}
         </span>
         <span
           className="text-right text-sm font-medium"
-          style={{ color: "#f0ede8" }}
+          style={{ color: "var(--foreground)" }}
         >
           {value}
         </span>
@@ -2214,13 +2214,13 @@ function KYCNuevoCliente() {
         {/* Nivel de riesgo */}
         <div
           className="flex items-center justify-between rounded-xl p-4"
-          style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+          style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
         >
           <div>
-            <p className="text-sm font-semibold" style={{ color: "#f0ede8" }}>
+            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
               Nivel de riesgo estimado · {riesgoEstimado.puntaje} pts
             </p>
-            <p className="mt-0.5 text-xs" style={{ color: "#4a6080" }}>
+            <p className="mt-0.5 text-xs" style={{ color: "var(--dim-foreground)" }}>
               Motor EBR — Ley 23/2015 Art. 22. El valor definitivo lo asigna
               el sistema al crear el expediente.
             </p>
@@ -2240,13 +2240,13 @@ function KYCNuevoCliente() {
             <AlertTriangle
               size={16}
               className="mt-0.5 flex-shrink-0"
-              style={{ color: "#e05252" }}
+              style={{ color: "var(--destructive)" }}
             />
             <div>
-              <p className="text-sm font-semibold" style={{ color: "#e05252" }}>
+              <p className="text-sm font-semibold" style={{ color: "var(--destructive)" }}>
                 DDR Obligatoria activada
               </p>
-              <p className="mt-0.5 text-xs" style={{ color: "#8a9bb5" }}>
+              <p className="mt-0.5 text-xs" style={{ color: "var(--muted-foreground)" }}>
                 Este expediente activará el flujo de Debida Diligencia Reforzada
                 al ser creado — Ley 23/2015 Art. 26.
               </p>
@@ -2257,11 +2257,11 @@ function KYCNuevoCliente() {
         {/* Resumen datos */}
         <div
           className="rounded-xl p-5"
-          style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+          style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
         >
           <p
             className="mb-3 text-xs font-semibold uppercase tracking-wider"
-            style={{ color: "#4a6080" }}
+            style={{ color: "var(--dim-foreground)" }}
           >
             {tipoPersona === "NATURAL" ? "Persona Natural" : "Persona Jurídica"}
           </p>
@@ -2307,7 +2307,7 @@ function KYCNuevoCliente() {
                 label="PEP"
                 value={
                   esPep ? (
-                    <span style={{ color: "#e05252" }}>Sí — DDR requerida</span>
+                    <span style={{ color: "var(--destructive)" }}>Sí — DDR requerida</span>
                   ) : (
                     "No"
                   )
@@ -2317,7 +2317,7 @@ function KYCNuevoCliente() {
                 label="Familiar / asociado de PEP"
                 value={
                   esPepFamiliar ? (
-                    <span style={{ color: "#e05252" }}>Sí</span>
+                    <span style={{ color: "var(--destructive)" }}>Sí</span>
                   ) : (
                     "No"
                   )
@@ -2327,7 +2327,7 @@ function KYCNuevoCliente() {
                 label="Antecedentes penales"
                 value={
                   tieneAntecedentes ? (
-                    <span style={{ color: "#e05252" }}>Sí</span>
+                    <span style={{ color: "var(--destructive)" }}>Sí</span>
                   ) : (
                     "No"
                   )
@@ -2356,7 +2356,7 @@ function KYCNuevoCliente() {
                 label="Accionistas anónimos"
                 value={
                   accionistasAnonimos ? (
-                    <span style={{ color: "#e05252" }}>Sí</span>
+                    <span style={{ color: "var(--destructive)" }}>Sí</span>
                   ) : (
                     "No"
                   )
@@ -2366,7 +2366,7 @@ function KYCNuevoCliente() {
                 label="Opera en países de alto riesgo"
                 value={
                   operaPaisesAltoRiesgo ? (
-                    <span style={{ color: "#e05252" }}>Sí</span>
+                    <span style={{ color: "var(--destructive)" }}>Sí</span>
                   ) : (
                     "No"
                   )
@@ -2380,7 +2380,7 @@ function KYCNuevoCliente() {
                       color:
                         Math.round(totalPorcentajeBF) === 100
                           ? "#22c55e"
-                          : "#e05252",
+                          : "var(--destructive)",
                     }}
                   >
                     {beneficiarios.length} registrado(s) ·{" "}
@@ -2395,11 +2395,11 @@ function KYCNuevoCliente() {
         {/* Documentos */}
         <div
           className="rounded-xl p-5"
-          style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+          style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
         >
           <p
             className="mb-3 text-xs font-semibold uppercase tracking-wider"
-            style={{ color: "#4a6080" }}
+            style={{ color: "var(--dim-foreground)" }}
           >
             Documentos cargados ({docsCargados.length})
           </p>
@@ -2407,15 +2407,15 @@ function KYCNuevoCliente() {
             <div
               key={d.label}
               className="flex items-center gap-2 py-2"
-              style={{ borderBottom: "1px solid #0f1f3a" }}
+              style={{ borderBottom: "1px solid var(--border)" }}
             >
               <CheckCircle size={13} style={{ color: "#22c55e" }} />
-              <span className="text-sm" style={{ color: "#f0ede8" }}>
+              <span className="text-sm" style={{ color: "var(--foreground)" }}>
                 {d.label}
               </span>
               <span
                 className="ml-auto truncate text-xs font-mono"
-                style={{ color: "#4a6080" }}
+                style={{ color: "var(--dim-foreground)" }}
               >
                 {d.file?.name}
               </span>
@@ -2423,9 +2423,9 @@ function KYCNuevoCliente() {
           ))}
         </div>
 
-        <p className="text-xs leading-relaxed" style={{ color: "#4a6080" }}>
+        <p className="text-xs leading-relaxed" style={{ color: "var(--dim-foreground)" }}>
           Al confirmar, el expediente quedará en estado{" "}
-          <strong style={{ color: "#c9a84c" }}>Pendiente de Revisión</strong> y
+          <strong style={{ color: "var(--primary)" }}>Pendiente de Revisión</strong> y
           se notificará al Oficial de Cumplimiento. Ref. Ley 23/2015 Art. 18.
         </p>
       </div>
@@ -2441,11 +2441,11 @@ function KYCNuevoCliente() {
       <div className="mb-6">
         <h1
           className="mb-1 text-[26px]"
-          style={{ fontFamily: "DM Serif Display, serif", color: "#f0ede8" }}
+          style={{ fontFamily: "DM Serif Display, serif", color: "var(--foreground)" }}
         >
           Nuevo Cliente KYC
         </h1>
-        <p className="text-sm" style={{ color: "#8a9bb5" }}>
+        <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
           Registro digital de cliente · Módulo KYC · Ley 23/2015 Art. 18-25
         </p>
       </div>
@@ -2455,7 +2455,7 @@ function KYCNuevoCliente() {
       {/* Card */}
       <div
         className="rounded-2xl p-7"
-        style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+        style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
       >
         {step === 1 && renderStep1()}
         {step === 2 && renderStep2()}
@@ -2465,13 +2465,13 @@ function KYCNuevoCliente() {
         {/* Navigation */}
         <div
           className="mt-8 flex items-center justify-between border-t pt-6"
-          style={{ borderColor: "#1b2e4a" }}
+          style={{ borderColor: "var(--border)" }}
         >
           <button
             type="button"
             onClick={step === 1 ? () => navigate({ to: "/" }) : handleBack}
-            className="flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm transition-all hover:text-[#c9a84c]"
-            style={{ color: "#8a9bb5" }}
+            className="flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm transition-all hover:text-primary"
+            style={{ color: "var(--muted-foreground)" }}
           >
             <ChevronLeft size={16} />
             {step === 1 ? "Cancelar" : "Anterior"}
@@ -2485,7 +2485,7 @@ function KYCNuevoCliente() {
                 "flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-semibold transition-all",
                 "hover:brightness-110 active:scale-[0.99]",
               )}
-              style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
+              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
             >
               Siguiente
               <ChevronRight size={16} />
@@ -2510,7 +2510,7 @@ function KYCNuevoCliente() {
                 "hover:brightness-110 active:scale-[0.99]",
                 "disabled:cursor-not-allowed disabled:opacity-60",
               )}
-              style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
+              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
             >
               {submitting ? (
                 <>

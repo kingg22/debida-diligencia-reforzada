@@ -40,7 +40,7 @@ function PanamaComplianceLogo() {
           border: "1px solid rgba(201,168,76,0.30)",
         }}
       >
-        <ShieldCheck size={16} style={{ color: "#c9a84c" }} />
+        <ShieldCheck size={16} style={{ color: "var(--primary)" }} />
       </div>
       <div className="group-data-[collapsible=icon]:hidden">
         <p

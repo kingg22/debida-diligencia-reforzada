@@ -90,13 +90,13 @@ function CadenaRevision({
         const color =
           esFinal && current === 4
             ? rechazado
-              ? "#e05252"
+              ? "var(--destructive)"
               : "#22c55e"
             : done
               ? "#22c55e"
               : active
-                ? "#c9a84c"
-                : "#4a6080"
+                ? "var(--primary)"
+                : "var(--dim-foreground)"
         return (
           <div key={s.etapa} className="flex flex-1 items-start">
             <div className="flex min-w-0 flex-col items-center">
@@ -107,16 +107,16 @@ function CadenaRevision({
                     done || (esFinal && current === 4)
                       ? color
                       : active
-                        ? "#c9a84c"
-                        : "#0a1628",
+                        ? "var(--primary)"
+                        : "var(--card)",
                   color:
                     done || active || (esFinal && current === 4)
-                      ? "#040d1c"
-                      : "#4a6080",
+                      ? "var(--primary-foreground)"
+                      : "var(--dim-foreground)",
                   border:
                     done || active || (esFinal && current === 4)
                       ? "none"
-                      : "1px solid #1b2e4a",
+                      : "1px solid var(--border)",
                   boxShadow: active
                     ? "0 0 0 3px rgba(201,168,76,0.20)"
                     : "none",
@@ -130,13 +130,13 @@ function CadenaRevision({
               </div>
               <span
                 className="mt-1.5 whitespace-nowrap text-xs font-medium"
-                style={{ color: active ? "#c9a84c" : done ? "#22c55e" : "#4a6080" }}
+                style={{ color: active ? "var(--primary)" : done ? "#22c55e" : "var(--dim-foreground)" }}
               >
                 {s.etapa}
               </span>
               <span
                 className="mt-0.5 whitespace-nowrap text-[10px] uppercase tracking-wide"
-                style={{ color: "#4a6080" }}
+                style={{ color: "var(--dim-foreground)" }}
               >
                 {s.rol === "Gerente / Comité"
                   ? nivel === "MUY_ALTO"
@@ -149,7 +149,7 @@ function CadenaRevision({
               <div
                 className="mx-2 mt-4 h-px flex-1"
                 style={{
-                  backgroundColor: i < current ? "#22c55e" : "#1b2e4a",
+                  backgroundColor: i < current ? "#22c55e" : "var(--accent)",
                 }}
               />
             )}
@@ -174,12 +174,12 @@ function Card({
   return (
     <div
       className="rounded-xl p-5"
-      style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+      style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
     >
       <div className="mb-4 flex items-center justify-between">
         <p
           className="text-xs font-semibold uppercase tracking-wider"
-          style={{ color: "#4a6080" }}
+          style={{ color: "var(--dim-foreground)" }}
         >
           {title}
         </p>
@@ -232,12 +232,12 @@ function Dato({
 }) {
   return (
     <div>
-      <p className="text-xs" style={{ color: "#4a6080" }}>
+      <p className="text-xs" style={{ color: "var(--dim-foreground)" }}>
         {label}
       </p>
       <p
         className="mt-0.5 text-sm"
-        style={{ color: alerta ? "#e05252" : "#f0ede8" }}
+        style={{ color: alerta ? "var(--destructive)" : "var(--foreground)" }}
       >
         {value}
       </p>
@@ -263,25 +263,25 @@ function FilaDocumento({
   return (
     <div
       className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"
-      style={{ backgroundColor: "#040d1c" }}
+      style={{ backgroundColor: "var(--background)" }}
     >
       <div className="flex min-w-0 items-center gap-2.5">
         <FileText
           size={14}
           className="flex-shrink-0"
-          style={{ color: "#c9a84c" }}
+          style={{ color: "var(--primary)" }}
         />
         <div className="min-w-0">
-          <p className="truncate text-sm" style={{ color: "#f0ede8" }}>
+          <p className="truncate text-sm" style={{ color: "var(--foreground)" }}>
             {documentoTipoLabel(tipo)}
-            <span className="ml-2 text-xs" style={{ color: "#8a9bb5" }}>
+            <span className="ml-2 text-xs" style={{ color: "var(--muted-foreground)" }}>
               {nombre}
             </span>
           </p>
           {hash && (
             <p
               className="truncate font-mono text-[10px]"
-              style={{ color: "#4a6080" }}
+              style={{ color: "var(--dim-foreground)" }}
               title={hash}
             >
               SHA-256: {hash.slice(0, 16)}…
@@ -290,7 +290,7 @@ function FilaDocumento({
         </div>
       </div>
       <div className="flex flex-shrink-0 items-center gap-3">
-        <span className="text-xs" style={{ color: "#8a9bb5" }}>
+        <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
           {formatBytes(tamanio)}
         </span>
         {onDescargar && (
@@ -299,8 +299,8 @@ function FilaDocumento({
             onClick={onDescargar}
             disabled={descargando}
             title="Descargar documento"
-            className="rounded-md p-1.5 transition-colors hover:bg-[#1b2e4a] disabled:opacity-50"
-            style={{ color: "#c9a84c" }}
+            className="rounded-md p-1.5 transition-colors hover:bg-accent disabled:opacity-50"
+            style={{ color: "var(--primary)" }}
           >
             <Download size={14} />
           </button>
@@ -316,7 +316,7 @@ function FlagRiesgo({ activo, label }: { activo: boolean; label: string }) {
       className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
       style={{
         backgroundColor: activo ? "rgba(224,82,82,0.12)" : "rgba(34,197,94,0.10)",
-        color: activo ? "#e05252" : "#22c55e",
+        color: activo ? "var(--destructive)" : "#22c55e",
       }}
     >
       {activo ? <ShieldAlert size={12} /> : <ShieldCheck size={12} />}
@@ -489,8 +489,8 @@ function CasoDetallePage() {
       <button
         type="button"
         onClick={() => navigate({ to: "/casos-ddr" })}
-        className="flex items-center gap-1.5 text-sm transition-colors hover:text-[#c9a84c]"
-        style={{ color: "#8a9bb5" }}
+        className="flex items-center gap-1.5 text-sm transition-colors hover:text-primary"
+        style={{ color: "var(--muted-foreground)" }}
       >
         <ArrowLeft size={15} /> Volver a casos DDR
       </button>
@@ -526,7 +526,7 @@ function CasoDetallePage() {
           {/* Cadena de revisión (cuatro ojos) */}
           <div
             className="rounded-xl p-6"
-            style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+            style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
           >
             <CadenaRevision
               current={etapaActual(caso.status)}
@@ -547,16 +547,16 @@ function CasoDetallePage() {
               <CornerUpLeft
                 size={16}
                 className="mt-0.5 flex-shrink-0"
-                style={{ color: "#c9a84c" }}
+                style={{ color: "var(--primary)" }}
               />
               <div>
                 <p
                   className="text-xs font-semibold uppercase tracking-wider"
-                  style={{ color: "#c9a84c" }}
+                  style={{ color: "var(--primary)" }}
                 >
                   Devuelto por el Oficial de Cumplimiento
                 </p>
-                <p className="mt-1 text-sm" style={{ color: "#f0ede8" }}>
+                <p className="mt-1 text-sm" style={{ color: "var(--foreground)" }}>
                   {caso.observaciones_oficial}
                 </p>
               </div>
@@ -574,11 +574,11 @@ function CasoDetallePage() {
             >
               <p
                 className="mb-1 text-xs font-semibold uppercase tracking-wider"
-                style={{ color: "#e05252" }}
+                style={{ color: "var(--destructive)" }}
               >
                 Motivo del rechazo
               </p>
-              <p className="text-sm" style={{ color: "#f0ede8" }}>
+              <p className="text-sm" style={{ color: "var(--foreground)" }}>
                 {caso.observaciones_rechazo}
               </p>
             </div>
@@ -705,10 +705,10 @@ function CasoDetallePage() {
               </div>
 
               {(expediente?.beneficiarios_final?.length ?? 0) > 0 && (
-                <div className="mt-5 border-t pt-4" style={{ borderColor: "#1b2e4a" }}>
+                <div className="mt-5 border-t pt-4" style={{ borderColor: "var(--border)" }}>
                   <p
                     className="mb-3 text-xs font-semibold uppercase tracking-wider"
-                    style={{ color: "#4a6080" }}
+                    style={{ color: "var(--dim-foreground)" }}
                   >
                     Beneficiarios finales
                   </p>
@@ -717,11 +717,11 @@ function CasoDetallePage() {
                       <div
                         key={bf.id}
                         className="flex items-center justify-between rounded-lg px-3 py-2"
-                        style={{ backgroundColor: "#040d1c" }}
+                        style={{ backgroundColor: "var(--background)" }}
                       >
                         <div className="flex items-center gap-2">
-                          <User size={13} style={{ color: "#4a6080" }} />
-                          <span className="text-sm" style={{ color: "#f0ede8" }}>
+                          <User size={13} style={{ color: "var(--dim-foreground)" }} />
+                          <span className="text-sm" style={{ color: "var(--foreground)" }}>
                             {bf.nombre} {bf.apellido}
                           </span>
                           {bf.es_pep && (
@@ -729,7 +729,7 @@ function CasoDetallePage() {
                               className="rounded-full px-2 py-0.5 text-[10px] font-semibold"
                               style={{
                                 backgroundColor: "rgba(224,82,82,0.12)",
-                                color: "#e05252",
+                                color: "var(--destructive)",
                               }}
                             >
                               PEP
@@ -738,7 +738,7 @@ function CasoDetallePage() {
                         </div>
                         <span
                           className="font-mono text-xs"
-                          style={{ color: "#8a9bb5" }}
+                          style={{ color: "var(--muted-foreground)" }}
                         >
                           {bf.porcentaje_participacion}% ·{" "}
                           {bf.tipo_control === "INDIRECTA"
@@ -761,7 +761,7 @@ function CasoDetallePage() {
             <Card
               title="Cuestionario EBR — Respuestas del analista"
               action={
-                <span className="text-xs" style={{ color: "#4a6080" }}>
+                <span className="text-xs" style={{ color: "var(--dim-foreground)" }}>
                   Completado {formatFechaHora(cuestionario.completado_en)}
                 </span>
               }
@@ -840,7 +840,7 @@ function CasoDetallePage() {
           {/* 1. Asignar analista — Oficial, caso ABIERTO */}
           {caso.status === "ABIERTO" && esOficial && (
             <Card title="Asignar analista investigador">
-              <p className="mb-3 text-xs" style={{ color: "#8a9bb5" }}>
+              <p className="mb-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
                 Por segregación de funciones, el analista que registró el
                 expediente no aparece en esta lista.
               </p>
@@ -848,10 +848,10 @@ function CasoDetallePage() {
                 <select
                   value={analistaSel}
                   onChange={(e) => setAnalistaSel(e.target.value)}
-                  className="h-10 min-w-[240px] rounded-lg border px-3 text-sm outline-none border-[#1b2e4a] focus:border-[#c9a84c]"
+                  className="h-10 min-w-[240px] rounded-lg border px-3 text-sm outline-none border-border focus:border-primary"
                   style={{
-                    backgroundColor: "#0f1f3a",
-                    color: analistaSel ? "#f0ede8" : "#4a6080",
+                    backgroundColor: "var(--secondary)",
+                    color: analistaSel ? "var(--foreground)" : "var(--dim-foreground)",
                   }}
                 >
                   <option value="">Selecciona un analista…</option>
@@ -866,7 +866,7 @@ function CasoDetallePage() {
                   disabled={!analistaSel || asignar.isPending}
                   onClick={() => asignar.mutate()}
                   className="rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-                  style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
+                  style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
                 >
                   {asignar.isPending ? "Asignando…" : "Asignar"}
                 </button>
@@ -884,7 +884,7 @@ function CasoDetallePage() {
                   navigate({ to: "/casos-ddr/$id/evaluacion", params: { id } })
                 }
                 className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110"
-                style={{ backgroundColor: "#c9a84c", color: "#040d1c" }}
+                style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
               >
                 <ClipboardCheck size={16} />
                 Completar evaluación DDR
@@ -894,7 +894,7 @@ function CasoDetallePage() {
           {/* 3. Revisión del Oficial — caso EN_REVISION_OFICIAL */}
           {caso.status === "EN_REVISION_OFICIAL" && esOficial && (
             <Card title="Revisión del Oficial de Cumplimiento">
-              <p className="mb-4 text-sm" style={{ color: "#8a9bb5" }}>
+              <p className="mb-4 text-sm" style={{ color: "var(--muted-foreground)" }}>
                 Revisa el expediente, las respuestas del cuestionario EBR y la
                 documentación de soporte. Si la investigación está completa,
                 valida el caso para escalarlo al{" "}
@@ -909,7 +909,7 @@ function CasoDetallePage() {
                   disabled={validar.isPending}
                   onClick={() => validar.mutate()}
                   className="rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-                  style={{ backgroundColor: "#22c55e", color: "#040d1c" }}
+                  style={{ backgroundColor: "#22c55e", color: "var(--primary-foreground)" }}
                 >
                   {validar.isPending
                     ? "Validando…"
@@ -918,10 +918,10 @@ function CasoDetallePage() {
                 <button
                   type="button"
                   onClick={() => setDevolverOpen(true)}
-                  className="flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-[rgba(201,168,76,0.08)]"
+                  className="flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-primary/10"
                   style={{
                     borderColor: "rgba(201,168,76,0.4)",
-                    color: "#c9a84c",
+                    color: "var(--primary)",
                   }}
                 >
                   <CornerUpLeft size={15} />
@@ -938,7 +938,7 @@ function CasoDetallePage() {
                 rol === "COMITE_CUMPLIMIENTO") ||
               rol === "ADMIN") && (
               <Card title="Decisión de aprobación">
-                <p className="mb-4 text-sm" style={{ color: "#8a9bb5" }}>
+                <p className="mb-4 text-sm" style={{ color: "var(--muted-foreground)" }}>
                   El caso fue investigado por el analista y validado por el
                   Oficial de Cumplimiento. La decisión final corresponde a esta
                   instancia.
@@ -949,17 +949,17 @@ function CasoDetallePage() {
                     disabled={aprobar.isPending}
                     onClick={() => aprobar.mutate()}
                     className="rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-                    style={{ backgroundColor: "#22c55e", color: "#040d1c" }}
+                    style={{ backgroundColor: "#22c55e", color: "var(--primary-foreground)" }}
                   >
                     {aprobar.isPending ? "Aprobando…" : "Aprobar caso"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setRechazoOpen(true)}
-                    className="rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-[rgba(224,82,82,0.1)]"
+                    className="rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-destructive/10"
                     style={{
                       borderColor: "rgba(224,82,82,0.4)",
-                      color: "#e05252",
+                      color: "var(--destructive)",
                     }}
                   >
                     Rechazar caso
@@ -971,7 +971,7 @@ function CasoDetallePage() {
           {/* Empresa vs persona: icono contextual al final del dossier */}
           {!pn && !pj && (
             <Card title="Expediente del cliente">
-              <div className="flex items-center gap-2 text-sm" style={{ color: "#8a9bb5" }}>
+              <div className="flex items-center gap-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
                 <Building2 size={14} />
                 Cargando información del expediente…
               </div>
@@ -986,8 +986,8 @@ function CasoDetallePage() {
           titulo="Devolver al analista"
           descripcion="Indica qué falta o qué debe corregirse (mínimo 10 caracteres). El analista verá estas observaciones en el caso."
           confirmLabel={devolver.isPending ? "Devolviendo…" : "Devolver caso"}
-          confirmColor="#c9a84c"
-          confirmTextColor="#040d1c"
+          confirmColor="var(--primary)"
+          confirmTextColor="var(--primary-foreground)"
           minimo={10}
           value={observaciones}
           onChange={setObservaciones}
@@ -1006,7 +1006,7 @@ function CasoDetallePage() {
           titulo="Rechazar caso"
           descripcion="Indica el motivo del rechazo (mínimo 20 caracteres)."
           confirmLabel={rechazar.isPending ? "Rechazando…" : "Confirmar rechazo"}
-          confirmColor="#e05252"
+          confirmColor="var(--destructive)"
           confirmTextColor="#fff"
           minimo={20}
           value={observaciones}
@@ -1055,32 +1055,32 @@ function ModalObservaciones({
     >
       <div
         className="w-full max-w-md rounded-2xl p-6"
-        style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+        style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
       >
         <h3
           className="mb-3 text-lg"
           style={{
             fontFamily: "DM Serif Display, serif",
-            color: "#f0ede8",
+            color: "var(--foreground)",
             fontWeight: 400,
           }}
         >
           {titulo}
         </h3>
-        <p className="mb-3 text-sm" style={{ color: "#8a9bb5" }}>
+        <p className="mb-3 text-sm" style={{ color: "var(--muted-foreground)" }}>
           {descripcion}
         </p>
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={4}
-          className="w-full rounded-lg border p-3 text-sm text-[#f0ede8] outline-none border-[#1b2e4a] focus:border-[#c9a84c]"
-          style={{ backgroundColor: "#0f1f3a" }}
+          className="w-full rounded-lg border p-3 text-sm text-foreground outline-none border-border focus:border-primary"
+          style={{ backgroundColor: "var(--secondary)" }}
           placeholder="Observaciones…"
         />
         <p
           className="mt-1 text-xs"
-          style={{ color: value.length >= minimo ? "#22c55e" : "#4a6080" }}
+          style={{ color: value.length >= minimo ? "#22c55e" : "var(--dim-foreground)" }}
         >
           {value.length}/{minimo}
         </p>
@@ -1088,8 +1088,8 @@ function ModalObservaciones({
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors hover:bg-[#1b2e4a]"
-            style={{ borderColor: "#1b2e4a", color: "#8a9bb5" }}
+            className="flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors hover:bg-accent"
+            style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}
           >
             Cancelar
           </button>
