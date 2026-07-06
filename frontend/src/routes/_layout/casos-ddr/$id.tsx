@@ -6,6 +6,7 @@ import {
   Check,
   ClipboardCheck,
   CornerUpLeft,
+  Download,
   FileText,
   ShieldAlert,
   ShieldCheck,
@@ -14,7 +15,11 @@ import {
 import { useState } from "react"
 import { toast } from "sonner"
 import { UsersService } from "@/client"
-import { CasosDdrService, SgddrApiError } from "@/client/sgddr"
+import {
+  CasosDdrService,
+  ClientesService,
+  SgddrApiError,
+} from "@/client/sgddr"
 import { EstadoCasoBadge } from "@/components/Common/EstadoCasoBadge"
 import { NivelRiesgoBadge } from "@/components/Common/NivelRiesgoBadge"
 import { PageHeader } from "@/components/Common/PageHeader"
@@ -22,6 +27,7 @@ import { ErrorState, LoadingState } from "@/components/Common/QueryStates"
 import useAuth from "@/hooks/useAuth"
 import {
   type AppUser,
+  documentoTipoLabel,
   formatBytes,
   formatFecha,
   formatFechaHora,
@@ -239,6 +245,71 @@ function Dato({
   )
 }
 
+function FilaDocumento({
+  nombre,
+  tipo,
+  tamanio,
+  hash,
+  onDescargar,
+  descargando,
+}: {
+  nombre: string
+  tipo?: string | null
+  tamanio?: number | null
+  hash?: string | null
+  onDescargar?: () => void
+  descargando?: boolean
+}) {
+  return (
+    <div
+      className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"
+      style={{ backgroundColor: "#040d1c" }}
+    >
+      <div className="flex min-w-0 items-center gap-2.5">
+        <FileText
+          size={14}
+          className="flex-shrink-0"
+          style={{ color: "#c9a84c" }}
+        />
+        <div className="min-w-0">
+          <p className="truncate text-sm" style={{ color: "#f0ede8" }}>
+            {documentoTipoLabel(tipo)}
+            <span className="ml-2 text-xs" style={{ color: "#8a9bb5" }}>
+              {nombre}
+            </span>
+          </p>
+          {hash && (
+            <p
+              className="truncate font-mono text-[10px]"
+              style={{ color: "#4a6080" }}
+              title={hash}
+            >
+              SHA-256: {hash.slice(0, 16)}…
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-shrink-0 items-center gap-3">
+        <span className="text-xs" style={{ color: "#8a9bb5" }}>
+          {formatBytes(tamanio)}
+        </span>
+        {onDescargar && (
+          <button
+            type="button"
+            onClick={onDescargar}
+            disabled={descargando}
+            title="Descargar documento"
+            className="rounded-md p-1.5 transition-colors hover:bg-[#1b2e4a] disabled:opacity-50"
+            style={{ color: "#c9a84c" }}
+          >
+            <Download size={14} />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function FlagRiesgo({ activo, label }: { activo: boolean; label: string }) {
   return (
     <span
@@ -384,6 +455,34 @@ function CasoDetallePage() {
   const esOficial = rol === "OFICIAL_CUMPLIMIENTO" || rol === "ADMIN"
   const pn = expediente?.persona_natural
   const pj = expediente?.persona_juridica
+
+  // Evidencia cargada al registrar el cliente (cédula, comprobante, etc.).
+  // Se excluyen los documentos DDR, que tienen su propia sección.
+  const docsKyc = (expediente?.documentos ?? []).filter((d) => !d.caso_ddr_id)
+
+  const [descargandoId, setDescargandoId] = useState<string | null>(null)
+  const descargarDocKyc = async (docId: string, nombre: string) => {
+    if (!expediente) return
+    setDescargandoId(docId)
+    try {
+      const blob = await ClientesService.descargarDocumento(
+        expediente.id,
+        docId,
+      )
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = nombre
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "No se pudo descargar el documento",
+      )
+    } finally {
+      setDescargandoId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -641,7 +740,12 @@ function CasoDetallePage() {
                           className="font-mono text-xs"
                           style={{ color: "#8a9bb5" }}
                         >
-                          {bf.porcentaje_participacion}%
+                          {bf.porcentaje_participacion}% ·{" "}
+                          {bf.tipo_control === "INDIRECTA"
+                            ? "Indirecta"
+                            : bf.tipo_control === "OTRO"
+                              ? "Otro"
+                              : "Directa"}
                         </span>
                       </div>
                     ))}
@@ -695,47 +799,37 @@ function CasoDetallePage() {
             </Card>
           )}
 
+          {/* Evidencia del expediente KYC (cédula, comprobantes, etc.) */}
+          {docsKyc.length > 0 && (
+            <Card title="Evidencia del expediente KYC">
+              <div className="space-y-2">
+                {docsKyc.map((d) => (
+                  <FilaDocumento
+                    key={d.id}
+                    nombre={d.nombre}
+                    tipo={d.tipo}
+                    tamanio={d.tamanio}
+                    hash={d.hash_sha256}
+                    descargando={descargandoId === d.id}
+                    onDescargar={() => descargarDocKyc(d.id, d.nombre)}
+                  />
+                ))}
+              </div>
+            </Card>
+          )}
+
           {/* Documentos DDR con hash de integridad */}
           {(documentosDdr?.count ?? 0) > 0 && (
             <Card title="Documentación de soporte DDR">
               <div className="space-y-2">
                 {documentosDdr?.data.map((d) => (
-                  <div
+                  <FilaDocumento
                     key={d.id}
-                    className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"
-                    style={{ backgroundColor: "#040d1c" }}
-                  >
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <FileText
-                        size={14}
-                        className="flex-shrink-0"
-                        style={{ color: "#c9a84c" }}
-                      />
-                      <div className="min-w-0">
-                        <p
-                          className="truncate text-sm"
-                          style={{ color: "#f0ede8" }}
-                        >
-                          {d.nombre}
-                        </p>
-                        {d.hash_sha256 && (
-                          <p
-                            className="truncate font-mono text-[10px]"
-                            style={{ color: "#4a6080" }}
-                            title={d.hash_sha256}
-                          >
-                            SHA-256: {d.hash_sha256.slice(0, 16)}…
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <span
-                      className="flex-shrink-0 text-xs"
-                      style={{ color: "#8a9bb5" }}
-                    >
-                      {formatBytes(d.tamanio)}
-                    </span>
-                  </div>
+                    nombre={d.nombre}
+                    tipo={d.tipo}
+                    tamanio={d.tamanio}
+                    hash={d.hash_sha256}
+                  />
                 ))}
               </div>
             </Card>

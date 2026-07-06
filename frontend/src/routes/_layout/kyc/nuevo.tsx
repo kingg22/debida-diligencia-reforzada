@@ -230,7 +230,7 @@ function tipoDocumentoBackend(
     if (tipoPersona === "JURIDICA") return "RUC"
     return tipoIdNatural === "CEDULA_PA" ? "CEDULA_FRONTAL" : "PASAPORTE"
   }
-  if (rol === "domicilio") return "OTRO"
+  if (rol === "domicilio") return "COMPROBANTE_DOMICILIO"
   if (rol === "constitucion") return "ESCRITURA_CONSTITUCION"
   if (rol === "poder") return "PODER_REPRESENTANTE"
   return "OTRO"
@@ -578,6 +578,7 @@ function KYCNuevoCliente() {
 
   // ── Paso 2 — Natural ──
   const [nacionalidad, setNacionalidad] = useState("Panamá")
+  const [paisNacimiento, setPaisNacimiento] = useState("Panamá")
   const [paisResidencia, setPaisResidencia] = useState("Panamá")
   const [correo, setCorreo] = useState("")
   const [telefono, setTelefono] = useState("+507-")
@@ -810,6 +811,7 @@ function KYCNuevoCliente() {
               fecha_nacimiento: b.fecha_nacimiento,
               porcentaje_participacion:
                 parseFloat(b.porcentaje_participacion) || 0,
+              tipo_control: b.tipo_control,
               es_pep: b.es_pep,
             }))
           : []
@@ -825,7 +827,7 @@ function KYCNuevoCliente() {
             numero_documento: numIdNatural,
             fecha_expiracion_doc: fechaExpiracionDoc,
             nacionalidad,
-            pais_nacimiento: paisResidencia,
+            pais_nacimiento: paisNacimiento,
             nombre: nombres,
             apellido: apellidos,
             fecha_nacimiento: fechaNacimiento,
@@ -892,7 +894,11 @@ function KYCNuevoCliente() {
       }
       if (tipoPersona === "NATURAL" && docDomicilio) {
         uploads.push(
-          ClientesService.subirDocumento(expediente.id, "OTRO", docDomicilio),
+          ClientesService.subirDocumento(
+            expediente.id,
+            "COMPROBANTE_DOMICILIO",
+            docDomicilio,
+          ),
         )
       }
       if (tipoPersona === "JURIDICA" && docConstitucion) {
@@ -1251,10 +1257,10 @@ function KYCNuevoCliente() {
                 ))}
               </StyledSelect>
             </Field>
-            <Field label="País de residencia" required>
+            <Field label="País de nacimiento" required>
               <StyledSelect
-                value={paisResidencia}
-                onChange={(e) => setPaisResidencia(e.target.value)}
+                value={paisNacimiento}
+                onChange={(e) => setPaisNacimiento(e.target.value)}
               >
                 {PAISES.map((p) => (
                   <option key={p}>{p}</option>
@@ -1262,6 +1268,17 @@ function KYCNuevoCliente() {
               </StyledSelect>
             </Field>
           </div>
+
+          <Field label="País de residencia" required>
+            <StyledSelect
+              value={paisResidencia}
+              onChange={(e) => setPaisResidencia(e.target.value)}
+            >
+              {PAISES.map((p) => (
+                <option key={p}>{p}</option>
+              ))}
+            </StyledSelect>
+          </Field>
 
           <Field label="Correo electrónico" required error={errors.correo}>
             <StyledInput
@@ -2260,6 +2277,7 @@ function KYCNuevoCliente() {
               <Row label="Género" value={{ MASCULINO: "Masculino", FEMENINO: "Femenino", OTRO: "Otro" }[genero]} />
               <Row label="Estado civil" value={{ SOLTERO: "Soltero/a", CASADO: "Casado/a", DIVORCIADO: "Divorciado/a", VIUDO: "Viudo/a", UNION_LIBRE: "Unión libre" }[estadoCivil]} />
               <Row label="Nacionalidad" value={nacionalidad} />
+              <Row label="País de nacimiento" value={paisNacimiento} />
               <Row label="País de residencia" value={paisResidencia} />
               <Row label="Dirección" value={`${direccion}, ${ciudad}`} />
               <Row label="Correo electrónico" value={correo} />
