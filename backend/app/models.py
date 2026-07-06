@@ -304,6 +304,10 @@ class DocumentoTipo(str, Enum):
     DECLARACION_RENTA = "DECLARACION_RENTA"
     ESCRITURA_CONSTITUCION = "ESCRITURA_CONSTITUCION"
     PODER_REPRESENTANTE = "PODER_REPRESENTANTE"
+    # Soporte de la fase DDR (Ley 23/2015 Art. 27-28)
+    DECLARACION_FONDOS = "DECLARACION_FONDOS"
+    REFERENCIA_BANCARIA = "REFERENCIA_BANCARIA"
+    COMPROBANTE_DOMICILIO = "COMPROBANTE_DOMICILIO"
     OTRO = "OTRO"
 
 
@@ -430,6 +434,8 @@ class BeneficiarioFinalBase(SQLModel):
     pais: str = Field(max_length=80)
     fecha_nacimiento: str = Field(max_length=20)
     porcentaje_participacion: float = Field(default=0, ge=0, le=100)
+    # Ley 254/2021: cómo ejerce el control (DIRECTA | INDIRECTA | OTRO)
+    tipo_control: str = Field(default="DIRECTA", max_length=20)
     es_pep: bool = False
 
 
