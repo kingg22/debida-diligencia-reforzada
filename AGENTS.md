@@ -131,9 +131,9 @@ El flujo de casos DDR aplica segregación de funciones. Ver detalle en
 - **Commits en español, sin `Co-Authored-By` ni menciones de IA/herramientas.**
 - El frontend en Docker es un **build estático de Nginx**: cada cambio requiere
   `docker compose build frontend && docker compose up -d frontend`. No hay HMR.
-- **NUNCA correr el suite completo de tests contra la BD viva del contenedor**:
-  los tests de users borran la tabla `user` (incluidos los usuarios demo).
-  Correr solo los módulos afectados, o restaurar con:
+- **CUALQUIER corrida de pytest contra la BD viva borra la tabla `user` al
+  terminar** (cleanup de sesión del conftest), incluidos los usuarios demo.
+  Después de correr tests, SIEMPRE restaurar con:
   `docker compose exec backend python -c "from app.core.db import engine, init_db; from sqlmodel import Session; init_db(Session(engine))"`
 - Los tests no están en la imagen backend; copiarlos antes de correr:
   `docker cp backend/tests debida-diligencia-reforzada-backend-1:/app/backend/`
