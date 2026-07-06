@@ -139,7 +139,7 @@ function CasosDdrPage() {
                         {caso.cliente && (
                           <span
                             className="text-xs"
-                            style={{ color: "#8a9bb5" }}
+                            style={{ color: "var(--muted-foreground)" }}
                           >
                             {formatIdentificacion(
                               caso.cliente.numero_identificacion,

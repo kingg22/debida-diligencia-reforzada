@@ -19,6 +19,7 @@ import {
   ESTADO_KYC,
   ESTADOS_KYC,
   formatFecha,
+  formatIdentificacion,
   NIVEL_RIESGO,
   NIVELES_RIESGO,
   puedeRegistrarCliente,
@@ -207,7 +208,7 @@ function ClientesPage() {
                       )}
                     </td>
                     <td className="text-muted-foreground px-4 py-3.5 font-mono text-xs">
-                      {c.numero_identificacion}
+                      {formatIdentificacion(c.numero_identificacion)}
                     </td>
                     <td className="px-4 py-3.5">
                       <NivelRiesgoBadge nivel={c.nivel_riesgo} />

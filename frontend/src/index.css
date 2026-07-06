@@ -40,6 +40,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-dim-foreground: var(--dim-foreground);
 }
 
 /* ─── PanamaCompliance light theme (default) ────────────────────── */
@@ -58,6 +59,8 @@
   --secondary-foreground: #1a1a2e;
   --muted: #f0ede8;
   --muted-foreground: #6b7280;
+  /* Texto terciario: etiquetas pequeñas, hints, metadatos */
+  --dim-foreground: #9ca3af;
   --accent: #e8e4dc;
   --accent-foreground: #1a1a2e;
   --destructive: #dc2626;
@@ -92,6 +95,8 @@
   --secondary-foreground: #f0ede8;
   --muted: #0f1f3a;
   --muted-foreground: #8a9bb5;
+  /* Texto terciario: etiquetas pequeñas, hints, metadatos */
+  --dim-foreground: #4a6080;
   --accent: #1b2e4a;
   --accent-foreground: #f0ede8;
   --destructive: #e05252;
