@@ -260,6 +260,9 @@ export type DocumentoTipo =
   | "DECLARACION_RENTA"
   | "ESCRITURA_CONSTITUCION"
   | "PODER_REPRESENTANTE"
+  | "DECLARACION_FONDOS"
+  | "REFERENCIA_BANCARIA"
+  | "COMPROBANTE_DOMICILIO"
   | "OTRO"
 
 export const DOCUMENTO_TIPO_LABEL: Record<DocumentoTipo, string> = {
@@ -272,7 +275,15 @@ export const DOCUMENTO_TIPO_LABEL: Record<DocumentoTipo, string> = {
   DECLARACION_RENTA: "Declaración de renta",
   ESCRITURA_CONSTITUCION: "Escritura de constitución",
   PODER_REPRESENTANTE: "Poder del representante",
+  DECLARACION_FONDOS: "Declaración jurada de origen de fondos",
+  REFERENCIA_BANCARIA: "Referencia bancaria",
+  COMPROBANTE_DOMICILIO: "Comprobante de domicilio",
   OTRO: "Otro",
+}
+
+export function documentoTipoLabel(tipo?: string | null): string {
+  if (!tipo) return "Documento"
+  return DOCUMENTO_TIPO_LABEL[tipo as DocumentoTipo] ?? tipo
 }
 
 export type DocumentoEstado = "PENDIENTE" | "VALIDADO" | "RECHAZADO"

@@ -144,6 +144,7 @@ export interface BeneficiarioFinal {
   pais: string
   fecha_nacimiento: string
   porcentaje_participacion: number
+  tipo_control: string
   es_pep: boolean
 }
 
@@ -284,6 +285,7 @@ export interface BeneficiarioFinalInput {
   pais: string
   fecha_nacimiento: string
   porcentaje_participacion: number
+  tipo_control: string
   es_pep: boolean
 }
 
