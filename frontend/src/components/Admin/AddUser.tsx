@@ -5,9 +5,17 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type UserCreate, UsersService } from "@/client"
+import { type UserCreate, type UserRole, UsersService } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { type Rol, ROL_LABELS } from "@/lib/sgddr"
 import {
   Dialog,
   DialogClose,
@@ -31,22 +39,39 @@ import { LoadingButton } from "@/components/ui/loading-button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
+const ROLES: Rol[] = [
+  "ANALISTA_DDR",
+  "OFICIAL_CUMPLIMIENTO",
+  "GERENTE_CUMPLIMIENTO",
+  "COMITE_CUMPLIMIENTO",
+  "AUDITOR",
+  "ADMIN",
+]
+
 const formSchema = z
   .object({
-    email: z.email({ message: "Invalid email address" }),
+    email: z.email({ message: "Correo inválido" }),
     full_name: z.string().optional(),
     password: z
       .string()
-      .min(1, { message: "Password is required" })
-      .min(8, { message: "Password must be at least 8 characters" }),
+      .min(1, { message: "La contraseña es requerida" })
+      .min(8, { message: "Mínimo 8 caracteres" }),
     confirm_password: z
       .string()
-      .min(1, { message: "Please confirm your password" }),
+      .min(1, { message: "Confirma la contraseña" }),
+    role: z.enum([
+      "ANALISTA_DDR",
+      "OFICIAL_CUMPLIMIENTO",
+      "GERENTE_CUMPLIMIENTO",
+      "COMITE_CUMPLIMIENTO",
+      "AUDITOR",
+      "ADMIN",
+    ]),
     is_superuser: z.boolean(),
     is_active: z.boolean(),
   })
   .refine((data) => data.password === data.confirm_password, {
-    message: "The passwords don't match",
+    message: "Las contraseñas no coinciden",
     path: ["confirm_password"],
   })
 
@@ -66,8 +91,9 @@ const AddUser = () => {
       full_name: "",
       password: "",
       confirm_password: "",
+      role: "ANALISTA_DDR",
       is_superuser: false,
-      is_active: false,
+      is_active: true,
     },
   })
 
@@ -75,7 +101,7 @@ const AddUser = () => {
     mutationFn: (data: UserCreate) =>
       UsersService.createUser({ requestBody: data }),
     onSuccess: () => {
-      showSuccessToast("User created successfully")
+      showSuccessToast("Usuario creado correctamente")
       form.reset()
       setIsOpen(false)
     },
@@ -86,7 +112,7 @@ const AddUser = () => {
   })
 
   const onSubmit = (data: FormData) => {
-    mutation.mutate(data)
+    mutation.mutate({ ...data, role: data.role as UserRole })
   }
 
   return (
@@ -94,14 +120,14 @@ const AddUser = () => {
       <DialogTrigger asChild>
         <Button className="my-4">
           <Plus className="mr-2" />
-          Add User
+          Agregar usuario
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add User</DialogTitle>
+          <DialogTitle>Agregar usuario</DialogTitle>
           <DialogDescription>
-            Fill in the form below to add a new user to the system.
+            Completa el formulario para agregar un usuario al sistema.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -113,11 +139,11 @@ const AddUser = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Email <span className="text-destructive">*</span>
+                      Correo <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Email"
+                        placeholder="correo@institucion.com"
                         type="email"
                         {...field}
                         required
@@ -133,9 +159,13 @@ const AddUser = () => {
                 name="full_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>Nombre completo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Full name" type="text" {...field} />
+                      <Input
+                        placeholder="Nombre completo"
+                        type="text"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -148,11 +178,11 @@ const AddUser = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Set Password <span className="text-destructive">*</span>
+                      Contraseña <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Password"
+                        placeholder="Contraseña"
                         type="password"
                         {...field}
                         required
@@ -169,17 +199,48 @@ const AddUser = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Confirm Password{" "}
+                      Confirmar contraseña{" "}
                       <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Password"
+                        placeholder="Contraseña"
                         type="password"
                         {...field}
                         required
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Rol en el sistema{" "}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecciona un rol" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ROLES.map((r) => (
+                          <SelectItem key={r} value={r}>
+                            {ROL_LABELS[r]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -196,7 +257,9 @@ const AddUser = () => {
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">Is superuser?</FormLabel>
+                    <FormLabel className="font-normal">
+                      ¿Es superusuario?
+                    </FormLabel>
                   </FormItem>
                 )}
               />
@@ -212,7 +275,7 @@ const AddUser = () => {
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">Is active?</FormLabel>
+                    <FormLabel className="font-normal">¿Activo?</FormLabel>
                   </FormItem>
                 )}
               />
@@ -221,11 +284,11 @@ const AddUser = () => {
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline" disabled={mutation.isPending}>
-                  Cancel
+                  Cancelar
                 </Button>
               </DialogClose>
               <LoadingButton type="submit" loading={mutation.isPending}>
-                Save
+                Guardar
               </LoadingButton>
             </DialogFooter>
           </form>

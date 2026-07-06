@@ -5,9 +5,17 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { type UserPublic, UsersService } from "@/client"
+import { type UserPublic, type UserRole, UsersService } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { type Rol, ROL_LABELS } from "@/lib/sgddr"
 import {
   Dialog,
   DialogClose,
@@ -31,21 +39,38 @@ import { LoadingButton } from "@/components/ui/loading-button"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
+const ROLES: Rol[] = [
+  "ANALISTA_DDR",
+  "OFICIAL_CUMPLIMIENTO",
+  "GERENTE_CUMPLIMIENTO",
+  "COMITE_CUMPLIMIENTO",
+  "AUDITOR",
+  "ADMIN",
+]
+
 const formSchema = z
   .object({
-    email: z.email({ message: "Invalid email address" }),
+    email: z.email({ message: "Correo inválido" }),
     full_name: z.string().optional(),
     password: z
       .string()
-      .min(8, { message: "Password must be at least 8 characters" })
+      .min(8, { message: "Mínimo 8 caracteres" })
       .optional()
       .or(z.literal("")),
     confirm_password: z.string().optional(),
+    role: z.enum([
+      "ANALISTA_DDR",
+      "OFICIAL_CUMPLIMIENTO",
+      "GERENTE_CUMPLIMIENTO",
+      "COMITE_CUMPLIMIENTO",
+      "AUDITOR",
+      "ADMIN",
+    ]),
     is_superuser: z.boolean().optional(),
     is_active: z.boolean().optional(),
   })
   .refine((data) => !data.password || data.password === data.confirm_password, {
-    message: "The passwords don't match",
+    message: "Las contraseñas no coinciden",
     path: ["confirm_password"],
   })
 
@@ -68,6 +93,7 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
     defaultValues: {
       email: user.email,
       full_name: user.full_name ?? undefined,
+      role: (user.role as Rol) ?? "ANALISTA_DDR",
       is_superuser: user.is_superuser,
       is_active: user.is_active,
     },
@@ -75,9 +101,12 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
 
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
-      UsersService.updateUser({ userId: user.id, requestBody: data }),
+      UsersService.updateUser({
+        userId: user.id,
+        requestBody: { ...data, role: data.role as UserRole },
+      }),
     onSuccess: () => {
-      showSuccessToast("User updated successfully")
+      showSuccessToast("Usuario actualizado correctamente")
       setIsOpen(false)
       onSuccess()
     },
@@ -103,15 +132,15 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
         onClick={() => setIsOpen(true)}
       >
         <Pencil />
-        Edit User
+        Editar usuario
       </DropdownMenuItem>
       <DialogContent className="sm:max-w-md">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader>
-              <DialogTitle>Edit User</DialogTitle>
+              <DialogTitle>Editar usuario</DialogTitle>
               <DialogDescription>
-                Update the user details below.
+                Actualiza los datos del usuario.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
@@ -121,11 +150,11 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Email <span className="text-destructive">*</span>
+                      Correo <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Email"
+                        placeholder="correo@institucion.com"
                         type="email"
                         {...field}
                         required
@@ -141,9 +170,9 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                 name="full_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>Nombre completo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Full name" type="text" {...field} />
+                      <Input placeholder="Nombre completo" type="text" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -155,10 +184,10 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Set Password</FormLabel>
+                    <FormLabel>Nueva contraseña (opcional)</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Password"
+                        placeholder="Contraseña"
                         type="password"
                         {...field}
                       />
@@ -173,14 +202,45 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                 name="confirm_password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
+                    <FormLabel>Confirmar contraseña</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Password"
+                        placeholder="Contraseña"
                         type="password"
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Rol en el sistema{" "}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecciona un rol" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ROLES.map((r) => (
+                          <SelectItem key={r} value={r}>
+                            {ROL_LABELS[r]}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -197,7 +257,7 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">Is superuser?</FormLabel>
+                    <FormLabel className="font-normal">¿Es superusuario?</FormLabel>
                   </FormItem>
                 )}
               />
@@ -213,7 +273,7 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">Is active?</FormLabel>
+                    <FormLabel className="font-normal">¿Activo?</FormLabel>
                   </FormItem>
                 )}
               />
@@ -222,11 +282,11 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline" disabled={mutation.isPending}>
-                  Cancel
+                  Cancelar
                 </Button>
               </DialogClose>
               <LoadingButton type="submit" loading={mutation.isPending}>
-                Save
+                Guardar
               </LoadingButton>
             </DialogFooter>
           </form>
