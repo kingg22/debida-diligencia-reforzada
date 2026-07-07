@@ -203,6 +203,28 @@ function validarCedulaPA(v: string) {
   return /^[0-9]{1,2}-[0-9]{3,4}-[0-9]{1,4}$/.test(v)
 }
 
+// Teléfono: dígitos con guiones/espacios opcionales y prefijo internacional.
+// Acepta +507-6000-0000, +507 6000 0000, 507-6000-0000, etc. (7-15 dígitos).
+function validarTelefono(v: string) {
+  const digitos = v.replace(/[\s\-+]/g, "")
+  return /^\+?[\d\s-]+$/.test(v.trim()) && /^\d{7,15}$/.test(digitos)
+}
+
+// Pasaporte: alfanumérico de 5 a 15 caracteres, sin símbolos.
+function validarPasaporte(v: string) {
+  return /^[A-Za-z0-9]{5,15}$/.test(v.trim())
+}
+
+// RUC panameño: dígitos y guiones (p. ej. 155123456-2-2015), 6-20 caracteres.
+function validarRuc(v: string) {
+  return /^\d[\d-]{4,19}$/.test(v.trim())
+}
+
+// Identificación libre (cédula o pasaporte del representante/beneficiario).
+function validarIdLibre(v: string) {
+  return /^[A-Za-z0-9-]{5,20}$/.test(v.trim())
+}
+
 function calcularEdad(fecha: string) {
   const hoy = new Date()
   const nac = new Date(fecha)
@@ -667,6 +689,8 @@ function KYCNuevoCliente() {
         e.numIdNatural = "El número de identificación es requerido"
       else if (tipoIdNatural === "CEDULA_PA" && !validarCedulaPA(numIdNatural))
         e.numIdNatural = "Formato inválido. Ejemplo: 8-123-4567"
+      else if (tipoIdNatural === "PASAPORTE" && !validarPasaporte(numIdNatural))
+        e.numIdNatural = "Pasaporte inválido: 5-15 letras y números"
       if (!nombres.trim()) e.nombres = "El nombre es requerido"
       else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(nombres.trim()))
         e.nombres = "Solo letras y espacios"
@@ -684,6 +708,8 @@ function KYCNuevoCliente() {
     } else {
       if (!razonSocial.trim()) e.razonSocial = "La razón social es requerida"
       if (!ruc.trim()) e.ruc = "El RUC es requerido"
+      else if (!validarRuc(ruc))
+        e.ruc = "RUC inválido: solo dígitos y guiones. Ej: 155123456-2-2015"
       if (!fechaConstitucion)
         e.fechaConstitucion = "La fecha de constitución es requerida"
       else if (new Date(fechaConstitucion) > new Date())
@@ -701,11 +727,15 @@ function KYCNuevoCliente() {
         e.correo = "Formato de correo inválido"
       if (!telefono.trim() || telefono === "+507-")
         e.telefono = "El teléfono es requerido"
+      else if (!validarTelefono(telefono))
+        e.telefono = "Formato inválido. Ej: +507-6000-0000"
       if (!direccion.trim()) e.direccion = "La dirección es requerida"
       if (!ciudad.trim()) e.ciudad = "La ciudad es requerida"
       if (!ocupacion.trim()) e.ocupacion = "La ocupación es requerida"
       if (!ingresoMensual || parseFloat(ingresoMensual) < 0)
         e.ingresoMensual = "Ingresa un ingreso mensual válido"
+      else if (parseFloat(ingresoMensual) > 10_000_000)
+        e.ingresoMensual = "Monto fuera de rango; verifica el valor"
       if (!fuenteIngresos) e.fuenteIngresos = "Selecciona la fuente de ingresos"
     } else {
       if (!actividadEconomica)
@@ -718,6 +748,8 @@ function KYCNuevoCliente() {
         e.ciudadEmpresa = "La ciudad es requerida"
       if (!telefonoEmpresa.trim())
         e.telefonoEmpresa = "El teléfono de la empresa es requerido"
+      else if (!validarTelefono(telefonoEmpresa))
+        e.telefonoEmpresa = "Formato inválido. Ej: +507-200-0000"
       if (!emailEmpresa.trim())
         e.emailEmpresa = "El correo de la empresa es requerido"
       else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEmpresa))
@@ -726,8 +758,12 @@ function KYCNuevoCliente() {
         e.representanteLegal = "El nombre del representante es requerido"
       if (!idRepresentante.trim())
         e.idRepresentante = "La identificación del representante es requerida"
+      else if (!validarIdLibre(idRepresentante))
+        e.idRepresentante = "Identificación inválida: 5-20 letras, números o guiones"
       if (!ingresoAnual || parseFloat(ingresoAnual) < 0)
         e.ingresoAnual = "Ingresa un ingreso anual válido"
+      else if (parseFloat(ingresoAnual) > 1_000_000_000)
+        e.ingresoAnual = "Monto fuera de rango; verifica el valor"
       if (
         cantidadEmpleados === "" ||
         parseInt(cantidadEmpleados, 10) < 0 ||
@@ -741,13 +777,23 @@ function KYCNuevoCliente() {
       beneficiarios.forEach((bf, i) => {
         if (!bf.nombre.trim()) e[`bf_${i}_nombre`] = "Requerido"
         if (!bf.apellido.trim()) e[`bf_${i}_apellido`] = "Requerido"
-        if (!bf.numero_identificacion.trim())
-          e[`bf_${i}_id`] = "Requerido"
-        if (!bf.fecha_nacimiento)
-          e[`bf_${i}_nac`] = "Requerida"
+        if (!bf.numero_identificacion.trim()) e[`bf_${i}_id`] = "Requerido"
+        else if (
+          bf.tipo_identificacion === "CEDULA_PA" &&
+          !validarCedulaPA(bf.numero_identificacion)
+        )
+          e[`bf_${i}_id`] = "Formato: 8-123-4567"
+        else if (
+          bf.tipo_identificacion === "PASAPORTE" &&
+          !validarPasaporte(bf.numero_identificacion)
+        )
+          e[`bf_${i}_id`] = "Pasaporte inválido"
+        if (!bf.fecha_nacimiento) e[`bf_${i}_nac`] = "Requerida"
+        else if (calcularEdad(bf.fecha_nacimiento) < 18)
+          e[`bf_${i}_nac`] = "Debe ser mayor de 18 años"
         const pct = parseFloat(bf.porcentaje_participacion)
-        if (Number.isNaN(pct) || pct < 0 || pct > 100)
-          e[`bf_${i}_pct`] = "Valor entre 0% y 100%"
+        if (Number.isNaN(pct) || pct <= 0 || pct > 100)
+          e[`bf_${i}_pct`] = "Valor entre 0.01% y 100%"
       })
       if (beneficiarios.length > 0 && Math.round(totalPorcentajeBF) !== 100) {
         const delta = Math.round(100 - totalPorcentajeBF)

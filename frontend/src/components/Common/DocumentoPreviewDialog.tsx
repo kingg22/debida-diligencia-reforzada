@@ -83,7 +83,7 @@ function DocPreviewContent({
     return (
       <div
         className="flex flex-col items-center justify-center gap-3 rounded border py-16 text-center"
-        style={{ borderColor: "var(--border)", backgroundColor: "rgba(15,31,58,0.4)" }}
+        style={{ borderColor: "var(--border)", backgroundColor: "var(--secondary)" }}
       >
         <FileText size={28} style={{ color: "var(--muted-foreground)" }} />
         <p style={{ color: "var(--foreground)" }} className="text-sm">
