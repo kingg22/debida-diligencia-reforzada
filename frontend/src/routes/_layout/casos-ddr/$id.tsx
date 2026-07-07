@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   CornerUpLeft,
   Download,
+  Eye,
   FileText,
   ShieldAlert,
   ShieldCheck,
@@ -18,8 +19,10 @@ import { UsersService } from "@/client"
 import {
   CasosDdrService,
   ClientesService,
+  type Documento,
   SgddrApiError,
 } from "@/client/sgddr"
+import { DocumentoPreviewDialog } from "@/components/Common/DocumentoPreviewDialog"
 import { EstadoCasoBadge } from "@/components/Common/EstadoCasoBadge"
 import { NivelRiesgoBadge } from "@/components/Common/NivelRiesgoBadge"
 import { PageHeader } from "@/components/Common/PageHeader"
@@ -250,6 +253,7 @@ function FilaDocumento({
   tipo,
   tamanio,
   hash,
+  onVer,
   onDescargar,
   descargando,
 }: {
@@ -257,6 +261,7 @@ function FilaDocumento({
   tipo?: string | null
   tamanio?: number | null
   hash?: string | null
+  onVer?: () => void
   onDescargar?: () => void
   descargando?: boolean
 }) {
@@ -293,6 +298,17 @@ function FilaDocumento({
         <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
           {formatBytes(tamanio)}
         </span>
+        {onVer && (
+          <button
+            type="button"
+            onClick={onVer}
+            title="Ver documento"
+            className="rounded-md p-1.5 transition-colors hover:bg-accent"
+            style={{ color: "var(--primary)" }}
+          >
+            <Eye size={14} />
+          </button>
+        )}
         {onDescargar && (
           <button
             type="button"
@@ -461,6 +477,7 @@ function CasoDetallePage() {
   const docsKyc = (expediente?.documentos ?? []).filter((d) => !d.caso_ddr_id)
 
   const [descargandoId, setDescargandoId] = useState<string | null>(null)
+  const [previewDoc, setPreviewDoc] = useState<Documento | null>(null)
   const descargarDocKyc = async (docId: string, nombre: string) => {
     if (!expediente) return
     setDescargandoId(docId)
@@ -811,6 +828,7 @@ function CasoDetallePage() {
                     tamanio={d.tamanio}
                     hash={d.hash_sha256}
                     descargando={descargandoId === d.id}
+                    onVer={() => setPreviewDoc(d)}
                     onDescargar={() => descargarDocKyc(d.id, d.nombre)}
                   />
                 ))}
@@ -829,6 +847,9 @@ function CasoDetallePage() {
                     tipo={d.tipo}
                     tamanio={d.tamanio}
                     hash={d.hash_sha256}
+                    onVer={
+                      expediente ? () => setPreviewDoc(d) : undefined
+                    }
                   />
                 ))}
               </div>
@@ -979,6 +1000,18 @@ function CasoDetallePage() {
           )}
         </>
       ) : null}
+
+      {/* Vista previa de documentos (evidencia KYC y soporte DDR) */}
+      {expediente && (
+        <DocumentoPreviewDialog
+          open={!!previewDoc}
+          onOpenChange={(o) => {
+            if (!o) setPreviewDoc(null)
+          }}
+          expedienteId={expediente.id}
+          documento={previewDoc}
+        />
+      )}
 
       {/* Modal devolver al analista */}
       {devolverOpen && (
