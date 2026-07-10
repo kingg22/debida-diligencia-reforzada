@@ -354,6 +354,7 @@ function CasoDetallePage() {
   const [analistaSel, setAnalistaSel] = useState("")
   const [rechazoOpen, setRechazoOpen] = useState(false)
   const [devolverOpen, setDevolverOpen] = useState(false)
+  const [devolverOficialOpen, setDevolverOficialOpen] = useState(false)
   const [observaciones, setObservaciones] = useState("")
 
   const {
@@ -443,6 +444,26 @@ function CasoDetallePage() {
       toast.success("Caso devuelto al analista con observaciones.")
       setDevolverOpen(false)
       setObservaciones("")
+      invalidar()
+    },
+    onError,
+  })
+
+  const devolverOficial = useMutation({
+    mutationFn: () => CasosDdrService.devolverOficial(id, { observaciones }),
+    onSuccess: () => {
+      toast.success("Caso devuelto al Oficial de Cumplimiento con observaciones.")
+      setDevolverOficialOpen(false)
+      setObservaciones("")
+      invalidar()
+    },
+    onError,
+  })
+
+  const reabrir = useMutation({
+    mutationFn: () => CasosDdrService.reabrir(id),
+    onSuccess: () => {
+      toast.success("Caso regresado a asignación. Puedes asignar otro analista.")
       invalidar()
     },
     onError,
@@ -551,6 +572,36 @@ function CasoDetallePage() {
               rechazado={caso.status === "RECHAZADO"}
             />
           </div>
+
+          {/* Observaciones de la instancia de aprobación al devolver
+              (visible al Oficial) */}
+          {caso.status === "EN_REVISION_OFICIAL" &&
+            caso.observaciones_oficial && (
+              <div
+                className="flex items-start gap-3 rounded-xl p-4"
+                style={{
+                  backgroundColor: "rgba(201,168,76,0.07)",
+                  border: "1px solid rgba(201,168,76,0.30)",
+                }}
+              >
+                <CornerUpLeft
+                  size={16}
+                  className="mt-0.5 flex-shrink-0"
+                  style={{ color: "var(--primary)" }}
+                />
+                <div>
+                  <p
+                    className="text-xs font-semibold uppercase tracking-wider"
+                    style={{ color: "var(--primary)" }}
+                  >
+                    Devuelto por la instancia de aprobación
+                  </p>
+                  <p className="mt-1 text-sm" style={{ color: "var(--foreground)" }}>
+                    {caso.observaciones_oficial}
+                  </p>
+                </div>
+              </div>
+            )}
 
           {/* Observaciones del Oficial al devolver (visible al analista) */}
           {caso.status === "EN_REVISION" && caso.observaciones_oficial && (
@@ -912,6 +963,32 @@ function CasoDetallePage() {
               </button>
             )}
 
+          {/* 2b. Regresar a asignación — Oficial, caso EN_REVISION */}
+          {caso.status === "EN_REVISION" && esOficial && (
+            <Card title="Reasignar el caso">
+              <p className="mb-4 text-sm" style={{ color: "var(--muted-foreground)" }}>
+                Si necesitas cambiar de analista, regresa el caso a la etapa de
+                asignación. Se retirará al analista actual y podrás asignar
+                otro.
+              </p>
+              <button
+                type="button"
+                disabled={reabrir.isPending}
+                onClick={() => reabrir.mutate()}
+                className="flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-primary/10 disabled:opacity-50"
+                style={{
+                  borderColor: "rgba(201,168,76,0.4)",
+                  color: "var(--primary)",
+                }}
+              >
+                <CornerUpLeft size={15} />
+                {reabrir.isPending
+                  ? "Regresando…"
+                  : "Regresar a asignación"}
+              </button>
+            </Card>
+          )}
+
           {/* 3. Revisión del Oficial — caso EN_REVISION_OFICIAL */}
           {caso.status === "EN_REVISION_OFICIAL" && esOficial && (
             <Card title="Revisión del Oficial de Cumplimiento">
@@ -985,6 +1062,18 @@ function CasoDetallePage() {
                   >
                     Rechazar caso
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setDevolverOficialOpen(true)}
+                    className="flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-primary/10"
+                    style={{
+                      borderColor: "rgba(201,168,76,0.4)",
+                      color: "var(--primary)",
+                    }}
+                  >
+                    <CornerUpLeft size={15} />
+                    Devolver al Oficial
+                  </button>
                 </div>
               </Card>
             )}
@@ -1030,6 +1119,28 @@ function CasoDetallePage() {
             setObservaciones("")
           }}
           onConfirm={() => devolver.mutate()}
+        />
+      )}
+
+      {/* Modal devolver al Oficial (desde aprobación) */}
+      {devolverOficialOpen && (
+        <ModalObservaciones
+          titulo="Devolver al Oficial de Cumplimiento"
+          descripcion="Indica qué debe revisarse de nuevo (mínimo 10 caracteres). El Oficial verá estas observaciones en el caso."
+          confirmLabel={
+            devolverOficial.isPending ? "Devolviendo…" : "Devolver caso"
+          }
+          confirmColor="var(--primary)"
+          confirmTextColor="var(--primary-foreground)"
+          minimo={10}
+          value={observaciones}
+          onChange={setObservaciones}
+          disabled={devolverOficial.isPending}
+          onCancel={() => {
+            setDevolverOficialOpen(false)
+            setObservaciones("")
+          }}
+          onConfirm={() => devolverOficial.mutate()}
         />
       )}
 

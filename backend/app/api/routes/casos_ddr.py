@@ -331,6 +331,9 @@ def validar_caso(
 
     caso.status = EstadoCasoDDR.EN_APROBACION.value
     caso.validado_por_id = current_user.id
+    # Limpia observaciones de una devolución previa de la instancia de
+    # aprobación: el caso escala limpio.
+    caso.observaciones_oficial = None
     caso.updated_at = datetime.now(timezone.utc)
     session.add(caso)
     session.commit()
@@ -386,6 +389,45 @@ def devolver_caso(
     return caso
 
 
+@router.post(
+    "/{id}/reabrir",
+    response_model=CasoDDRPublic,
+    dependencies=[OficialRol],
+)
+def reabrir_caso(
+    id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Any:
+    """El Oficial regresa un caso EN_REVISION a ABIERTO: retira al analista
+    asignado para poder reasignarlo (p. ej. por conflicto o inactividad)."""
+    caso = _get_caso_o_404(session, id)
+
+    if caso.status != EstadoCasoDDR.EN_REVISION.value:
+        raise HTTPException(
+            status_code=409,
+            detail="El caso debe estar en EN_REVISION para regresarse a asignación",
+        )
+
+    caso.status = EstadoCasoDDR.ABIERTO.value
+    caso.analista_id = None
+    caso.observaciones_oficial = None
+    caso.updated_at = datetime.now(timezone.utc)
+    session.add(caso)
+    session.commit()
+    session.refresh(caso)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="DDR",
+        accion="REABRIR_CASO",
+        entidad_tipo="CasoDDR",
+        entidad_id=caso.id,
+        descripcion="Oficial regresó el caso a asignación (se retiró al analista)",
+    )
+    return caso
+
+
 # ── Aprobación / rechazo (cierre del flujo DDR) ──────────────────────────
 
 
@@ -425,6 +467,43 @@ def _check_aprobador(caso: CasoDDR, user: User) -> None:
             status_code=400,
             detail="El nivel de riesgo del caso no es aprobable",
         )
+
+
+@router.post("/{id}/devolver-oficial", response_model=CasoDDRPublic)
+def devolver_a_oficial(
+    id: uuid.UUID,
+    body: DevolucionInput,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Any:
+    """La instancia de aprobación (Gerente si ALTO, Comité si MUY_ALTO)
+    devuelve el caso al Oficial de Cumplimiento con observaciones en lugar
+    de decidir, para que la validación se revise de nuevo."""
+    caso = _get_caso_o_404(session, id)
+    _check_aprobador(caso, current_user)
+
+    if caso.status != EstadoCasoDDR.EN_APROBACION.value:
+        raise HTTPException(
+            status_code=409,
+            detail="El caso debe estar en EN_APROBACION para devolverse al Oficial",
+        )
+
+    caso.status = EstadoCasoDDR.EN_REVISION_OFICIAL.value
+    caso.observaciones_oficial = body.observaciones
+    caso.updated_at = datetime.now(timezone.utc)
+    session.add(caso)
+    session.commit()
+    session.refresh(caso)
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="DDR",
+        accion="DEVOLVER_A_OFICIAL",
+        entidad_tipo="CasoDDR",
+        entidad_id=caso.id,
+        descripcion=f"Instancia de aprobación devolvió el caso al Oficial: {body.observaciones[:80]}",
+    )
+    return caso
 
 
 @router.post("/{id}/aprobar", response_model=CasoDDRPublic)

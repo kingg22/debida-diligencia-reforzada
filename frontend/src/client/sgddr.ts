@@ -588,6 +588,15 @@ export const CasosDdrService = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  // Gerente/Comité devuelve el caso al Oficial con observaciones
+  devolverOficial: (id: string, body: RechazoInput) =>
+    fetchJson<CasoDDR>(Endpoints.casosDdr.devolverOficial(id), {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  // El Oficial regresa el caso a ABIERTO (retira al analista asignado)
+  reabrir: (id: string) =>
+    fetchJson<CasoDDR>(Endpoints.casosDdr.reabrir(id), { method: "POST" }),
   aprobar: (id: string) =>
     fetchJson<CasoDDR>(Endpoints.casosDdr.aprobar(id), { method: "POST" }),
   rechazar: (id: string, body: RechazoInput) =>
