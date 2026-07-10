@@ -188,7 +188,7 @@ function estimarRiesgo(params: {
     puntaje += Math.min(bfPep * 15, 45)
   }
   puntaje = Math.min(100, puntaje)
-  const nivel: NivelRiesgo =
+  let nivel: NivelRiesgo =
     puntaje <= 20
       ? "BAJO"
       : puntaje <= 40
@@ -196,6 +196,12 @@ function estimarRiesgo(params: {
         : puntaje <= 70
           ? "ALTO"
           : "MUY_ALTO"
+  // Regla dura de cumplimiento (espejo de kyc_risk.calcular_riesgo):
+  // un cliente PEP o con beneficiarios finales PEP es SIEMPRE al menos ALTO.
+  const hayPep =
+    (params.tipoPersona === "NATURAL" && params.esPep) ||
+    params.beneficiarios.some((b) => b.es_pep)
+  if (hayPep && (nivel === "BAJO" || nivel === "MEDIO")) nivel = "ALTO"
   return { nivel, puntaje }
 }
 

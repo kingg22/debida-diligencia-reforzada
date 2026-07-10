@@ -19,16 +19,16 @@ import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as TwoFactorSetupRouteImport } from './routes/two-factor.setup'
 import { Route as LayoutUsuariosRouteImport } from './routes/_layout/usuarios'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
-import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutParametrosRouteImport } from './routes/_layout/parametros'
 import { Route as LayoutAuditoriaRouteImport } from './routes/_layout/auditoria'
+import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
 import { Route as LayoutKycIndexRouteImport } from './routes/_layout/kyc/index'
 import { Route as LayoutClientesIndexRouteImport } from './routes/_layout/clientes/index'
 import { Route as LayoutCasosDdrIndexRouteImport } from './routes/_layout/casos-ddr/index'
 import { Route as LayoutKycNuevoRouteImport } from './routes/_layout/kyc/nuevo'
 import { Route as LayoutClientesIdRouteImport } from './routes/_layout/clientes/$id'
 import { Route as LayoutCasosDdrIdRouteImport } from './routes/_layout/casos-ddr/$id'
-import { Route as LayoutCasosDdrIdEvaluacionRouteImport } from './routes/_layout/casos-ddr/$id.evaluacion'
+import { Route as LayoutCasosDdrIdEvaluacionRouteImport } from './routes/_layout/casos-ddr/$id_.evaluacion'
 
 const TwoFactorRoute = TwoFactorRouteImport.update({
   id: '/two-factor',
@@ -79,11 +79,6 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutAdminRoute = LayoutAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => LayoutRoute,
-} as any)
 const LayoutParametrosRoute = LayoutParametrosRouteImport.update({
   id: '/parametros',
   path: '/parametros',
@@ -92,6 +87,11 @@ const LayoutParametrosRoute = LayoutParametrosRouteImport.update({
 const LayoutAuditoriaRoute = LayoutAuditoriaRouteImport.update({
   id: '/auditoria',
   path: '/auditoria',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutAdminRoute = LayoutAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
 const LayoutKycIndexRoute = LayoutKycIndexRouteImport.update({
@@ -126,9 +126,9 @@ const LayoutCasosDdrIdRoute = LayoutCasosDdrIdRouteImport.update({
 } as any)
 const LayoutCasosDdrIdEvaluacionRoute =
   LayoutCasosDdrIdEvaluacionRouteImport.update({
-    id: '/evaluacion',
-    path: '/evaluacion',
-    getParentRoute: () => LayoutCasosDdrIdRoute,
+    id: '/casos-ddr/$id_/evaluacion',
+    path: '/casos-ddr/$id/evaluacion',
+    getParentRoute: () => LayoutRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -139,12 +139,12 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/two-factor': typeof TwoFactorRouteWithChildren
   '/admin': typeof LayoutAdminRoute
-  '/parametros': typeof LayoutParametrosRoute
   '/auditoria': typeof LayoutAuditoriaRoute
+  '/parametros': typeof LayoutParametrosRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
   '/two-factor/setup': typeof TwoFactorSetupRoute
-  '/casos-ddr/$id': typeof LayoutCasosDdrIdRouteWithChildren
+  '/casos-ddr/$id': typeof LayoutCasosDdrIdRoute
   '/clientes/$id': typeof LayoutClientesIdRoute
   '/kyc/nuevo': typeof LayoutKycNuevoRoute
   '/casos-ddr/': typeof LayoutCasosDdrIndexRoute
@@ -159,13 +159,13 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/two-factor': typeof TwoFactorRouteWithChildren
   '/admin': typeof LayoutAdminRoute
-  '/parametros': typeof LayoutParametrosRoute
   '/auditoria': typeof LayoutAuditoriaRoute
+  '/parametros': typeof LayoutParametrosRoute
   '/settings': typeof LayoutSettingsRoute
   '/usuarios': typeof LayoutUsuariosRoute
   '/two-factor/setup': typeof TwoFactorSetupRoute
   '/': typeof LayoutIndexRoute
-  '/casos-ddr/$id': typeof LayoutCasosDdrIdRouteWithChildren
+  '/casos-ddr/$id': typeof LayoutCasosDdrIdRoute
   '/clientes/$id': typeof LayoutClientesIdRoute
   '/kyc/nuevo': typeof LayoutKycNuevoRoute
   '/casos-ddr': typeof LayoutCasosDdrIndexRoute
@@ -182,19 +182,19 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/two-factor': typeof TwoFactorRouteWithChildren
   '/_layout/admin': typeof LayoutAdminRoute
-  '/_layout/parametros': typeof LayoutParametrosRoute
   '/_layout/auditoria': typeof LayoutAuditoriaRoute
+  '/_layout/parametros': typeof LayoutParametrosRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/usuarios': typeof LayoutUsuariosRoute
   '/two-factor/setup': typeof TwoFactorSetupRoute
   '/_layout/': typeof LayoutIndexRoute
-  '/_layout/casos-ddr/$id': typeof LayoutCasosDdrIdRouteWithChildren
+  '/_layout/casos-ddr/$id': typeof LayoutCasosDdrIdRoute
   '/_layout/clientes/$id': typeof LayoutClientesIdRoute
   '/_layout/kyc/nuevo': typeof LayoutKycNuevoRoute
   '/_layout/casos-ddr/': typeof LayoutCasosDdrIndexRoute
   '/_layout/clientes/': typeof LayoutClientesIndexRoute
   '/_layout/kyc/': typeof LayoutKycIndexRoute
-  '/_layout/casos-ddr/$id/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
+  '/_layout/casos-ddr/$id_/evaluacion': typeof LayoutCasosDdrIdEvaluacionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -206,8 +206,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/two-factor'
     | '/admin'
-    | '/parametros'
     | '/auditoria'
+    | '/parametros'
     | '/settings'
     | '/usuarios'
     | '/two-factor/setup'
@@ -226,8 +226,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/two-factor'
     | '/admin'
-    | '/parametros'
     | '/auditoria'
+    | '/parametros'
     | '/settings'
     | '/usuarios'
     | '/two-factor/setup'
@@ -248,8 +248,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/two-factor'
     | '/_layout/admin'
-    | '/_layout/parametros'
     | '/_layout/auditoria'
+    | '/_layout/parametros'
     | '/_layout/settings'
     | '/_layout/usuarios'
     | '/two-factor/setup'
@@ -260,7 +260,7 @@ export interface FileRouteTypes {
     | '/_layout/casos-ddr/'
     | '/_layout/clientes/'
     | '/_layout/kyc/'
-    | '/_layout/casos-ddr/$id/evaluacion'
+    | '/_layout/casos-ddr/$id_/evaluacion'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -344,6 +344,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/parametros': {
+      id: '/_layout/parametros'
+      path: '/parametros'
+      fullPath: '/parametros'
+      preLoaderRoute: typeof LayoutParametrosRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/auditoria': {
+      id: '/_layout/auditoria'
+      path: '/auditoria'
+      fullPath: '/auditoria'
+      preLoaderRoute: typeof LayoutAuditoriaRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/admin': {
       id: '/_layout/admin'
       path: '/admin'
@@ -393,69 +407,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCasosDdrIdRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/casos-ddr/$id/evaluacion': {
-      id: '/_layout/casos-ddr/$id/evaluacion'
-      path: '/evaluacion'
+    '/_layout/casos-ddr/$id_/evaluacion': {
+      id: '/_layout/casos-ddr/$id_/evaluacion'
+      path: '/casos-ddr/$id/evaluacion'
       fullPath: '/casos-ddr/$id/evaluacion'
       preLoaderRoute: typeof LayoutCasosDdrIdEvaluacionRouteImport
-      parentRoute: typeof LayoutCasosDdrIdRoute
-    }
-    '/_layout/parametros': {
-      id: '/_layout/parametros'
-      path: '/parametros'
-      fullPath: '/parametros'
-      preLoaderRoute: typeof LayoutParametrosRouteImport
-      parentRoute: typeof LayoutRoute
-    }
-    '/_layout/auditoria': {
-      id: '/_layout/auditoria'
-      path: '/auditoria'
-      fullPath: '/auditoria'
-      preLoaderRoute: typeof LayoutAuditoriaRouteImport
       parentRoute: typeof LayoutRoute
     }
   }
 }
 
-interface LayoutCasosDdrIdRouteChildren {
-  LayoutCasosDdrIdEvaluacionRoute: typeof LayoutCasosDdrIdEvaluacionRoute
-}
-
-const LayoutCasosDdrIdRouteChildren: LayoutCasosDdrIdRouteChildren = {
-  LayoutCasosDdrIdEvaluacionRoute: LayoutCasosDdrIdEvaluacionRoute,
-}
-
-const LayoutCasosDdrIdRouteWithChildren =
-  LayoutCasosDdrIdRoute._addFileChildren(LayoutCasosDdrIdRouteChildren)
-
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
-  LayoutParametrosRoute: typeof LayoutParametrosRoute
   LayoutAuditoriaRoute: typeof LayoutAuditoriaRoute
+  LayoutParametrosRoute: typeof LayoutParametrosRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutUsuariosRoute: typeof LayoutUsuariosRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
-  LayoutCasosDdrIdRoute: typeof LayoutCasosDdrIdRouteWithChildren
+  LayoutCasosDdrIdRoute: typeof LayoutCasosDdrIdRoute
   LayoutClientesIdRoute: typeof LayoutClientesIdRoute
   LayoutKycNuevoRoute: typeof LayoutKycNuevoRoute
   LayoutCasosDdrIndexRoute: typeof LayoutCasosDdrIndexRoute
   LayoutClientesIndexRoute: typeof LayoutClientesIndexRoute
   LayoutKycIndexRoute: typeof LayoutKycIndexRoute
+  LayoutCasosDdrIdEvaluacionRoute: typeof LayoutCasosDdrIdEvaluacionRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
-  LayoutParametrosRoute: LayoutParametrosRoute,
   LayoutAuditoriaRoute: LayoutAuditoriaRoute,
+  LayoutParametrosRoute: LayoutParametrosRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutUsuariosRoute: LayoutUsuariosRoute,
   LayoutIndexRoute: LayoutIndexRoute,
-  LayoutCasosDdrIdRoute: LayoutCasosDdrIdRouteWithChildren,
+  LayoutCasosDdrIdRoute: LayoutCasosDdrIdRoute,
   LayoutClientesIdRoute: LayoutClientesIdRoute,
   LayoutKycNuevoRoute: LayoutKycNuevoRoute,
   LayoutCasosDdrIndexRoute: LayoutCasosDdrIndexRoute,
   LayoutClientesIndexRoute: LayoutClientesIndexRoute,
   LayoutKycIndexRoute: LayoutKycIndexRoute,
+  LayoutCasosDdrIdEvaluacionRoute: LayoutCasosDdrIdEvaluacionRoute,
 }
 
 const LayoutRouteWithChildren =

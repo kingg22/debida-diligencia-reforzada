@@ -133,4 +133,10 @@ def calcular_riesgo(
     else:
         nivel = RiskLevel.MUY_ALTO
 
+    # Regla dura de cumplimiento: un cliente PEP (o con beneficiarios
+    # finales PEP) es SIEMPRE al menos riesgo ALTO, sin importar el puntaje.
+    hay_pep = (pn is not None and pn.es_pep) or bf_pep > 0
+    if hay_pep and nivel in (RiskLevel.BAJO, RiskLevel.MEDIO):
+        nivel = RiskLevel.ALTO
+
     return RiesgoResult(nivel=nivel, puntaje=puntaje, factores=factores)

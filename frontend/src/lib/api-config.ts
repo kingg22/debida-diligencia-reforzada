@@ -71,6 +71,9 @@ export const Endpoints = {
       `${API_VERSION}/casos-ddr/${id}/enviar-aprobacion`,
     validar: (id: string) => `${API_VERSION}/casos-ddr/${id}/validar`,
     devolver: (id: string) => `${API_VERSION}/casos-ddr/${id}/devolver`,
+    devolverOficial: (id: string) =>
+      `${API_VERSION}/casos-ddr/${id}/devolver-oficial`,
+    reabrir: (id: string) => `${API_VERSION}/casos-ddr/${id}/reabrir`,
     aprobar: (id: string) => `${API_VERSION}/casos-ddr/${id}/aprobar`,
     rechazar: (id: string) => `${API_VERSION}/casos-ddr/${id}/rechazar`,
     cuestionario: (id: string) => `${API_VERSION}/casos-ddr/${id}/cuestionario`,

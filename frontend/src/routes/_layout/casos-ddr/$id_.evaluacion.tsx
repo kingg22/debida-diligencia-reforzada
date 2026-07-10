@@ -8,7 +8,7 @@ import { DropZone } from "@/components/Common/DropZone"
 import { PageHeader } from "@/components/Common/PageHeader"
 import { WizardProgress } from "@/components/Common/WizardProgress"
 
-export const Route = createFileRoute("/_layout/casos-ddr/$id/evaluacion")({
+export const Route = createFileRoute("/_layout/casos-ddr/$id_/evaluacion")({
   component: EvaluacionPage,
   head: () => ({
     meta: [{ title: "Evaluación DDR — PanamaCompliance SGDDR" }],
@@ -93,7 +93,7 @@ function RadioSiNo({
 }
 
 function EvaluacionPage() {
-  const { id } = useParams({ from: "/_layout/casos-ddr/$id/evaluacion" })
+  const { id } = useParams({ from: "/_layout/casos-ddr/$id_/evaluacion" })
   const navigate = useNavigate()
 
   const [etapa, setEtapa] = useState(0) // 0 = cuestionario, 1 = documentos
