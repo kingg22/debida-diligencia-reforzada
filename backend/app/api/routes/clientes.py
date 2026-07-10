@@ -20,6 +20,7 @@ from app.api.deps import (
 from app.auditoria import registrar_auditoria
 from app.kyc_risk import calcular_riesgo
 from app.models import (
+    CasoDDR,
     ClientType,
     DocumentoEstado,
     DocumentoKYC,
@@ -93,9 +94,20 @@ def _get_expediente_o_404(
     return expediente
 
 
-def _verificar_acceso(expediente: ExpedienteKYC, user: User) -> None:
-    if not _puede_ver_todos(user) and expediente.analista_id != user.id:
-        raise HTTPException(status_code=403, detail="No tiene acceso a este expediente")
+def _verificar_acceso(
+    session: SessionDep, expediente: ExpedienteKYC, user: User
+) -> None:
+    if _puede_ver_todos(user) or expediente.analista_id == user.id:
+        return
+    # Cuatro ojos: el analista que investiga el caso DDR es, por diseño,
+    # distinto del que registró el expediente. También necesita acceso al
+    # dossier (incluidos sus documentos) para poder investigar.
+    caso = session.exec(
+        select(CasoDDR).where(CasoDDR.expediente_id == expediente.id)
+    ).first()
+    if caso is not None and caso.analista_id == user.id:
+        return
+    raise HTTPException(status_code=403, detail="No tiene acceso a este expediente")
 
 
 @router.post("/", response_model=ExpedienteKYCPublic, dependencies=[RegistraCliente])
@@ -190,7 +202,7 @@ def read_cliente(
     Obtener el detalle de un expediente KYC.
     """
     expediente = _get_expediente_o_404(session, id)
-    _verificar_acceso(expediente, current_user)
+    _verificar_acceso(session, expediente, current_user)
     return expediente
 
 
@@ -206,7 +218,7 @@ def update_cliente(
     Actualizar el estado de un expediente (enviar a revisión, aprobar, rechazar).
     """
     expediente = _get_expediente_o_404(session, id)
-    _verificar_acceso(expediente, current_user)
+    _verificar_acceso(session, expediente, current_user)
 
     nuevo_status = update_in.status
     if nuevo_status is not None:
@@ -264,7 +276,7 @@ def upload_documento(
     Subir un documento al expediente (PDF/JPG/PNG, máx. 10 MB).
     """
     expediente = _get_expediente_o_404(session, id)
-    _verificar_acceso(expediente, current_user)
+    _verificar_acceso(session, expediente, current_user)
 
     if file.content_type not in ALLOWED_MIME:
         raise HTTPException(
@@ -323,7 +335,7 @@ def delete_documento(
     Eliminar un documento del expediente.
     """
     expediente = _get_expediente_o_404(session, id)
-    _verificar_acceso(expediente, current_user)
+    _verificar_acceso(session, expediente, current_user)
 
     documento = session.get(DocumentoKYC, doc_id)
     if not documento or documento.expediente_id != expediente.id:
@@ -363,7 +375,7 @@ def descargar_documento(
     El archivo se reconstruye desde `ruta_archivo` en la fila del documento;
     nunca se conf\u00eda en nombres provistos por el cliente."""
     expediente = _get_expediente_o_404(session, id)
-    _verificar_acceso(expediente, current_user)
+    _verificar_acceso(session, expediente, current_user)
 
     documento = session.get(DocumentoKYC, doc_id)
     if not documento or documento.expediente_id != expediente.id:
@@ -401,7 +413,7 @@ def evaluar_riesgo(
     Recalcular y persistir el nivel de riesgo del expediente.
     """
     expediente = _get_expediente_o_404(session, id)
-    _verificar_acceso(expediente, current_user)
+    _verificar_acceso(session, expediente, current_user)
 
     pesos = crud.get_pesos_riesgo(session)
     resultado = calcular_riesgo(expediente, pesos)
@@ -453,7 +465,7 @@ def verificar_listas(
 ) -> Any:
     """Screening contra listas restrictivas con similitud fuzzy (difflib)."""
     expediente = _get_expediente_o_404(session, id)
-    _verificar_acceso(expediente, current_user)
+    _verificar_acceso(session, expediente, current_user)
 
     nombre = _nombre_expediente(expediente)
     doc = _doc_expediente(expediente)
@@ -520,7 +532,7 @@ def listar_screening(
 ) -> Any:
     """Devuelve los resultados persistidos del último screening."""
     expediente = _get_expediente_o_404(session, id)
-    _verificar_acceso(expediente, current_user)
+    _verificar_acceso(session, expediente, current_user)
     return session.exec(
         select(ScreeningResultado)
         .where(ScreeningResultado.expediente_id == expediente.id)
@@ -538,7 +550,7 @@ def marcar_falso_positivo(
 ) -> Any:
     """El Oficial de Cumplimiento descarta una coincidencia como falso positivo."""
     expediente = _get_expediente_o_404(session, id)
-    _verificar_acceso(expediente, current_user)
+    _verificar_acceso(session, expediente, current_user)
     resultado = session.get(ScreeningResultado, resultado_id)
     if not resultado or resultado.expediente_id != expediente.id:
         raise HTTPException(status_code=404, detail="Resultado no encontrado")
@@ -568,7 +580,7 @@ def factores_riesgo(
 ) -> Any:
     """Desglose de factores del cálculo de riesgo actual (solo lectura, no persiste)."""
     expediente = _get_expediente_o_404(session, id)
-    _verificar_acceso(expediente, current_user)
+    _verificar_acceso(session, expediente, current_user)
     pesos = crud.get_pesos_riesgo(session)
     return calcular_riesgo(expediente, pesos)
 
