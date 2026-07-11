@@ -42,6 +42,7 @@ from app.core.totp import (
 from app.models import (
     REQUIRES_2FA_ROLES,
     Message,
+    Token,
     TwoFactorAuth,
     User,
     UserRole,
@@ -379,6 +380,28 @@ def logout(
         ip_origen=request.client.host if request.client else None,
     )
     return Message(message="Sesión cerrada")
+
+
+# ── POST /auth/extend-session ──────────────────────────────────────────────
+
+
+@router.post("/extend-session", response_model=Token)
+def extend_session(
+    current_user: CurrentUser, request: Request, session: SessionDep
+) -> Token:
+    """Reemite el access token del usuario actual con una nueva expiración."""
+    token = security.create_access_token(
+        current_user.id,
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+    registrar_auditoria(
+        session=session,
+        usuario_id=current_user.id,
+        modulo="AUTH",
+        accion="SESION_EXTENDIDA",
+        ip_origen=request.client.host if request.client else None,
+    )
+    return Token(access_token=token)
 
 
 # ── 2FA: setup (sin sesión, usa temp_token) ────────────────────────────────

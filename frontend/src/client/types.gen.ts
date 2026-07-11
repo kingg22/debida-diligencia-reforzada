@@ -526,6 +526,8 @@ export type AuthLoginResponse = (LoginResponse);
 
 export type AuthLogoutResponse = (Message);
 
+export type AuthExtendSessionResponse = (Token);
+
 export type AuthTwofaSetupStartData = {
     requestBody: TwoFactorVerifyInput;
 };

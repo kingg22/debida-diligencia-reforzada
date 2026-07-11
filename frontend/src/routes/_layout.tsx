@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 
 import { AuthService, type TwoFactorStatus } from "@/client"
 import { Footer } from "@/components/Common/Footer"
+import SessionExpiryModal from "@/components/Common/SessionExpiryModal"
 import AppSidebar from "@/components/Sidebar/AppSidebar"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,7 +14,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-import { getTokenExpiry } from "@/lib/auth"
+import useSessionCountdown from "@/hooks/useSessionCountdown"
 import { roleRequires2FA } from "@/lib/roles"
 import { cn } from "@/lib/utils"
 
@@ -28,28 +29,11 @@ export const Route = createFileRoute("/_layout")({
 
 function SessionTimer() {
   const { logout } = useAuth()
-  const [secsLeft, setSecsLeft] = useState(() => {
-    const exp = getTokenExpiry()
-    if (!exp) return 0
-    return Math.max(0, Math.floor((exp.getTime() - Date.now()) / 1000))
-  })
+  const secsLeft = useSessionCountdown()
 
   useEffect(() => {
-    const id = setInterval(() => {
-      const exp = getTokenExpiry()
-      if (!exp) {
-        setSecsLeft(0)
-        return
-      }
-      const s = Math.max(0, Math.floor((exp.getTime() - Date.now()) / 1000))
-      setSecsLeft(s)
-      if (s <= 0) {
-        clearInterval(id)
-        logout()
-      }
-    }, 1000)
-    return () => clearInterval(id)
-  }, [logout])
+    if (secsLeft <= 0) logout()
+  }, [secsLeft, logout])
 
   if (secsLeft <= 0) return null
 
@@ -111,6 +95,7 @@ function Layout() {
         </main>
         <Footer />
       </SidebarInset>
+      <SessionExpiryModal />
     </SidebarProvider>
   )
 }
