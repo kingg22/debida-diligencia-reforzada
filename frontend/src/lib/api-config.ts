@@ -48,6 +48,7 @@ export const Endpoints = {
   // ── Clientes (expedientes KYC) ─────────────────────────────────────────
   clientes: {
     list: () => `${API_VERSION}/clientes/`,
+    estadisticas: () => `${API_VERSION}/clientes/estadisticas`,
     get: (id: string) => `${API_VERSION}/clientes/${id}`,
     create: () => `${API_VERSION}/clientes/`,
     update: (id: string) => `${API_VERSION}/clientes/${id}`,
@@ -64,6 +65,7 @@ export const Endpoints = {
   // ── Casos DDR ─────────────────────────────────────────────────────────
   casosDdr: {
     list: () => `${API_VERSION}/casos-ddr/`,
+    estadisticas: () => `${API_VERSION}/casos-ddr/estadisticas`,
     get: (id: string) => `${API_VERSION}/casos-ddr/${id}`,
     expediente: (id: string) => `${API_VERSION}/casos-ddr/${id}/expediente`,
     asignar: (id: string) => `${API_VERSION}/casos-ddr/${id}/asignar`,

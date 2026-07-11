@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 
 import { SidebarAppearance } from "@/components/Common/Appearance"
+import { RoleBadge } from "@/components/Common/RoleBadge"
 import {
   Sidebar,
   SidebarContent,
@@ -100,6 +101,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarAppearance />
+        <RoleBadge role={role} />
         <User user={sidebarUser} />
       </SidebarFooter>
     </Sidebar>

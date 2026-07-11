@@ -118,6 +118,9 @@ def get_dashboard(session: SessionDep, current_user: CurrentUser) -> Any:
             "mis_casos_en_revision": _count_casos_analista_estado(
                 session, current_user.id, EstadoCaso.EN_REVISION
             ),
+            "mis_casos_en_revision_oficial": _count_casos_analista_estado(
+                session, current_user.id, EstadoCaso.EN_REVISION_OFICIAL
+            ),
             "casos_sin_asignar": _count_casos_sin_asignar(session),
         }
 
@@ -127,6 +130,12 @@ def get_dashboard(session: SessionDep, current_user: CurrentUser) -> Any:
                 session, RiskLevel.ALTO, EstadoCaso.EN_APROBACION
             ),
             "dias_promedio_espera": _dias_promedio_espera(session, RiskLevel.ALTO),
+            "casos_aprobados_alto": _count_casos_por_nivel_y_estado(
+                session, RiskLevel.ALTO, EstadoCaso.APROBADO
+            ),
+            "casos_rechazados_alto": _count_casos_por_nivel_y_estado(
+                session, RiskLevel.ALTO, EstadoCaso.RECHAZADO
+            ),
         }
 
     if rol == UserRole.COMITE_CUMPLIMIENTO:
@@ -135,6 +144,12 @@ def get_dashboard(session: SessionDep, current_user: CurrentUser) -> Any:
                 session, RiskLevel.MUY_ALTO, EstadoCaso.EN_APROBACION
             ),
             "dias_promedio_espera": _dias_promedio_espera(session, RiskLevel.MUY_ALTO),
+            "casos_aprobados_muy_alto": _count_casos_por_nivel_y_estado(
+                session, RiskLevel.MUY_ALTO, EstadoCaso.APROBADO
+            ),
+            "casos_rechazados_muy_alto": _count_casos_por_nivel_y_estado(
+                session, RiskLevel.MUY_ALTO, EstadoCaso.RECHAZADO
+            ),
         }
 
     if rol == UserRole.AUDITOR:
@@ -145,6 +160,8 @@ def get_dashboard(session: SessionDep, current_user: CurrentUser) -> Any:
             "total_casos_ddr": session.exec(
                 select(func.count()).select_from(CasoDDR)
             ).one(),
+            "casos_aprobados": _count_casos_por_estado(session, EstadoCaso.APROBADO),
+            "casos_rechazados": _count_casos_por_estado(session, EstadoCaso.RECHAZADO),
         }
 
     return {}

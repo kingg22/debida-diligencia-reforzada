@@ -420,9 +420,16 @@ export interface DashboardData {
   casos_ddr_en_revision?: number
   mis_casos_abiertos?: number
   mis_casos_en_revision?: number
+  mis_casos_en_revision_oficial?: number
   casos_sin_asignar?: number
   casos_pendientes_aprobacion_alto?: number
   casos_pendientes_aprobacion_muy_alto?: number
+  casos_aprobados_alto?: number
+  casos_rechazados_alto?: number
+  casos_aprobados_muy_alto?: number
+  casos_rechazados_muy_alto?: number
+  casos_aprobados?: number
+  casos_rechazados?: number
   dias_promedio_espera?: number
   total_usuarios?: number
   usuarios_activos?: number
@@ -461,7 +468,20 @@ function toSkipLimit(q: ClientesQuery): {
   }
 }
 
+export interface ClientesEstadisticas {
+  total: number
+  pendientes_revision: number
+  en_revision: number
+  riesgo_alto: number
+  bajo: number
+  medio: number
+  alto: number
+  muy_alto: number
+}
+
 export const ClientesService = {
+  estadisticas: () =>
+    fetchJson<ClientesEstadisticas>(Endpoints.clientes.estadisticas()),
   list: async (q: ClientesQuery = {}) => {
     const { skip, limit, search, status, riesgo } = toSkipLimit(q)
     const path = buildUrl(Endpoints.clientes.list(), {
@@ -540,7 +560,19 @@ function casosToSkipLimit(q: CasosQuery): {
   }
 }
 
+export interface CasosDdrEstadisticas {
+  total: number
+  abiertos: number
+  en_revision: number
+  en_revision_oficial: number
+  en_aprobacion: number
+  aprobados: number
+  rechazados: number
+}
+
 export const CasosDdrService = {
+  estadisticas: () =>
+    fetchJson<CasosDdrEstadisticas>(Endpoints.casosDdr.estadisticas()),
   list: async (q: CasosQuery = {}) => {
     const { skip, limit, status, nivel_riesgo } = casosToSkipLimit(q)
     const path = buildUrl(Endpoints.casosDdr.list(), {
