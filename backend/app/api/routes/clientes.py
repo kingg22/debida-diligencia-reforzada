@@ -194,6 +194,40 @@ def read_clientes(
     )
 
 
+@router.get("/estadisticas", dependencies=[LecturaKYC])
+def estadisticas_clientes(session: SessionDep, current_user: CurrentUser) -> Any:
+    """
+    Conteos para las tarjetas KPI de la lista de clientes.
+    Respeta la misma visibilidad que `read_clientes`: el analista solo
+    cuenta los suyos, el resto de roles con acceso ven todos.
+    """
+    filters: list[Any] = []
+    if not _puede_ver_todos(current_user):
+        filters.append(ExpedienteKYC.analista_id == current_user.id)
+
+    def contar(*extra: Any) -> int:
+        return session.exec(
+            select(func.count()).select_from(ExpedienteKYC).where(*filters, *extra)
+        ).one()
+
+    return {
+        "total": contar(),
+        "pendientes_revision": contar(
+            ExpedienteKYC.status == KYCStatus.PENDIENTE.value
+        ),
+        "en_revision": contar(ExpedienteKYC.status == KYCStatus.EN_REVISION.value),
+        "riesgo_alto": contar(
+            col(ExpedienteKYC.nivel_riesgo).in_(
+                [RiskLevel.ALTO.value, RiskLevel.MUY_ALTO.value]
+            )
+        ),
+        "bajo": contar(ExpedienteKYC.nivel_riesgo == RiskLevel.BAJO.value),
+        "medio": contar(ExpedienteKYC.nivel_riesgo == RiskLevel.MEDIO.value),
+        "alto": contar(ExpedienteKYC.nivel_riesgo == RiskLevel.ALTO.value),
+        "muy_alto": contar(ExpedienteKYC.nivel_riesgo == RiskLevel.MUY_ALTO.value),
+    }
+
+
 @router.get("/{id}", response_model=ExpedienteKYCPublic, dependencies=[LecturaKYC])
 def read_cliente(
     session: SessionDep, current_user: CurrentUser, id: uuid.UUID

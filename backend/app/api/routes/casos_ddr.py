@@ -158,6 +158,42 @@ def read_casos_ddr(
     )
 
 
+def _visibilidad_casos(current_user: CurrentUser) -> list[Any]:
+    """Mismo alcance por rol que `read_casos_ddr`, pero sin restringir por
+    estado: para las tarjetas KPI necesitamos el desglose por estado dentro
+    de lo que el rol puede ver (sus propios casos, o su nivel de riesgo)."""
+    if current_user.role == UserRole.ANALISTA_DDR:
+        return [CasoDDR.analista_id == current_user.id]
+    if current_user.role == UserRole.GERENTE_CUMPLIMIENTO:
+        return [CasoDDR.nivel_riesgo == "ALTO"]
+    if current_user.role == UserRole.COMITE_CUMPLIMIENTO:
+        return [CasoDDR.nivel_riesgo == "MUY_ALTO"]
+    return []
+
+
+@router.get("/estadisticas", dependencies=[AccesoDDR])
+def estadisticas_casos_ddr(session: SessionDep, current_user: CurrentUser) -> Any:
+    """Conteos para las tarjetas KPI de la lista de casos DDR."""
+    filters = _visibilidad_casos(current_user)
+
+    def contar(*extra: Any) -> int:
+        return session.exec(
+            select(func.count()).select_from(CasoDDR).where(*filters, *extra)
+        ).one()
+
+    return {
+        "total": contar(),
+        "abiertos": contar(CasoDDR.status == EstadoCasoDDR.ABIERTO.value),
+        "en_revision": contar(CasoDDR.status == EstadoCasoDDR.EN_REVISION.value),
+        "en_revision_oficial": contar(
+            CasoDDR.status == EstadoCasoDDR.EN_REVISION_OFICIAL.value
+        ),
+        "en_aprobacion": contar(CasoDDR.status == EstadoCasoDDR.EN_APROBACION.value),
+        "aprobados": contar(CasoDDR.status == EstadoCasoDDR.APROBADO.value),
+        "rechazados": contar(CasoDDR.status == EstadoCasoDDR.RECHAZADO.value),
+    }
+
+
 @router.get("/{id}", response_model=CasoDDRPublic, dependencies=[AccesoDDR])
 def read_caso_ddr(session: SessionDep, id: uuid.UUID) -> Any:
     caso = _get_caso_o_404(session, id)

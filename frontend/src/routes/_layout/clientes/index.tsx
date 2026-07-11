@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { Plus, Search, X } from "lucide-react"
+import { AlertTriangle, Clock, FileSearch, Plus, Search, Users, X } from "lucide-react"
 import { useEffect, useState } from "react"
 import { ClientesService } from "@/client/sgddr"
 import { EstadoKYCBadge } from "@/components/Common/EstadoCasoBadge"
+import { KpiCard } from "@/components/Common/KpiCard"
 import { NivelRiesgoBadge } from "@/components/Common/NivelRiesgoBadge"
 import { PageHeader } from "@/components/Common/PageHeader"
 import {
@@ -72,6 +73,13 @@ function ClientesPage() {
   const total = data?.count ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const tieneFiltros = !!(searchInput || nivel || estado)
+
+  const { data: stats, isPending: statsPending } = useQuery({
+    queryKey: ["clientes-estadisticas"],
+    queryFn: ClientesService.estadisticas,
+    retry: false,
+    enabled: !!user,
+  })
 
   return (
     <div className="space-y-6">
@@ -148,6 +156,38 @@ function ClientesPage() {
             <X size={13} /> Limpiar
           </Button>
         )}
+      </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard
+          icon={Users}
+          label="Total de clientes"
+          value={stats?.total ?? 0}
+          color="#c9a84c"
+          loading={statsPending}
+        />
+        <KpiCard
+          icon={Clock}
+          label="Pendientes de revisión"
+          value={stats?.pendientes_revision ?? 0}
+          color="#f59e0b"
+          loading={statsPending}
+        />
+        <KpiCard
+          icon={FileSearch}
+          label="En revisión"
+          value={stats?.en_revision ?? 0}
+          color="#60a5fa"
+          loading={statsPending}
+        />
+        <KpiCard
+          icon={AlertTriangle}
+          label="Riesgo alto o muy alto"
+          value={stats?.riesgo_alto ?? 0}
+          color="#e05252"
+          loading={statsPending}
+        />
       </div>
 
       {/* Contenido */}
