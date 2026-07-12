@@ -1,16 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  createFileRoute,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router"
+import { useMutation } from "@tanstack/react-query"
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 import { AlertTriangle, KeyRound, Loader2, ShieldCheck } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-
 import { AuthService } from "@/client"
-import { useMutation } from "@tanstack/react-query"
 import { getTempToken, isLoggedIn } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
 
@@ -77,13 +72,19 @@ function TwoFactor() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12" style={{ backgroundColor: "#0a1628" }}>
+    <div
+      className="flex min-h-screen items-center justify-center px-4 py-12"
+      style={{ backgroundColor: "#0a1628" }}
+    >
       <div className="w-full max-w-md">
         {/* ── Header ─────────────────────────────────────────────── */}
         <div className="mb-6 flex flex-col items-center text-center">
           <div
             className="mb-4 flex h-14 w-14 items-center justify-center rounded-full"
-            style={{ backgroundColor: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.35)" }}
+            style={{
+              backgroundColor: "rgba(201,168,76,0.12)",
+              border: "1px solid rgba(201,168,76,0.35)",
+            }}
           >
             <ShieldCheck size={26} style={{ color: "#c9a84c" }} />
           </div>
@@ -114,8 +115,14 @@ function TwoFactor() {
                 border: "1px solid rgba(224,82,82,0.35)",
               }}
             >
-              <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" style={{ color: "#e05252" }} />
-              <p className="text-sm" style={{ color: "#e05252" }}>{error}</p>
+              <AlertTriangle
+                size={16}
+                className="mt-0.5 flex-shrink-0"
+                style={{ color: "#e05252" }}
+              />
+              <p className="text-sm" style={{ color: "#e05252" }}>
+                {error}
+              </p>
             </div>
           )}
 
@@ -133,7 +140,6 @@ function TwoFactor() {
                 type="text"
                 inputMode={mode === "totp" ? "numeric" : "text"}
                 autoComplete="one-time-code"
-                autoFocus
                 maxLength={mode === "totp" ? 6 : 11}
                 placeholder={mode === "totp" ? "123456" : "ABCDE-FGHIJ"}
                 disabled={verifyMutation.isPending}
@@ -194,7 +200,10 @@ function TwoFactor() {
           </form>
 
           {/* ── Switch mode ──────────────────────────────────────── */}
-          <div className="mt-5 border-t pt-4" style={{ borderColor: "#1b2e4a" }}>
+          <div
+            className="mt-5 border-t pt-4"
+            style={{ borderColor: "#1b2e4a" }}
+          >
             {mode === "totp" ? (
               <button
                 type="button"

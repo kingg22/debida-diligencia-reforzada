@@ -78,7 +78,13 @@ export function AppSidebar() {
   const items = [
     ...baseItems,
     ...(canRegistrar
-      ? [{ icon: ClipboardList, title: "Nuevo Cliente KYC", path: "/kyc/nuevo" }]
+      ? [
+          {
+            icon: ClipboardList,
+            title: "Nuevo Cliente KYC",
+            path: "/kyc/nuevo",
+          },
+        ]
       : []),
     ...(canVerClientes
       ? [{ icon: FolderOpen, title: "Clientes", path: "/clientes" }]

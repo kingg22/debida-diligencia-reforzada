@@ -19,22 +19,21 @@ import { toast } from "sonner"
 import {
   ClientesRiesgoService,
   ClientesService,
-  ScreeningService,
   type Documento,
   type ExpedienteKYC,
   type ScreeningResultado,
+  ScreeningService,
 } from "@/client/sgddr"
+import { DocumentoPreviewDialog } from "@/components/Common/DocumentoPreviewDialog"
 import { EstadoKYCBadge } from "@/components/Common/EstadoCasoBadge"
 import { NivelRiesgoBadge } from "@/components/Common/NivelRiesgoBadge"
 import { PageHeader } from "@/components/Common/PageHeader"
-import { DocumentoPreviewDialog } from "@/components/Common/DocumentoPreviewDialog"
 import {
   EmptyState,
   ErrorState,
   LoadingState,
 } from "@/components/Common/QueryStates"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Table,
   TableBody,
@@ -43,8 +42,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import useAuth from "@/hooks/useAuth"
 import {
+  type AppUser,
   DOCUMENTO_ESTADO,
   DOCUMENTO_TIPO_LABEL,
   type DocumentoEstado,
@@ -55,7 +56,6 @@ import {
   NIVEL_RIESGO,
   NIVELES_RIESGO,
   TIPO_CLIENTE_LABELS,
-  type AppUser,
 } from "@/lib/sgddr"
 
 export const Route = createFileRoute("/_layout/clientes/$id")({
@@ -114,7 +114,7 @@ function Campo({
   const display =
     value === null || value === undefined || value === ""
       ? "—"
-      : ETIQUETAS[String(value)] ?? String(value)
+      : (ETIQUETAS[String(value)] ?? String(value))
   return (
     <div>
       <p className="text-muted-foreground text-xs">{label}</p>
@@ -146,7 +146,9 @@ function BoolPill({ value }: { value?: boolean | null }) {
     <span
       className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
       style={{
-        backgroundColor: isTrue ? "rgba(34,197,94,0.14)" : "rgba(224,82,82,0.10)",
+        backgroundColor: isTrue
+          ? "rgba(34,197,94,0.14)"
+          : "rgba(224,82,82,0.10)",
         color: isTrue ? "#22c55e" : "var(--muted-foreground)",
       }}
     >
@@ -163,7 +165,10 @@ function DocumentoEstadoBadge({ estado }: { estado?: string | null }) {
     return (
       <span
         className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-        style={{ backgroundColor: "rgba(138,155,181,0.12)", color: "var(--muted-foreground)" }}
+        style={{
+          backgroundColor: "rgba(138,155,181,0.12)",
+          color: "var(--muted-foreground)",
+        }}
       >
         {estado || "—"}
       </span>
@@ -209,7 +214,11 @@ function ClienteDetallePage() {
   const handleDownload = async (doc: Documento) => {
     setDownloadingId(doc.id)
     try {
-      const blob = await ClientesService.descargarDocumento(id, doc.id, "attachment")
+      const blob = await ClientesService.descargarDocumento(
+        id,
+        doc.id,
+        "attachment",
+      )
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
@@ -262,7 +271,13 @@ function ClienteDetallePage() {
 
 // ── Cuerpo: header + tabs ───────────────────────────────────────────────
 
-function TabRiesgo({ expedienteId, rol }: { expedienteId: string; rol?: string }) {
+function TabRiesgo({
+  expedienteId,
+  rol,
+}: {
+  expedienteId: string
+  rol?: string
+}) {
   const qc = useQueryClient()
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ["factores-riesgo", expedienteId],
@@ -465,7 +480,11 @@ function TabRiesgo({ expedienteId, rol }: { expedienteId: string; rol?: string }
 
 function SimilitudBar({ value }: { value: number }) {
   const color =
-    value >= 90 ? "var(--destructive)" : value >= 75 ? "var(--primary)" : "#6b7a99"
+    value >= 90
+      ? "var(--destructive)"
+      : value >= 75
+        ? "var(--primary)"
+        : "#6b7a99"
   return (
     <div className="flex items-center gap-2">
       <div
@@ -524,8 +543,7 @@ function TabScreening({
 
   const activas = (resultados ?? []).filter((r) => !r.es_falso_positivo)
   const descartadas = (resultados ?? []).filter((r) => r.es_falso_positivo)
-  const puedeDescartar =
-    rol === "OFICIAL_CUMPLIMIENTO" || rol === "ADMIN"
+  const puedeDescartar = rol === "OFICIAL_CUMPLIMIENTO" || rol === "ADMIN"
 
   return (
     <div className="space-y-4">
@@ -534,7 +552,9 @@ function TabScreening({
           <p className="text-muted-foreground text-xs">Coincidencias activas</p>
           <p
             className="mt-0.5 text-lg font-semibold"
-            style={{ color: activas.length > 0 ? "var(--destructive)" : "#22c55e" }}
+            style={{
+              color: activas.length > 0 ? "var(--destructive)" : "#22c55e",
+            }}
           >
             {isPending ? "…" : activas.length}
           </p>
@@ -741,8 +761,14 @@ function DetalleBody({
               <div className="grid grid-cols-2 gap-4">
                 {isNatural ? (
                   <>
-                    <Campo label="Tipo de documento" value={pn?.tipo_documento} />
-                    <Campo label="Número de documento" value={pn?.numero_documento} />
+                    <Campo
+                      label="Tipo de documento"
+                      value={pn?.tipo_documento}
+                    />
+                    <Campo
+                      label="Número de documento"
+                      value={pn?.numero_documento}
+                    />
                     <Campo
                       label="Fecha de expiración"
                       value={formatFecha(pn?.fecha_expiracion_doc)}
@@ -752,10 +778,7 @@ function DetalleBody({
                   <>
                     <Campo label="Razón social" value={pj?.razon_social} />
                     <Campo label="RUC" value={pj?.ruc} />
-                    <Campo
-                      label="Tipo de sociedad"
-                      value={pj?.tipo_sociedad}
-                    />
+                    <Campo label="Tipo de sociedad" value={pj?.tipo_sociedad} />
                     <Campo
                       label="Fecha de constitución"
                       value={formatFecha(pj?.fecha_constitucion)}
@@ -786,7 +809,10 @@ function DetalleBody({
                   <Campo label="Género" value={pn?.genero} />
                   <Campo label="Estado civil" value={pn?.estado_civil} />
                   <Campo label="Nacionalidad" value={pn?.nacionalidad} />
-                  <Campo label="País de nacimiento" value={pn?.pais_nacimiento} />
+                  <Campo
+                    label="País de nacimiento"
+                    value={pn?.pais_nacimiento}
+                  />
                   <Campo label="País de residencia" value={pn?.pais} />
                   <Campo label="Teléfono" value={pn?.telefono} />
                   <Campo label="Correo" value={pn?.email} />
@@ -817,7 +843,10 @@ function DetalleBody({
                     value={pj?.telefono_empresa}
                   />
                   <Campo label="Correo empresa" value={pj?.email_empresa} />
-                  <Campo label="Dirección fiscal" value={pj?.direccion_fiscal} />
+                  <Campo
+                    label="Dirección fiscal"
+                    value={pj?.direccion_fiscal}
+                  />
                   <Campo label="Ciudad" value={pj?.ciudad} />
                   <Campo label="País" value={pj?.pais} />
                 </div>
@@ -828,18 +857,9 @@ function DetalleBody({
             {!isNatural && (
               <Card title="Representante legal">
                 <div className="grid grid-cols-2 gap-4">
-                  <Campo
-                    label="Nombre"
-                    value={pj?.nombre_representante}
-                  />
-                  <Campo
-                    label="Cédula"
-                    value={pj?.cedula_representante}
-                  />
-                  <Campo
-                    label="Cargo"
-                    value={pj?.cargo_representante}
-                  />
+                  <Campo label="Nombre" value={pj?.nombre_representante} />
+                  <Campo label="Cédula" value={pj?.cedula_representante} />
+                  <Campo label="Cargo" value={pj?.cargo_representante} />
                 </div>
               </Card>
             )}
@@ -851,7 +871,10 @@ function DetalleBody({
                   <>
                     <Campo label="Ocupación" value={pn?.ocupacion} />
                     <Campo label="Empleador" value={pn?.empleador} />
-                    <Campo label="Fuente de ingresos" value={pn?.fuente_ingresos} />
+                    <Campo
+                      label="Fuente de ingresos"
+                      value={pn?.fuente_ingresos}
+                    />
                     <Campo
                       label="Ingreso mensual (USD)"
                       value={formatMoneda(pn?.ingreso_mensual_aproximado)}
@@ -884,7 +907,9 @@ function DetalleBody({
                       </div>
                     </div>
                     <div>
-                      <p className="text-muted-foreground text-xs">¿Familiar PEP?</p>
+                      <p className="text-muted-foreground text-xs">
+                        ¿Familiar PEP?
+                      </p>
                       <div className="mt-1">
                         <BoolPill value={pn?.es_pep_familiar} />
                       </div>
@@ -926,8 +951,14 @@ function DetalleBody({
               <div className="grid grid-cols-2 gap-4">
                 <Campo label="Código" value={data.codigo} />
                 <Campo label="Puntaje de riesgo" value={data.puntaje_riesgo} />
-                <Campo label="Creado" value={formatFechaHora(data.created_at)} />
-                <Campo label="Actualizado" value={formatFechaHora(data.updated_at)} />
+                <Campo
+                  label="Creado"
+                  value={formatFechaHora(data.created_at)}
+                />
+                <Campo
+                  label="Actualizado"
+                  value={formatFechaHora(data.updated_at)}
+                />
               </div>
             </Card>
           </div>
@@ -946,7 +977,9 @@ function DetalleBody({
                     <TableHead>Cédula</TableHead>
                     <TableHead>País</TableHead>
                     <TableHead>Nacimiento</TableHead>
-                    <TableHead className="text-right">% Participación</TableHead>
+                    <TableHead className="text-right">
+                      % Participación
+                    </TableHead>
                     <TableHead>PEP</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -978,7 +1011,9 @@ function DetalleBody({
                   </span>
                   <span
                     className="font-semibold"
-                    style={{ color: porcentajeOk ? "#22c55e" : "var(--destructive)" }}
+                    style={{
+                      color: porcentajeOk ? "#22c55e" : "var(--destructive)",
+                    }}
                   >
                     {totalPorcentaje.toFixed(2)}%
                     {porcentajeOk ? " ✓" : " — suma incorrecta"}
@@ -992,7 +1027,9 @@ function DetalleBody({
                     className="h-full transition-all"
                     style={{
                       width: `${Math.min(100, totalPorcentaje)}%`,
-                      backgroundColor: porcentajeOk ? "var(--primary)" : "var(--destructive)",
+                      backgroundColor: porcentajeOk
+                        ? "var(--primary)"
+                        : "var(--destructive)",
                     }}
                   />
                 </div>

@@ -6,13 +6,13 @@ import { useMemo, useState } from "react"
 import { type UserPublic, UsersService } from "@/client"
 import AddUser from "@/components/Admin/AddUser"
 import { columns, type UserTableData } from "@/components/Admin/columns"
+import { DataTable } from "@/components/Common/DataTable"
 import { PageHeader } from "@/components/Common/PageHeader"
 import {
   EmptyState,
   ErrorState,
   LoadingState,
 } from "@/components/Common/QueryStates"
-import { DataTable } from "@/components/Common/DataTable"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import useAuth from "@/hooks/useAuth"

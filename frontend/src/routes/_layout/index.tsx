@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
+import type { LucideIcon } from "lucide-react"
 import {
   AlertTriangle,
   Clock,
@@ -10,12 +11,11 @@ import {
   UserCheck,
   Users,
 } from "lucide-react"
-import type { LucideIcon } from "lucide-react"
 import {
-  CasosDdrService,
-  ClientesService,
   type CasosDdrEstadisticas,
+  CasosDdrService,
   type ClientesEstadisticas,
+  ClientesService,
   type DashboardData,
 } from "@/client/sgddr"
 import { BarListCard, type BarListItem } from "@/components/Common/BarListCard"

@@ -26,7 +26,10 @@ export function BarListCard({
       {loading ? (
         <div className="space-y-3">
           {items.map((item) => (
-            <div key={item.label} className="bg-muted h-6 animate-pulse rounded-md" />
+            <div
+              key={item.label}
+              className="bg-muted h-6 animate-pulse rounded-md"
+            />
           ))}
         </div>
       ) : (

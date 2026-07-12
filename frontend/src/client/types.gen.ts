@@ -34,6 +34,7 @@ export type BeneficiarioFinalCreate = {
     pais: string;
     fecha_nacimiento: string;
     porcentaje_participacion?: number;
+    tipo_control?: string;
     es_pep?: boolean;
 };
 
@@ -45,18 +46,19 @@ export type BeneficiarioFinalPublic = {
     pais: string;
     fecha_nacimiento: string;
     porcentaje_participacion?: number;
+    tipo_control?: string;
     es_pep?: boolean;
     id: string;
 };
 
 export type Body_casos_ddr_upload_documento_ddr = {
     tipo: DocumentoTipo;
-    file: (Blob | File);
+    file: string;
 };
 
 export type Body_clientes_upload_documento = {
     tipo: DocumentoTipo;
-    file: (Blob | File);
+    file: string;
 };
 
 export type Body_login_login_access_token = {
@@ -75,6 +77,8 @@ export type CasoDDRPublic = {
     status: string;
     analista_id?: (string | null);
     aprobado_por_id?: (string | null);
+    validado_por_id?: (string | null);
+    observaciones_oficial?: (string | null);
     observaciones_rechazo?: (string | null);
     fecha_apertura?: (string | null);
     fecha_cierre?: (string | null);
@@ -130,6 +134,10 @@ export type CuestionarioUpdate = {
     familiar_pep?: (boolean | null);
 };
 
+export type DevolucionInput = {
+    observaciones: string;
+};
+
 export type DocumentoEstado = 'PENDIENTE' | 'VALIDADO' | 'RECHAZADO';
 
 export type DocumentoKYCPublic = {
@@ -150,9 +158,18 @@ export type DocumentosDDRPublic = {
     count: number;
 };
 
-export type DocumentoTipo = 'CEDULA_FRONTAL' | 'CEDULA_POSTERIOR' | 'PASAPORTE' | 'RUC' | 'REGISTRO_MERCANTIL' | 'ESTADOS_FINANCIEROS' | 'DECLARACION_RENTA' | 'ESCRITURA_CONSTITUCION' | 'PODER_REPRESENTANTE' | 'OTRO';
+export type DocumentoTipo = 'CEDULA_FRONTAL' | 'CEDULA_POSTERIOR' | 'PASAPORTE' | 'RUC' | 'REGISTRO_MERCANTIL' | 'ESTADOS_FINANCIEROS' | 'DECLARACION_RENTA' | 'ESCRITURA_CONSTITUCION' | 'PODER_REPRESENTANTE' | 'DECLARACION_FONDOS' | 'REFERENCIA_BANCARIA' | 'COMPROBANTE_DOMICILIO' | 'OTRO';
 
-export type EstadoCasoDDR = 'ABIERTO' | 'EN_REVISION' | 'EN_APROBACION' | 'APROBADO' | 'RECHAZADO';
+/**
+ * Flujo DDR con segregación de funciones (cuatro ojos):
+ *
+ * ABIERTO → el Oficial asigna un analista (distinto al que registró)
+ * EN_REVISION → el analista investiga (EBR + documentos)
+ * EN_REVISION_OFICIAL → el Oficial valida el trabajo del analista
+ * EN_APROBACION → Gerente (ALTO) o Comité (MUY_ALTO) decide
+ * APROBADO / RECHAZADO → cierre
+ */
+export type EstadoCasoDDR = 'ABIERTO' | 'EN_REVISION' | 'EN_REVISION_OFICIAL' | 'EN_APROBACION' | 'APROBADO' | 'RECHAZADO';
 
 export type ExpedienteKYCCreate = {
     tipo_cliente: ClientType;
@@ -169,6 +186,8 @@ export type ExpedienteKYCPublic = {
     status: KYCStatus;
     nivel_riesgo?: (RiskLevel | null);
     puntaje_riesgo?: (number | null);
+    nivel_riesgo_override?: (RiskLevel | null);
+    justificacion_override?: (string | null);
     comentario_rechazo?: (string | null);
     analista_id: string;
     created_at?: (string | null);
@@ -267,6 +286,19 @@ export type Message = {
 export type NewPassword = {
     token: string;
     new_password: string;
+};
+
+export type ParametroRiesgoPublic = {
+    id: string;
+    factor: string;
+    descripcion: string;
+    peso: number;
+    activo: boolean;
+};
+
+export type ParametroRiesgoUpdate = {
+    peso: number;
+    activo?: (boolean | null);
 };
 
 export type PersonaJuridicaCreate = {
@@ -376,6 +408,11 @@ export type RechazoInput = {
     observaciones: string;
 };
 
+export type RiesgoOverrideInput = {
+    nivel_riesgo_override: RiskLevel;
+    justificacion_override: string;
+};
+
 export type RiesgoResult = {
     nivel: RiskLevel;
     puntaje: number;
@@ -383,6 +420,18 @@ export type RiesgoResult = {
 };
 
 export type RiskLevel = 'BAJO' | 'MEDIO' | 'ALTO' | 'MUY_ALTO';
+
+export type ScreeningResultadoPublic = {
+    id: string;
+    expediente_id: string;
+    lista: string;
+    nombre_entrada: string;
+    similitud: number;
+    es_falso_positivo: boolean;
+    revisado_por_id: (string | null);
+    revisado_en: (string | null);
+    creado_en: string;
+};
 
 export type Token = {
     access_token: string;
@@ -569,11 +618,19 @@ export type CasosDdrReadCasosDdrData = {
 
 export type CasosDdrReadCasosDdrResponse = (CasosDDRPublic);
 
+export type CasosDdrEstadisticasCasosDdrResponse = (unknown);
+
 export type CasosDdrReadCasoDdrData = {
     id: string;
 };
 
 export type CasosDdrReadCasoDdrResponse = (CasoDDRPublic);
+
+export type CasosDdrReadExpedienteDelCasoData = {
+    id: string;
+};
+
+export type CasosDdrReadExpedienteDelCasoResponse = (ExpedienteKYCPublic);
 
 export type CasosDdrAsignarAnalistaData = {
     id: string;
@@ -587,6 +644,32 @@ export type CasosDdrEnviarAprobacionData = {
 };
 
 export type CasosDdrEnviarAprobacionResponse = (CasoDDRPublic);
+
+export type CasosDdrValidarCasoData = {
+    id: string;
+};
+
+export type CasosDdrValidarCasoResponse = (CasoDDRPublic);
+
+export type CasosDdrDevolverCasoData = {
+    id: string;
+    requestBody: DevolucionInput;
+};
+
+export type CasosDdrDevolverCasoResponse = (CasoDDRPublic);
+
+export type CasosDdrReabrirCasoData = {
+    id: string;
+};
+
+export type CasosDdrReabrirCasoResponse = (CasoDDRPublic);
+
+export type CasosDdrDevolverAOficialData = {
+    id: string;
+    requestBody: DevolucionInput;
+};
+
+export type CasosDdrDevolverAOficialResponse = (CasoDDRPublic);
 
 export type CasosDdrAprobarCasoData = {
     id: string;
@@ -647,6 +730,8 @@ export type ClientesReadClientesData = {
 
 export type ClientesReadClientesResponse = (ExpedientesKYCPublic);
 
+export type ClientesEstadisticasClientesResponse = (unknown);
+
 export type ClientesReadClienteData = {
     id: string;
 };
@@ -693,6 +778,32 @@ export type ClientesVerificarListasData = {
 };
 
 export type ClientesVerificarListasResponse = (ListasResult);
+
+export type ClientesListarScreeningData = {
+    id: string;
+};
+
+export type ClientesListarScreeningResponse = (Array<ScreeningResultadoPublic>);
+
+export type ClientesMarcarFalsoPositivoData = {
+    id: string;
+    resultadoId: string;
+};
+
+export type ClientesMarcarFalsoPositivoResponse = (ScreeningResultadoPublic);
+
+export type ClientesFactoresRiesgoData = {
+    id: string;
+};
+
+export type ClientesFactoresRiesgoResponse = (RiesgoResult);
+
+export type ClientesOverrideRiesgoData = {
+    id: string;
+    requestBody: RiesgoOverrideInput;
+};
+
+export type ClientesOverrideRiesgoResponse = (ExpedienteKYCPublic);
 
 export type DashboardGetDashboardResponse = (unknown);
 
@@ -753,6 +864,15 @@ export type LoginRecoverPasswordHtmlContentData = {
 };
 
 export type LoginRecoverPasswordHtmlContentResponse = (string);
+
+export type ParametrosListarParametrosResponse = (Array<ParametroRiesgoPublic>);
+
+export type ParametrosActualizarParametroData = {
+    id: string;
+    requestBody: ParametroRiesgoUpdate;
+};
+
+export type ParametrosActualizarParametroResponse = (ParametroRiesgoPublic);
 
 export type PrivateCreateUserData = {
     requestBody: PrivateUserCreate;

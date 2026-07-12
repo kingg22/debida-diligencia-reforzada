@@ -7,7 +7,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Download, FileText, Loader2, X } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
-import { ClientesService, SgddrApiError, type Documento } from "@/client/sgddr"
+import { ClientesService, type Documento, SgddrApiError } from "@/client/sgddr"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -56,7 +56,7 @@ function DocPreviewContent({
     const url = URL.createObjectURL(query.data)
     setObjectUrl(url)
     return () => URL.revokeObjectURL(url)
-  }, [query.data, doc.id])
+  }, [query.data])
 
   const renderer = useMemo(() => {
     if (!objectUrl) return null
@@ -67,7 +67,10 @@ function DocPreviewContent({
           src={objectUrl}
           title={doc.nombre}
           className="h-[70vh] w-full rounded border"
-          style={{ borderColor: "var(--border)", backgroundColor: "var(--card)" }}
+          style={{
+            borderColor: "var(--border)",
+            backgroundColor: "var(--card)",
+          }}
         />
       )
     }
@@ -83,7 +86,10 @@ function DocPreviewContent({
     return (
       <div
         className="flex flex-col items-center justify-center gap-3 rounded border py-16 text-center"
-        style={{ borderColor: "var(--border)", backgroundColor: "var(--secondary)" }}
+        style={{
+          borderColor: "var(--border)",
+          backgroundColor: "var(--secondary)",
+        }}
       >
         <FileText size={28} style={{ color: "var(--muted-foreground)" }} />
         <p style={{ color: "var(--foreground)" }} className="text-sm">
@@ -128,7 +134,12 @@ function DocPreviewContent({
         <p className="text-sm" style={{ color: "var(--destructive)" }}>
           {msg}
         </p>
-        <Button type="button" variant="outline" size="sm" onClick={() => query.refetch()}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => query.refetch()}
+        >
           Reintentar
         </Button>
       </div>
@@ -141,7 +152,11 @@ function DocPreviewContent({
         className="flex flex-col items-center justify-center gap-3 py-16"
         style={{ color: "var(--muted-foreground)" }}
       >
-        <Loader2 size={22} className="animate-spin" style={{ color: "var(--primary)" }} />
+        <Loader2
+          size={22}
+          className="animate-spin"
+          style={{ color: "var(--primary)" }}
+        />
         <p className="text-sm">Cargando documento…</p>
       </div>
     )

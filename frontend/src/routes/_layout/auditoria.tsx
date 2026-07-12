@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
-
+import { type AuditoriaEntry, AuditoriaService } from "@/client/sgddr"
 import { PageHeader } from "@/components/Common/PageHeader"
 import {
   EmptyState,
@@ -18,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { AuditoriaService, type AuditoriaEntry } from "@/client/sgddr"
 import { formatFechaHora } from "@/lib/sgddr"
 
 const PAGE_SIZE = 20
@@ -76,37 +75,57 @@ function AuditoriaPage() {
         <div className="flex flex-wrap gap-3">
           <select
             value={modulo}
-            onChange={(e) => { setModulo(e.target.value); setPage(1) }}
+            onChange={(e) => {
+              setModulo(e.target.value)
+              setPage(1)
+            }}
             className="border-input bg-background text-foreground focus:border-ring h-10 rounded-lg border px-3 text-sm outline-none"
           >
             <option value="">Todos los módulos</option>
             {MODULOS.map((m) => (
-              <option key={m} value={m}>{m}</option>
+              <option key={m} value={m}>
+                {m}
+              </option>
             ))}
           </select>
 
           <div className="flex items-center gap-2">
-            <label className="text-muted-foreground text-xs whitespace-nowrap">Desde</label>
+            <label className="text-muted-foreground text-xs whitespace-nowrap">
+              Desde
+            </label>
             <Input
               type="datetime-local"
               value={desde}
-              onChange={(e) => { setDesde(e.target.value); setPage(1) }}
+              onChange={(e) => {
+                setDesde(e.target.value)
+                setPage(1)
+              }}
               className="h-10 w-52 text-sm"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-muted-foreground text-xs whitespace-nowrap">Hasta</label>
+            <label className="text-muted-foreground text-xs whitespace-nowrap">
+              Hasta
+            </label>
             <Input
               type="datetime-local"
               value={hasta}
-              onChange={(e) => { setHasta(e.target.value); setPage(1) }}
+              onChange={(e) => {
+                setHasta(e.target.value)
+                setPage(1)
+              }}
               className="h-10 w-52 text-sm"
             />
           </div>
 
           {hayFiltros && (
-            <Button type="button" variant="outline" size="sm" onClick={resetFiltros}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={resetFiltros}
+            >
               Limpiar
             </Button>
           )}
@@ -127,10 +146,15 @@ function AuditoriaPage() {
         </div>
 
         {isPending ? (
-          <div className="p-6"><LoadingState label="Cargando bitácora…" /></div>
+          <div className="p-6">
+            <LoadingState label="Cargando bitácora…" />
+          </div>
         ) : isError ? (
           <div className="p-6">
-            <ErrorState message={(error as Error)?.message} onRetry={() => refetch()} />
+            <ErrorState
+              message={(error as Error)?.message}
+              onRetry={() => refetch()}
+            />
           </div>
         ) : (data?.data ?? []).length === 0 ? (
           <div className="p-6">
@@ -156,7 +180,9 @@ function AuditoriaPage() {
                     </TableCell>
                     <TableCell className="text-sm">
                       {e.usuario_nombre ?? (
-                        <span className="text-muted-foreground italic">Sistema</span>
+                        <span className="text-muted-foreground italic">
+                          Sistema
+                        </span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -164,7 +190,9 @@ function AuditoriaPage() {
                         {e.modulo}
                       </span>
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{e.accion}</TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {e.accion}
+                    </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {e.descripcion ?? "—"}
                     </TableCell>

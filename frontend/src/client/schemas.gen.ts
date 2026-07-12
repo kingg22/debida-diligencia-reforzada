@@ -183,6 +183,12 @@ export const BeneficiarioFinalCreateSchema = {
             title: 'Porcentaje Participacion',
             default: 0
         },
+        tipo_control: {
+            type: 'string',
+            maxLength: 20,
+            title: 'Tipo Control',
+            default: 'DIRECTA'
+        },
         es_pep: {
             type: 'boolean',
             title: 'Es Pep',
@@ -233,6 +239,12 @@ export const BeneficiarioFinalPublicSchema = {
             title: 'Porcentaje Participacion',
             default: 0
         },
+        tipo_control: {
+            type: 'string',
+            maxLength: 20,
+            title: 'Tipo Control',
+            default: 'DIRECTA'
+        },
         es_pep: {
             type: 'boolean',
             title: 'Es Pep',
@@ -256,7 +268,7 @@ export const Body_casos_ddr_upload_documento_ddrSchema = {
         },
         file: {
             type: 'string',
-            format: 'binary',
+            contentMediaType: 'application/octet-stream',
             title: 'File'
         }
     },
@@ -272,7 +284,7 @@ export const Body_clientes_upload_documentoSchema = {
         },
         file: {
             type: 'string',
-            format: 'binary',
+            contentMediaType: 'application/octet-stream',
             title: 'File'
         }
     },
@@ -381,6 +393,29 @@ export const CasoDDRPublicSchema = {
                 }
             ],
             title: 'Aprobado Por Id'
+        },
+        validado_por_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Validado Por Id'
+        },
+        observaciones_oficial: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Observaciones Oficial'
         },
         observaciones_rechazo: {
             anyOf: [
@@ -716,6 +751,20 @@ export const CuestionarioUpdateSchema = {
     title: 'CuestionarioUpdate'
 } as const;
 
+export const DevolucionInputSchema = {
+    properties: {
+        observaciones: {
+            type: 'string',
+            maxLength: 1000,
+            minLength: 10,
+            title: 'Observaciones'
+        }
+    },
+    type: 'object',
+    required: ['observaciones'],
+    title: 'DevolucionInput'
+} as const;
+
 export const DocumentoEstadoSchema = {
     type: 'string',
     enum: ['PENDIENTE', 'VALIDADO', 'RECHAZADO'],
@@ -795,7 +844,7 @@ export const DocumentoKYCPublicSchema = {
 
 export const DocumentoTipoSchema = {
     type: 'string',
-    enum: ['CEDULA_FRONTAL', 'CEDULA_POSTERIOR', 'PASAPORTE', 'RUC', 'REGISTRO_MERCANTIL', 'ESTADOS_FINANCIEROS', 'DECLARACION_RENTA', 'ESCRITURA_CONSTITUCION', 'PODER_REPRESENTANTE', 'OTRO'],
+    enum: ['CEDULA_FRONTAL', 'CEDULA_POSTERIOR', 'PASAPORTE', 'RUC', 'REGISTRO_MERCANTIL', 'ESTADOS_FINANCIEROS', 'DECLARACION_RENTA', 'ESCRITURA_CONSTITUCION', 'PODER_REPRESENTANTE', 'DECLARACION_FONDOS', 'REFERENCIA_BANCARIA', 'COMPROBANTE_DOMICILIO', 'OTRO'],
     title: 'DocumentoTipo'
 } as const;
 
@@ -820,8 +869,15 @@ export const DocumentosDDRPublicSchema = {
 
 export const EstadoCasoDDRSchema = {
     type: 'string',
-    enum: ['ABIERTO', 'EN_REVISION', 'EN_APROBACION', 'APROBADO', 'RECHAZADO'],
-    title: 'EstadoCasoDDR'
+    enum: ['ABIERTO', 'EN_REVISION', 'EN_REVISION_OFICIAL', 'EN_APROBACION', 'APROBADO', 'RECHAZADO'],
+    title: 'EstadoCasoDDR',
+    description: `Flujo DDR con segregación de funciones (cuatro ojos):
+
+ABIERTO → el Oficial asigna un analista (distinto al que registró)
+EN_REVISION → el analista investiga (EBR + documentos)
+EN_REVISION_OFICIAL → el Oficial valida el trabajo del analista
+EN_APROBACION → Gerente (ALTO) o Comité (MUY_ALTO) decide
+APROBADO / RECHAZADO → cierre`
 } as const;
 
 export const ExpedienteKYCCreateSchema = {
@@ -904,6 +960,27 @@ export const ExpedienteKYCPublicSchema = {
                 }
             ],
             title: 'Puntaje Riesgo'
+        },
+        nivel_riesgo_override: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/RiskLevel'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        justificacion_override: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Justificacion Override'
         },
         comentario_rechazo: {
             anyOf: [
@@ -1371,6 +1448,60 @@ export const NewPasswordSchema = {
     title: 'NewPassword'
 } as const;
 
+export const ParametroRiesgoPublicSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        factor: {
+            type: 'string',
+            title: 'Factor'
+        },
+        descripcion: {
+            type: 'string',
+            title: 'Descripcion'
+        },
+        peso: {
+            type: 'integer',
+            title: 'Peso'
+        },
+        activo: {
+            type: 'boolean',
+            title: 'Activo'
+        }
+    },
+    type: 'object',
+    required: ['id', 'factor', 'descripcion', 'peso', 'activo'],
+    title: 'ParametroRiesgoPublic'
+} as const;
+
+export const ParametroRiesgoUpdateSchema = {
+    properties: {
+        peso: {
+            type: 'integer',
+            maximum: 100,
+            minimum: 0,
+            title: 'Peso'
+        },
+        activo: {
+            anyOf: [
+                {
+                    type: 'boolean'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Activo'
+        }
+    },
+    type: 'object',
+    required: ['peso'],
+    title: 'ParametroRiesgoUpdate'
+} as const;
+
 export const PersonaJuridicaCreateSchema = {
     properties: {
         razon_social: {
@@ -1385,7 +1516,7 @@ export const PersonaJuridicaCreateSchema = {
         },
         tipo_sociedad: {
             type: 'string',
-            maxLength: 30,
+            maxLength: 40,
             title: 'Tipo Sociedad'
         },
         fecha_constitucion: {
@@ -1488,7 +1619,7 @@ export const PersonaJuridicaPublicSchema = {
         },
         tipo_sociedad: {
             type: 'string',
-            maxLength: 30,
+            maxLength: 40,
             title: 'Tipo Sociedad'
         },
         fecha_constitucion: {
@@ -1862,6 +1993,23 @@ export const RechazoInputSchema = {
     title: 'RechazoInput'
 } as const;
 
+export const RiesgoOverrideInputSchema = {
+    properties: {
+        nivel_riesgo_override: {
+            '$ref': '#/components/schemas/RiskLevel'
+        },
+        justificacion_override: {
+            type: 'string',
+            maxLength: 500,
+            minLength: 10,
+            title: 'Justificacion Override'
+        }
+    },
+    type: 'object',
+    required: ['nivel_riesgo_override', 'justificacion_override'],
+    title: 'RiesgoOverrideInput'
+} as const;
+
 export const RiesgoResultSchema = {
     properties: {
         nivel: {
@@ -1888,6 +2036,69 @@ export const RiskLevelSchema = {
     type: 'string',
     enum: ['BAJO', 'MEDIO', 'ALTO', 'MUY_ALTO'],
     title: 'RiskLevel'
+} as const;
+
+export const ScreeningResultadoPublicSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        expediente_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Expediente Id'
+        },
+        lista: {
+            type: 'string',
+            title: 'Lista'
+        },
+        nombre_entrada: {
+            type: 'string',
+            title: 'Nombre Entrada'
+        },
+        similitud: {
+            type: 'integer',
+            title: 'Similitud'
+        },
+        es_falso_positivo: {
+            type: 'boolean',
+            title: 'Es Falso Positivo'
+        },
+        revisado_por_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Revisado Por Id'
+        },
+        revisado_en: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Revisado En'
+        },
+        creado_en: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Creado En'
+        }
+    },
+    type: 'object',
+    required: ['id', 'expediente_id', 'lista', 'nombre_entrada', 'similitud', 'es_falso_positivo', 'revisado_por_id', 'revisado_en', 'creado_en'],
+    title: 'ScreeningResultadoPublic'
 } as const;
 
 export const TokenSchema = {

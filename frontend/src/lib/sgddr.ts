@@ -292,9 +292,17 @@ export const DOCUMENTO_ESTADO: Record<
   DocumentoEstado,
   { label: string; color: string; bg: string }
 > = {
-  PENDIENTE: { label: "Pendiente", color: "#eab308", bg: "rgba(234,179,8,0.14)" },
+  PENDIENTE: {
+    label: "Pendiente",
+    color: "#eab308",
+    bg: "rgba(234,179,8,0.14)",
+  },
   VALIDADO: { label: "Validado", color: "#22c55e", bg: "rgba(34,197,94,0.14)" },
-  RECHAZADO: { label: "Rechazado", color: "#e05252", bg: "rgba(224,82,82,0.14)" },
+  RECHAZADO: {
+    label: "Rechazado",
+    color: "#e05252",
+    bg: "rgba(224,82,82,0.14)",
+  },
 }
 
 export function formatBytes(bytes?: number | null): string {

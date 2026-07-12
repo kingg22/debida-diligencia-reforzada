@@ -133,7 +133,13 @@ function CadenaRevision({
               </div>
               <span
                 className="mt-1.5 whitespace-nowrap text-xs font-medium"
-                style={{ color: active ? "var(--primary)" : done ? "#22c55e" : "var(--dim-foreground)" }}
+                style={{
+                  color: active
+                    ? "var(--primary)"
+                    : done
+                      ? "#22c55e"
+                      : "var(--dim-foreground)",
+                }}
               >
                 {s.etapa}
               </span>
@@ -177,7 +183,10 @@ function Card({
   return (
     <div
       className="rounded-xl p-5"
-      style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
+      style={{
+        backgroundColor: "var(--card)",
+        border: "1px solid var(--border)",
+      }}
     >
       <div className="mb-4 flex items-center justify-between">
         <p
@@ -277,9 +286,15 @@ function FilaDocumento({
           style={{ color: "var(--primary)" }}
         />
         <div className="min-w-0">
-          <p className="truncate text-sm" style={{ color: "var(--foreground)" }}>
+          <p
+            className="truncate text-sm"
+            style={{ color: "var(--foreground)" }}
+          >
             {documentoTipoLabel(tipo)}
-            <span className="ml-2 text-xs" style={{ color: "var(--muted-foreground)" }}>
+            <span
+              className="ml-2 text-xs"
+              style={{ color: "var(--muted-foreground)" }}
+            >
               {nombre}
             </span>
           </p>
@@ -331,7 +346,9 @@ function FlagRiesgo({ activo, label }: { activo: boolean; label: string }) {
     <span
       className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
       style={{
-        backgroundColor: activo ? "rgba(224,82,82,0.12)" : "rgba(34,197,94,0.10)",
+        backgroundColor: activo
+          ? "rgba(224,82,82,0.12)"
+          : "rgba(34,197,94,0.10)",
         color: activo ? "var(--destructive)" : "#22c55e",
       }}
     >
@@ -452,7 +469,9 @@ function CasoDetallePage() {
   const devolverOficial = useMutation({
     mutationFn: () => CasosDdrService.devolverOficial(id, { observaciones }),
     onSuccess: () => {
-      toast.success("Caso devuelto al Oficial de Cumplimiento con observaciones.")
+      toast.success(
+        "Caso devuelto al Oficial de Cumplimiento con observaciones.",
+      )
       setDevolverOficialOpen(false)
       setObservaciones("")
       invalidar()
@@ -463,7 +482,9 @@ function CasoDetallePage() {
   const reabrir = useMutation({
     mutationFn: () => CasosDdrService.reabrir(id),
     onSuccess: () => {
-      toast.success("Caso regresado a asignación. Puedes asignar otro analista.")
+      toast.success(
+        "Caso regresado a asignación. Puedes asignar otro analista.",
+      )
       invalidar()
     },
     onError,
@@ -564,7 +585,10 @@ function CasoDetallePage() {
           {/* Cadena de revisión (cuatro ojos) */}
           <div
             className="rounded-xl p-6"
-            style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
+            style={{
+              backgroundColor: "var(--card)",
+              border: "1px solid var(--border)",
+            }}
           >
             <CadenaRevision
               current={etapaActual(caso.status)}
@@ -596,7 +620,10 @@ function CasoDetallePage() {
                   >
                     Devuelto por la instancia de aprobación
                   </p>
-                  <p className="mt-1 text-sm" style={{ color: "var(--foreground)" }}>
+                  <p
+                    className="mt-1 text-sm"
+                    style={{ color: "var(--foreground)" }}
+                  >
                     {caso.observaciones_oficial}
                   </p>
                 </div>
@@ -624,7 +651,10 @@ function CasoDetallePage() {
                 >
                   Devuelto por el Oficial de Cumplimiento
                 </p>
-                <p className="mt-1 text-sm" style={{ color: "var(--foreground)" }}>
+                <p
+                  className="mt-1 text-sm"
+                  style={{ color: "var(--foreground)" }}
+                >
                   {caso.observaciones_oficial}
                 </p>
               </div>
@@ -682,7 +712,10 @@ function CasoDetallePage() {
             <Card title="Expediente del cliente — Persona Natural">
               <div className="mb-4 flex flex-wrap gap-2">
                 <FlagRiesgo activo={pn.es_pep} label="PEP" />
-                <FlagRiesgo activo={pn.es_pep_familiar} label="Familiar de PEP" />
+                <FlagRiesgo
+                  activo={pn.es_pep_familiar}
+                  label="Familiar de PEP"
+                />
                 <FlagRiesgo
                   activo={pn.tiene_antecedentes}
                   label="Antecedentes penales"
@@ -693,10 +726,7 @@ function CasoDetallePage() {
                   label="Documento"
                   value={`${etiqueta(pn.tipo_documento)} · ${pn.numero_documento}`}
                 />
-                <Dato
-                  label="Expira"
-                  value={pn.fecha_expiracion_doc || "—"}
-                />
+                <Dato label="Expira" value={pn.fecha_expiracion_doc || "—"} />
                 <Dato label="Nacionalidad" value={pn.nacionalidad} />
                 <Dato label="Fecha de nacimiento" value={pn.fecha_nacimiento} />
                 <Dato label="Género" value={etiqueta(pn.genero)} />
@@ -773,7 +803,10 @@ function CasoDetallePage() {
               </div>
 
               {(expediente?.beneficiarios_final?.length ?? 0) > 0 && (
-                <div className="mt-5 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+                <div
+                  className="mt-5 border-t pt-4"
+                  style={{ borderColor: "var(--border)" }}
+                >
                   <p
                     className="mb-3 text-xs font-semibold uppercase tracking-wider"
                     style={{ color: "var(--dim-foreground)" }}
@@ -788,8 +821,14 @@ function CasoDetallePage() {
                         style={{ backgroundColor: "var(--background)" }}
                       >
                         <div className="flex items-center gap-2">
-                          <User size={13} style={{ color: "var(--dim-foreground)" }} />
-                          <span className="text-sm" style={{ color: "var(--foreground)" }}>
+                          <User
+                            size={13}
+                            style={{ color: "var(--dim-foreground)" }}
+                          />
+                          <span
+                            className="text-sm"
+                            style={{ color: "var(--foreground)" }}
+                          >
                             {bf.nombre} {bf.apellido}
                           </span>
                           {bf.es_pep && (
@@ -829,7 +868,10 @@ function CasoDetallePage() {
             <Card
               title="Cuestionario EBR — Respuestas del analista"
               action={
-                <span className="text-xs" style={{ color: "var(--dim-foreground)" }}>
+                <span
+                  className="text-xs"
+                  style={{ color: "var(--dim-foreground)" }}
+                >
                   Completado {formatFechaHora(cuestionario.completado_en)}
                 </span>
               }
@@ -854,7 +896,9 @@ function CasoDetallePage() {
                   />
                   <Dato
                     label="Estructura societaria compleja"
-                    value={cuestionario.tiene_estructura_societaria ? "Sí" : "No"}
+                    value={
+                      cuestionario.tiene_estructura_societaria ? "Sí" : "No"
+                    }
                     alerta={cuestionario.tiene_estructura_societaria === true}
                   />
                   <Dato
@@ -898,9 +942,7 @@ function CasoDetallePage() {
                     tipo={d.tipo}
                     tamanio={d.tamanio}
                     hash={d.hash_sha256}
-                    onVer={
-                      expediente ? () => setPreviewDoc(d) : undefined
-                    }
+                    onVer={expediente ? () => setPreviewDoc(d) : undefined}
                   />
                 ))}
               </div>
@@ -912,7 +954,10 @@ function CasoDetallePage() {
           {/* 1. Asignar analista — Oficial, caso ABIERTO */}
           {caso.status === "ABIERTO" && esOficial && (
             <Card title="Asignar analista investigador">
-              <p className="mb-3 text-xs" style={{ color: "var(--muted-foreground)" }}>
+              <p
+                className="mb-3 text-xs"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 Por segregación de funciones, el analista que registró el
                 expediente no aparece en esta lista.
               </p>
@@ -923,7 +968,9 @@ function CasoDetallePage() {
                   className="h-10 min-w-[240px] rounded-lg border px-3 text-sm outline-none border-border focus:border-primary"
                   style={{
                     backgroundColor: "var(--secondary)",
-                    color: analistaSel ? "var(--foreground)" : "var(--dim-foreground)",
+                    color: analistaSel
+                      ? "var(--foreground)"
+                      : "var(--dim-foreground)",
                   }}
                 >
                   <option value="">Selecciona un analista…</option>
@@ -938,7 +985,10 @@ function CasoDetallePage() {
                   disabled={!analistaSel || asignar.isPending}
                   onClick={() => asignar.mutate()}
                   className="rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-                  style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "var(--primary-foreground)",
+                  }}
                 >
                   {asignar.isPending ? "Asignando…" : "Asignar"}
                 </button>
@@ -956,7 +1006,10 @@ function CasoDetallePage() {
                   navigate({ to: "/casos-ddr/$id/evaluacion", params: { id } })
                 }
                 className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110"
-                style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+                style={{
+                  backgroundColor: "var(--primary)",
+                  color: "var(--primary-foreground)",
+                }}
               >
                 <ClipboardCheck size={16} />
                 Completar evaluación DDR
@@ -966,7 +1019,10 @@ function CasoDetallePage() {
           {/* 2b. Regresar a asignación — Oficial, caso EN_REVISION */}
           {caso.status === "EN_REVISION" && esOficial && (
             <Card title="Reasignar el caso">
-              <p className="mb-4 text-sm" style={{ color: "var(--muted-foreground)" }}>
+              <p
+                className="mb-4 text-sm"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 Si necesitas cambiar de analista, regresa el caso a la etapa de
                 asignación. Se retirará al analista actual y podrás asignar
                 otro.
@@ -982,9 +1038,7 @@ function CasoDetallePage() {
                 }}
               >
                 <CornerUpLeft size={15} />
-                {reabrir.isPending
-                  ? "Regresando…"
-                  : "Regresar a asignación"}
+                {reabrir.isPending ? "Regresando…" : "Regresar a asignación"}
               </button>
             </Card>
           )}
@@ -992,7 +1046,10 @@ function CasoDetallePage() {
           {/* 3. Revisión del Oficial — caso EN_REVISION_OFICIAL */}
           {caso.status === "EN_REVISION_OFICIAL" && esOficial && (
             <Card title="Revisión del Oficial de Cumplimiento">
-              <p className="mb-4 text-sm" style={{ color: "var(--muted-foreground)" }}>
+              <p
+                className="mb-4 text-sm"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 Revisa el expediente, las respuestas del cuestionario EBR y la
                 documentación de soporte. Si la investigación está completa,
                 valida el caso para escalarlo al{" "}
@@ -1007,7 +1064,10 @@ function CasoDetallePage() {
                   disabled={validar.isPending}
                   onClick={() => validar.mutate()}
                   className="rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-                  style={{ backgroundColor: "#22c55e", color: "var(--primary-foreground)" }}
+                  style={{
+                    backgroundColor: "#22c55e",
+                    color: "var(--primary-foreground)",
+                  }}
                 >
                   {validar.isPending
                     ? "Validando…"
@@ -1036,7 +1096,10 @@ function CasoDetallePage() {
                 rol === "COMITE_CUMPLIMIENTO") ||
               rol === "ADMIN") && (
               <Card title="Decisión de aprobación">
-                <p className="mb-4 text-sm" style={{ color: "var(--muted-foreground)" }}>
+                <p
+                  className="mb-4 text-sm"
+                  style={{ color: "var(--muted-foreground)" }}
+                >
                   El caso fue investigado por el analista y validado por el
                   Oficial de Cumplimiento. La decisión final corresponde a esta
                   instancia.
@@ -1047,7 +1110,10 @@ function CasoDetallePage() {
                     disabled={aprobar.isPending}
                     onClick={() => aprobar.mutate()}
                     className="rounded-lg px-4 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-                    style={{ backgroundColor: "#22c55e", color: "var(--primary-foreground)" }}
+                    style={{
+                      backgroundColor: "#22c55e",
+                      color: "var(--primary-foreground)",
+                    }}
                   >
                     {aprobar.isPending ? "Aprobando…" : "Aprobar caso"}
                   </button>
@@ -1081,7 +1147,10 @@ function CasoDetallePage() {
           {/* Empresa vs persona: icono contextual al final del dossier */}
           {!pn && !pj && (
             <Card title="Expediente del cliente">
-              <div className="flex items-center gap-2 text-sm" style={{ color: "var(--muted-foreground)" }}>
+              <div
+                className="flex items-center gap-2 text-sm"
+                style={{ color: "var(--muted-foreground)" }}
+              >
                 <Building2 size={14} />
                 Cargando información del expediente…
               </div>
@@ -1149,7 +1218,9 @@ function CasoDetallePage() {
         <ModalObservaciones
           titulo="Rechazar caso"
           descripcion="Indica el motivo del rechazo (mínimo 20 caracteres)."
-          confirmLabel={rechazar.isPending ? "Rechazando…" : "Confirmar rechazo"}
+          confirmLabel={
+            rechazar.isPending ? "Rechazando…" : "Confirmar rechazo"
+          }
           confirmColor="var(--destructive)"
           confirmTextColor="#fff"
           minimo={20}
@@ -1199,7 +1270,10 @@ function ModalObservaciones({
     >
       <div
         className="w-full max-w-md rounded-2xl p-6"
-        style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
+        style={{
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+        }}
       >
         <h3
           className="mb-3 text-lg"
@@ -1211,7 +1285,10 @@ function ModalObservaciones({
         >
           {titulo}
         </h3>
-        <p className="mb-3 text-sm" style={{ color: "var(--muted-foreground)" }}>
+        <p
+          className="mb-3 text-sm"
+          style={{ color: "var(--muted-foreground)" }}
+        >
           {descripcion}
         </p>
         <textarea
@@ -1224,7 +1301,9 @@ function ModalObservaciones({
         />
         <p
           className="mt-1 text-xs"
-          style={{ color: value.length >= minimo ? "#22c55e" : "var(--dim-foreground)" }}
+          style={{
+            color: value.length >= minimo ? "#22c55e" : "var(--dim-foreground)",
+          }}
         >
           {value.length}/{minimo}
         </p>
@@ -1233,7 +1312,10 @@ function ModalObservaciones({
             type="button"
             onClick={onCancel}
             className="flex-1 rounded-lg border py-2.5 text-sm font-medium transition-colors hover:bg-accent"
-            style={{ borderColor: "var(--border)", color: "var(--muted-foreground)" }}
+            style={{
+              borderColor: "var(--border)",
+              color: "var(--muted-foreground)",
+            }}
           >
             Cancelar
           </button>

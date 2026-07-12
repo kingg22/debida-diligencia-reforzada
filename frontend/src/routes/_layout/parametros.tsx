@@ -5,11 +5,9 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import { UsersService } from "@/client"
+import { type ParametroRiesgo, ParametrosService } from "@/client/sgddr"
 import { PageHeader } from "@/components/Common/PageHeader"
-import {
-  ErrorState,
-  LoadingState,
-} from "@/components/Common/QueryStates"
+import { ErrorState, LoadingState } from "@/components/Common/QueryStates"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -19,7 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { ParametrosService, type ParametroRiesgo } from "@/client/sgddr"
 
 export const Route = createFileRoute("/_layout/parametros")({
   component: ParametrosPage,
@@ -110,9 +107,7 @@ function ParametrosPage() {
               return (
                 <TableRow
                   key={param.id}
-                  className={
-                    changed ? "bg-amber-500/5" : undefined
-                  }
+                  className={changed ? "bg-amber-500/5" : undefined}
                 >
                   <TableCell className="font-medium">{param.factor}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">
@@ -125,7 +120,10 @@ function ParametrosPage() {
                       max={100}
                       value={localPeso}
                       onChange={(e) => {
-                        const v = Math.min(100, Math.max(0, Number(e.target.value)))
+                        const v = Math.min(
+                          100,
+                          Math.max(0, Number(e.target.value)),
+                        )
                         if (v === param.peso) {
                           setEdits((prev) => {
                             const next = { ...prev }
@@ -153,8 +151,8 @@ function ParametrosPage() {
                         <Loader2 size={13} className="animate-spin" />
                       ) : (
                         <Save size={13} />
-                      )}
-                      {" "}Guardar
+                      )}{" "}
+                      Guardar
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -165,7 +163,8 @@ function ParametrosPage() {
       </div>
 
       <p className="text-muted-foreground text-xs">
-        Los cambios se aplican a los nuevos expedientes y al recalcular. Un peso de 0 desactiva el factor.
+        Los cambios se aplican a los nuevos expedientes y al recalcular. Un peso
+        de 0 desactiva el factor.
       </p>
     </div>
   )

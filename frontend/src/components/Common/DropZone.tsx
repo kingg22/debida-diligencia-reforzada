@@ -49,14 +49,20 @@ export function DropZone({
 
   return (
     <div>
-      <p className="mb-1.5 text-sm" style={{ color: "var(--muted-foreground)" }}>
+      <p
+        className="mb-1.5 text-sm"
+        style={{ color: "var(--muted-foreground)" }}
+      >
         {label}
       </p>
 
       {file || done ? (
         <div
           className="flex items-center gap-3 rounded-lg border px-4 py-3"
-          style={{ borderColor: "var(--border)", backgroundColor: "var(--secondary)" }}
+          style={{
+            borderColor: "var(--border)",
+            backgroundColor: "var(--secondary)",
+          }}
         >
           <div
             className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg"
@@ -73,7 +79,10 @@ export function DropZone({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm" style={{ color: "var(--foreground)" }}>
+            <p
+              className="truncate text-sm"
+              style={{ color: "var(--foreground)" }}
+            >
               {file?.name ?? "Documento cargado"}
             </p>
             <p
@@ -124,10 +133,16 @@ export function DropZone({
           ) : (
             <FileText size={20} style={{ color: "var(--dim-foreground)" }} />
           )}
-          <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+          <span
+            className="text-xs"
+            style={{ color: "var(--muted-foreground)" }}
+          >
             Arrastra un archivo o haz clic para seleccionar
           </span>
-          <span className="text-[11px]" style={{ color: "var(--dim-foreground)" }}>
+          <span
+            className="text-[11px]"
+            style={{ color: "var(--dim-foreground)" }}
+          >
             PDF, JPG o PNG · máx. 20 MB
           </span>
         </button>
@@ -146,7 +161,11 @@ export function DropZone({
       />
 
       {error && (
-        <p role="alert" className="mt-1.5 text-xs" style={{ color: "var(--destructive)" }}>
+        <p
+          role="alert"
+          className="mt-1.5 text-xs"
+          style={{ color: "var(--destructive)" }}
+        >
           {error}
         </p>
       )}

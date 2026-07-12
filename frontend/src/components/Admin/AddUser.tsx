@@ -9,14 +9,6 @@ import { type UserCreate, type UserRole, UsersService } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { type Rol, ROL_LABELS } from "@/lib/sgddr"
-import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -36,7 +28,15 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import useCustomToast from "@/hooks/useCustomToast"
+import { ROL_LABELS, type Rol } from "@/lib/sgddr"
 import { handleError } from "@/utils"
 
 const ROLES: Rol[] = [
@@ -56,9 +56,7 @@ const formSchema = z
       .string()
       .min(1, { message: "La contraseña es requerida" })
       .min(8, { message: "Mínimo 8 caracteres" }),
-    confirm_password: z
-      .string()
-      .min(1, { message: "Confirma la contraseña" }),
+    confirm_password: z.string().min(1, { message: "Confirma la contraseña" }),
     role: z.enum([
       "ANALISTA_DDR",
       "OFICIAL_CUMPLIMIENTO",
@@ -224,10 +222,7 @@ const AddUser = () => {
                       Rol en el sistema{" "}
                       <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Selecciona un rol" />

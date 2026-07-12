@@ -51,7 +51,10 @@ const VACIO: Form = {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <label className="mb-1.5 block text-sm" style={{ color: "var(--muted-foreground)" }}>
+    <label
+      className="mb-1.5 block text-sm"
+      style={{ color: "var(--muted-foreground)" }}
+    >
       {children}
     </label>
   )
@@ -82,7 +85,10 @@ function RadioSiNo({
                   backgroundColor: "rgba(201,168,76,0.1)",
                   color: "var(--primary)",
                 }
-              : { borderColor: "var(--border)", color: "var(--muted-foreground)" }
+              : {
+                  borderColor: "var(--border)",
+                  color: "var(--muted-foreground)",
+                }
           }
         >
           {l}
@@ -167,7 +173,10 @@ function EvaluacionPage() {
 
       <div
         className="rounded-xl p-6"
-        style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
+        style={{
+          backgroundColor: "var(--card)",
+          border: "1px solid var(--border)",
+        }}
       >
         <WizardProgress
           steps={["Cuestionario EBR", "Documentos"]}
@@ -178,7 +187,10 @@ function EvaluacionPage() {
       {etapa === 0 ? (
         <div
           className="space-y-5 rounded-xl p-6"
-          style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
+          style={{
+            backgroundColor: "var(--card)",
+            border: "1px solid var(--border)",
+          }}
         >
           <div>
             <Label>Describa el origen de los fondos del cliente</Label>
@@ -233,7 +245,9 @@ function EvaluacionPage() {
                 className="h-10 w-full rounded-lg border px-3 text-sm outline-none border-border focus:border-primary"
                 style={{
                   backgroundColor: "var(--secondary)",
-                  color: form.patrimonio_estimado ? "var(--foreground)" : "var(--dim-foreground)",
+                  color: form.patrimonio_estimado
+                    ? "var(--foreground)"
+                    : "var(--dim-foreground)",
                 }}
               >
                 <option value="">Selecciona…</option>
@@ -280,7 +294,10 @@ function EvaluacionPage() {
               disabled={!cuestionarioValido || guardarCuestionario.isPending}
               onClick={() => guardarCuestionario.mutate()}
               className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+              style={{
+                backgroundColor: "var(--primary)",
+                color: "var(--primary-foreground)",
+              }}
             >
               {guardarCuestionario.isPending
                 ? "Guardando…"
@@ -291,7 +308,10 @@ function EvaluacionPage() {
       ) : (
         <div
           className="space-y-5 rounded-xl p-6"
-          style={{ backgroundColor: "var(--card)", border: "1px solid var(--border)" }}
+          style={{
+            backgroundColor: "var(--card)",
+            border: "1px solid var(--border)",
+          }}
         >
           {DOCS_DDR.map((d) => (
             <DropZone
@@ -313,9 +333,14 @@ function EvaluacionPage() {
               disabled={!todosLosDocs || enviar.isPending}
               onClick={() => enviar.mutate()}
               className="rounded-lg px-5 py-2.5 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-              style={{ backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }}
+              style={{
+                backgroundColor: "var(--primary)",
+                color: "var(--primary-foreground)",
+              }}
             >
-              {enviar.isPending ? "Enviando…" : "Enviar al Oficial de Cumplimiento"}
+              {enviar.isPending
+                ? "Enviando…"
+                : "Enviar al Oficial de Cumplimiento"}
             </button>
           </div>
         </div>

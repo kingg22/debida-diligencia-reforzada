@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 
 import {
-  AuthService,
   type AuthLoginData,
+  AuthService,
   type LoginResponse,
   type UserPublic,
   type UserRegister,
@@ -99,6 +99,10 @@ const useAuth = () => {
     }
     localStorage.removeItem("access_token")
     clearTempToken()
+    // Limpia todo el caché de React Query: evita que datos del usuario que
+    // cierra sesión (perfil, clientes, casos DDR, etc.) queden servidos al
+    // siguiente usuario que inicie sesión en la misma pestaña.
+    queryClient.clear()
     navigate({ to: "/login" })
   }
 
@@ -112,5 +116,5 @@ const useAuth = () => {
   }
 }
 
-export { isLoggedIn, getTempToken, clearTempToken }
+export { clearTempToken, getTempToken, isLoggedIn }
 export default useAuth

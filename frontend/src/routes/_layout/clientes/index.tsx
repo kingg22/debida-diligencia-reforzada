@@ -1,6 +1,14 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { AlertTriangle, Clock, FileSearch, Plus, Search, Users, X } from "lucide-react"
+import {
+  AlertTriangle,
+  Clock,
+  FileSearch,
+  Plus,
+  Search,
+  Users,
+  X,
+} from "lucide-react"
 import { useEffect, useState } from "react"
 import { ClientesService } from "@/client/sgddr"
 import { EstadoKYCBadge } from "@/components/Common/EstadoCasoBadge"

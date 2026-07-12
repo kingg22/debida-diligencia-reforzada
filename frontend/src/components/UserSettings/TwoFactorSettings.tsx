@@ -95,7 +95,8 @@ const TwoFactorSettings = () => {
       <div>
         <h3 className="text-lg font-semibold">Autenticación de dos factores</h3>
         <p className="text-muted-foreground text-sm">
-          Refuerza la seguridad de tu cuenta con un código temporal además de la contraseña.
+          Refuerza la seguridad de tu cuenta con un código temporal además de la
+          contraseña.
         </p>
       </div>
 
@@ -119,11 +120,7 @@ const TwoFactorSettings = () => {
                 : "bg-muted text-muted-foreground",
           )}
         >
-          {data.enabled ? (
-            <ShieldCheck size={18} />
-          ) : (
-            <ShieldOff size={18} />
-          )}
+          {data.enabled ? <ShieldCheck size={18} /> : <ShieldOff size={18} />}
         </div>
 
         <div className="flex-1">
@@ -214,7 +211,8 @@ const TwoFactorSettings = () => {
           <DialogHeader>
             <DialogTitle>Regenerar códigos de respaldo</DialogTitle>
             <DialogDescription>
-              Esto invalida los códigos anteriores. Ingresa tu contraseña para continuar.
+              Esto invalida los códigos anteriores. Ingresa tu contraseña para
+              continuar.
             </DialogDescription>
           </DialogHeader>
           <PasswordInput
@@ -239,7 +237,10 @@ const TwoFactorSettings = () => {
       </Dialog>
 
       {/* ── Modal: mostrar nuevos códigos ──────────────── */}
-      <Dialog open={newCodes !== null} onOpenChange={(o) => !o && closeNewCodes()}>
+      <Dialog
+        open={newCodes !== null}
+        onOpenChange={(o) => !o && closeNewCodes()}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Nuevos códigos de respaldo</DialogTitle>
@@ -248,9 +249,7 @@ const TwoFactorSettings = () => {
             </DialogDescription>
           </DialogHeader>
           {newCodes && (
-            <div
-              className="grid grid-cols-2 gap-2 rounded-lg border p-4 font-mono text-sm"
-            >
+            <div className="grid grid-cols-2 gap-2 rounded-lg border p-4 font-mono text-sm">
               {newCodes.map((code) => (
                 <div key={code} className="text-center">
                   {code}

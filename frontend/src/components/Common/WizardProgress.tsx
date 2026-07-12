@@ -24,9 +24,15 @@ export function WizardProgress({
                 )}
                 style={
                   isDone
-                    ? { backgroundColor: "#22c55e", color: "var(--primary-foreground)" }
+                    ? {
+                        backgroundColor: "#22c55e",
+                        color: "var(--primary-foreground)",
+                      }
                     : isCurrent
-                      ? { backgroundColor: "var(--primary)", color: "var(--primary-foreground)" }
+                      ? {
+                          backgroundColor: "var(--primary)",
+                          color: "var(--primary-foreground)",
+                        }
                       : {
                           backgroundColor: "var(--secondary)",
                           color: "var(--dim-foreground)",
@@ -38,7 +44,11 @@ export function WizardProgress({
               </div>
               <span
                 className="max-w-[110px] text-center text-[11px] leading-tight"
-                style={{ color: isCurrent ? "var(--foreground)" : "var(--dim-foreground)" }}
+                style={{
+                  color: isCurrent
+                    ? "var(--foreground)"
+                    : "var(--dim-foreground)",
+                }}
               >
                 {label}
               </span>
@@ -46,7 +56,9 @@ export function WizardProgress({
             {i < steps.length - 1 && (
               <div
                 className="mx-2 h-px flex-1"
-                style={{ backgroundColor: isDone ? "#22c55e" : "var(--accent)" }}
+                style={{
+                  backgroundColor: isDone ? "#22c55e" : "var(--accent)",
+                }}
               />
             )}
           </div>

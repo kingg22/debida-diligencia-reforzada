@@ -257,15 +257,14 @@ test.describe("Crear Cliente — Persona Jurídica (Ley 254/2021)", () => {
     await expect(page.getByPlaceholder("123-456-789")).toBeVisible()
   })
 
-  test("paso 2 siembra un beneficiario y muestra total 0%", async ({ page }) => {
+  test("paso 2 siembra un beneficiario y muestra total 0%", async ({
+    page,
+  }) => {
     await page.goto("/kyc/nuevo")
     await page.getByRole("button", { name: "Persona Jurídica" }).click()
     await page.getByPlaceholder("Corp Panama S.A.").fill("Acme S.A.")
     await page.getByPlaceholder("123-456-789").fill("1234567-1-234567")
-    await page
-      .locator('input[type="date"]')
-      .first()
-      .fill("2010-01-01")
+    await page.locator('input[type="date"]').first().fill("2010-01-01")
     await page.getByRole("button", { name: "Siguiente" }).click()
 
     // Espera a que aparezca el título del paso 2 antes de aserciones.
@@ -290,16 +289,11 @@ test.describe("Crear Cliente — Persona Jurídica (Ley 254/2021)", () => {
     // Paso 1 — Identificación empresa
     await page.getByPlaceholder("Corp Panama S.A.").fill("Acme S.A.")
     await page.getByPlaceholder("123-456-789").fill("1234567-1-234567")
-    await page
-      .locator('input[type="date"]')
-      .first()
-      .fill("2010-01-01")
+    await page.locator('input[type="date"]').first().fill("2010-01-01")
     await page.getByRole("button", { name: "Siguiente" }).click()
 
     // Espera paso 2.
-    await expect(
-      page.getByPlaceholder("RM-1234567"),
-    ).toBeVisible()
+    await expect(page.getByPlaceholder("RM-1234567")).toBeVisible()
 
     // Llena los campos requeridos de empresa y representante, pero deja
     // el total de beneficiarios en 60% (no llega a 100%).
@@ -325,9 +319,7 @@ test.describe("Crear Cliente — Persona Jurídica (Ley 254/2021)", () => {
 
     // Intentar avanzar debe fallar y mostrar el error inline.
     await page.getByRole("button", { name: "Siguiente" }).click()
-    await expect(
-      page.getByText(/Actual: 60%/),
-    ).toBeVisible()
+    await expect(page.getByText(/Actual: 60%/)).toBeVisible()
   })
 
   test("crear persona jurídica happy path (60 + 40)", async ({ page }) => {
@@ -337,10 +329,7 @@ test.describe("Crear Cliente — Persona Jurídica (Ley 254/2021)", () => {
     // Paso 1 — Identificación empresa
     await page.getByPlaceholder("Corp Panama S.A.").fill("Acme S.A.")
     await page.getByPlaceholder("123-456-789").fill("1234567-1-234567")
-    await page
-      .locator('input[type="date"]')
-      .first()
-      .fill("2010-01-01")
+    await page.locator('input[type="date"]').first().fill("2010-01-01")
     await page.getByRole("button", { name: "Siguiente" }).click()
 
     await expect(page.getByPlaceholder("RM-1234567")).toBeVisible()

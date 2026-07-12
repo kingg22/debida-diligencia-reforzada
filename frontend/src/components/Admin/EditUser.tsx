@@ -9,14 +9,6 @@ import { type UserPublic, type UserRole, UsersService } from "@/client"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { type Rol, ROL_LABELS } from "@/lib/sgddr"
-import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -36,7 +28,15 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import useCustomToast from "@/hooks/useCustomToast"
+import { ROL_LABELS, type Rol } from "@/lib/sgddr"
 import { handleError } from "@/utils"
 
 const ROLES: Rol[] = [
@@ -172,7 +172,11 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                   <FormItem>
                     <FormLabel>Nombre completo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nombre completo" type="text" {...field} />
+                      <Input
+                        placeholder="Nombre completo"
+                        type="text"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -224,10 +228,7 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                       Rol en el sistema{" "}
                       <span className="text-destructive">*</span>
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Selecciona un rol" />
@@ -257,7 +258,9 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormLabel className="font-normal">¿Es superusuario?</FormLabel>
+                    <FormLabel className="font-normal">
+                      ¿Es superusuario?
+                    </FormLabel>
                   </FormItem>
                 )}
               />

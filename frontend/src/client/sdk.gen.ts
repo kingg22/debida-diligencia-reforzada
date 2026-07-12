@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AuditoriaReadAuditoriaData, AuditoriaReadAuditoriaResponse, AuthLoginData, AuthLoginResponse, AuthLogoutResponse, AuthExtendSessionResponse, AuthTwofaSetupStartData, AuthTwofaSetupStartResponse, AuthTwofaSetupConfirmData, AuthTwofaSetupConfirmResponse, AuthTwofaVerifyData, AuthTwofaVerifyResponse, AuthTwofaStatusResponse, AuthTwofaDisableData, AuthTwofaDisableResponse, AuthTwofaRegenerateBackupCodesData, AuthTwofaRegenerateBackupCodesResponse, CasosDdrReadCasosDdrData, CasosDdrReadCasosDdrResponse, CasosDdrReadCasoDdrData, CasosDdrReadCasoDdrResponse, CasosDdrAsignarAnalistaData, CasosDdrAsignarAnalistaResponse, CasosDdrEnviarAprobacionData, CasosDdrEnviarAprobacionResponse, CasosDdrAprobarCasoData, CasosDdrAprobarCasoResponse, CasosDdrRechazarCasoData, CasosDdrRechazarCasoResponse, CasosDdrGetCuestionarioData, CasosDdrGetCuestionarioResponse, CasosDdrUpdateCuestionarioData, CasosDdrUpdateCuestionarioResponse, CasosDdrUploadDocumentoDdrData, CasosDdrUploadDocumentoDdrResponse, CasosDdrListDocumentosDdrData, CasosDdrListDocumentosDdrResponse, ClientesCreateClienteData, ClientesCreateClienteResponse, ClientesReadClientesData, ClientesReadClientesResponse, ClientesReadClienteData, ClientesReadClienteResponse, ClientesUpdateClienteData, ClientesUpdateClienteResponse, ClientesUploadDocumentoData, ClientesUploadDocumentoResponse, ClientesDeleteDocumentoData, ClientesDeleteDocumentoResponse, ClientesDescargarDocumentoData, ClientesDescargarDocumentoResponse, ClientesEvaluarRiesgoData, ClientesEvaluarRiesgoResponse, ClientesVerificarListasData, ClientesVerificarListasResponse, DashboardGetDashboardResponse, ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { AuditoriaReadAuditoriaData, AuditoriaReadAuditoriaResponse, AuthLoginData, AuthLoginResponse, AuthLogoutResponse, AuthExtendSessionResponse, AuthTwofaSetupStartData, AuthTwofaSetupStartResponse, AuthTwofaSetupConfirmData, AuthTwofaSetupConfirmResponse, AuthTwofaVerifyData, AuthTwofaVerifyResponse, AuthTwofaStatusResponse, AuthTwofaDisableData, AuthTwofaDisableResponse, AuthTwofaRegenerateBackupCodesData, AuthTwofaRegenerateBackupCodesResponse, CasosDdrReadCasosDdrData, CasosDdrReadCasosDdrResponse, CasosDdrEstadisticasCasosDdrResponse, CasosDdrReadCasoDdrData, CasosDdrReadCasoDdrResponse, CasosDdrReadExpedienteDelCasoData, CasosDdrReadExpedienteDelCasoResponse, CasosDdrAsignarAnalistaData, CasosDdrAsignarAnalistaResponse, CasosDdrEnviarAprobacionData, CasosDdrEnviarAprobacionResponse, CasosDdrValidarCasoData, CasosDdrValidarCasoResponse, CasosDdrDevolverCasoData, CasosDdrDevolverCasoResponse, CasosDdrReabrirCasoData, CasosDdrReabrirCasoResponse, CasosDdrDevolverAOficialData, CasosDdrDevolverAOficialResponse, CasosDdrAprobarCasoData, CasosDdrAprobarCasoResponse, CasosDdrRechazarCasoData, CasosDdrRechazarCasoResponse, CasosDdrGetCuestionarioData, CasosDdrGetCuestionarioResponse, CasosDdrUpdateCuestionarioData, CasosDdrUpdateCuestionarioResponse, CasosDdrUploadDocumentoDdrData, CasosDdrUploadDocumentoDdrResponse, CasosDdrListDocumentosDdrData, CasosDdrListDocumentosDdrResponse, ClientesCreateClienteData, ClientesCreateClienteResponse, ClientesReadClientesData, ClientesReadClientesResponse, ClientesEstadisticasClientesResponse, ClientesReadClienteData, ClientesReadClienteResponse, ClientesUpdateClienteData, ClientesUpdateClienteResponse, ClientesUploadDocumentoData, ClientesUploadDocumentoResponse, ClientesDeleteDocumentoData, ClientesDeleteDocumentoResponse, ClientesDescargarDocumentoData, ClientesDescargarDocumentoResponse, ClientesEvaluarRiesgoData, ClientesEvaluarRiesgoResponse, ClientesVerificarListasData, ClientesVerificarListasResponse, ClientesListarScreeningData, ClientesListarScreeningResponse, ClientesMarcarFalsoPositivoData, ClientesMarcarFalsoPositivoResponse, ClientesFactoresRiesgoData, ClientesFactoresRiesgoResponse, ClientesOverrideRiesgoData, ClientesOverrideRiesgoResponse, DashboardGetDashboardResponse, ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, ParametrosListarParametrosResponse, ParametrosActualizarParametroData, ParametrosActualizarParametroResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class AuditoriaService {
     /**
@@ -68,7 +68,7 @@ export class AuthService {
             url: '/api/v1/auth/logout'
         });
     }
-
+    
     /**
      * Extend Session
      * Reemite el access token del usuario actual con una nueva expiración.
@@ -81,7 +81,7 @@ export class AuthService {
             url: '/api/v1/auth/extend-session'
         });
     }
-
+    
     /**
      * Twofa Setup Start
      * @param data The data for the request.
@@ -218,6 +218,19 @@ export class CasosDdrService {
     }
     
     /**
+     * Estadisticas Casos Ddr
+     * Conteos para las tarjetas KPI de la lista de casos DDR.
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static estadisticasCasosDdr(): CancelablePromise<CasosDdrEstadisticasCasosDdrResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/casos-ddr/estadisticas'
+        });
+    }
+    
+    /**
      * Read Caso Ddr
      * @param data The data for the request.
      * @param data.id
@@ -228,6 +241,29 @@ export class CasosDdrService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/casos-ddr/{id}',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Expediente Del Caso
+     * Expediente KYC completo del caso, para que quien revisa o decide
+     * (Oficial, Gerente, Comité, Auditor) tenga toda la información del
+     * cliente sin depender de los permisos del módulo KYC.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns ExpedienteKYCPublic Successful Response
+     * @throws ApiError
+     */
+    public static readExpedienteDelCaso(data: CasosDdrReadExpedienteDelCasoData): CancelablePromise<CasosDdrReadExpedienteDelCasoResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/casos-ddr/{id}/expediente',
             path: {
                 id: data.id
             },
@@ -262,6 +298,9 @@ export class CasosDdrService {
     
     /**
      * Enviar Aprobacion
+     * El analista termina su investigación y envía el caso a revisión
+     * del Oficial de Cumplimiento (cuatro ojos: el analista investiga,
+     * el Oficial valida, el Gerente/Comité decide).
      * @param data The data for the request.
      * @param data.id
      * @returns CasoDDRPublic Successful Response
@@ -274,6 +313,101 @@ export class CasosDdrService {
             path: {
                 id: data.id
             },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Validar Caso
+     * El Oficial valida el trabajo del analista y escala el caso a la
+     * instancia de aprobación (Gerente si ALTO, Comité si MUY_ALTO).
+     * @param data The data for the request.
+     * @param data.id
+     * @returns CasoDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static validarCaso(data: CasosDdrValidarCasoData): CancelablePromise<CasosDdrValidarCasoResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/casos-ddr/{id}/validar',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Devolver Caso
+     * El Oficial devuelve el caso al analista con observaciones para que
+     * complete o corrija la investigación.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns CasoDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static devolverCaso(data: CasosDdrDevolverCasoData): CancelablePromise<CasosDdrDevolverCasoResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/casos-ddr/{id}/devolver',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Reabrir Caso
+     * El Oficial regresa un caso EN_REVISION a ABIERTO: retira al analista
+     * asignado para poder reasignarlo (p. ej. por conflicto o inactividad).
+     * @param data The data for the request.
+     * @param data.id
+     * @returns CasoDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static reabrirCaso(data: CasosDdrReabrirCasoData): CancelablePromise<CasosDdrReabrirCasoResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/casos-ddr/{id}/reabrir',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Devolver A Oficial
+     * La instancia de aprobación (Gerente si ALTO, Comité si MUY_ALTO)
+     * devuelve el caso al Oficial de Cumplimiento con observaciones en lugar
+     * de decidir, para que la validación se revise de nuevo.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns CasoDDRPublic Successful Response
+     * @throws ApiError
+     */
+    public static devolverAOficial(data: CasosDdrDevolverAOficialData): CancelablePromise<CasosDdrDevolverAOficialResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/casos-ddr/{id}/devolver-oficial',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }
@@ -473,6 +607,21 @@ export class ClientesService {
     }
     
     /**
+     * Estadisticas Clientes
+     * Conteos para las tarjetas KPI de la lista de clientes.
+     * Respeta la misma visibilidad que `read_clientes`: el analista solo
+     * cuenta los suyos, el resto de roles con acceso ven todos.
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static estadisticasClientes(): CancelablePromise<ClientesEstadisticasClientesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/clientes/estadisticas'
+        });
+    }
+    
+    /**
      * Read Cliente
      * Obtener el detalle de un expediente KYC.
      * @param data The data for the request.
@@ -616,8 +765,7 @@ export class ClientesService {
     
     /**
      * Verificar Listas
-     * Verificación contra listas restrictivas (OFAC, ONU, UE).
-     * Stub simulado — la administración de listas es de un sprint posterior.
+     * Screening contra listas restrictivas con similitud fuzzy (difflib).
      * @param data The data for the request.
      * @param data.id
      * @returns ListasResult Successful Response
@@ -625,11 +773,100 @@ export class ClientesService {
      */
     public static verificarListas(data: ClientesVerificarListasData): CancelablePromise<ClientesVerificarListasResponse> {
         return __request(OpenAPI, {
-            method: 'GET',
+            method: 'POST',
             url: '/api/v1/clientes/{id}/verificar-listas',
             path: {
                 id: data.id
             },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Listar Screening
+     * Devuelve los resultados persistidos del último screening.
+     * @param data The data for the request.
+     * @param data.id
+     * @returns ScreeningResultadoPublic Successful Response
+     * @throws ApiError
+     */
+    public static listarScreening(data: ClientesListarScreeningData): CancelablePromise<ClientesListarScreeningResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/clientes/{id}/screening',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Marcar Falso Positivo
+     * El Oficial de Cumplimiento descarta una coincidencia como falso positivo.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.resultadoId
+     * @returns ScreeningResultadoPublic Successful Response
+     * @throws ApiError
+     */
+    public static marcarFalsoPositivo(data: ClientesMarcarFalsoPositivoData): CancelablePromise<ClientesMarcarFalsoPositivoResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/clientes/{id}/screening/{resultado_id}/falso-positivo',
+            path: {
+                id: data.id,
+                resultado_id: data.resultadoId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Factores Riesgo
+     * Desglose de factores del cálculo de riesgo actual (solo lectura, no persiste).
+     * @param data The data for the request.
+     * @param data.id
+     * @returns RiesgoResult Successful Response
+     * @throws ApiError
+     */
+    public static factoresRiesgo(data: ClientesFactoresRiesgoData): CancelablePromise<ClientesFactoresRiesgoResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/clientes/{id}/factores-riesgo',
+            path: {
+                id: data.id
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Override Riesgo
+     * El Oficial de Cumplimiento puede ajustar manualmente el nivel de riesgo con justificación.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns ExpedienteKYCPublic Successful Response
+     * @throws ApiError
+     */
+    public static overrideRiesgo(data: ClientesOverrideRiesgoData): CancelablePromise<ClientesOverrideRiesgoResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/clientes/{id}/override-riesgo',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }
@@ -852,6 +1089,43 @@ export class LoginService {
             path: {
                 email: data.email
             },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class ParametrosService {
+    /**
+     * Listar Parametros
+     * @returns ParametroRiesgoPublic Successful Response
+     * @throws ApiError
+     */
+    public static listarParametros(): CancelablePromise<ParametrosListarParametrosResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/parametros/riesgo'
+        });
+    }
+    
+    /**
+     * Actualizar Parametro
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.requestBody
+     * @returns ParametroRiesgoPublic Successful Response
+     * @throws ApiError
+     */
+    public static actualizarParametro(data: ParametrosActualizarParametroData): CancelablePromise<ParametrosActualizarParametroResponse> {
+        return __request(OpenAPI, {
+            method: 'PATCH',
+            url: '/api/v1/parametros/riesgo/{id}',
+            path: {
+                id: data.id
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: 'Validation Error'
             }

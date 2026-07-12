@@ -32,11 +32,10 @@ export function RecentActivityCard({
                 {e.modulo}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">
-                  {e.descripcion ?? e.accion}
-                </p>
+                <p className="truncate text-sm">{e.descripcion ?? e.accion}</p>
                 <p className="text-muted-foreground text-xs">
-                  {e.usuario_nombre ?? "Sistema"} · {formatFechaHora(e.creado_en)}
+                  {e.usuario_nombre ?? "Sistema"} ·{" "}
+                  {formatFechaHora(e.creado_en)}
                 </p>
               </div>
             </li>

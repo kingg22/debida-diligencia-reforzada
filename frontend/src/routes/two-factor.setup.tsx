@@ -1,25 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  createFileRoute,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router"
 import { useMutation } from "@tanstack/react-query"
-import {
-  AlertTriangle,
-  Check,
-  Copy,
-  Loader2,
-  ShieldCheck,
-} from "lucide-react"
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
+import { AlertTriangle, Check, Copy, Loader2, ShieldCheck } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import {
-  AuthService,
-  type TwoFactorSetupStartResponse,
-} from "@/client"
+import { AuthService, type TwoFactorSetupStartResponse } from "@/client"
 import { getTempToken, isLoggedIn } from "@/hooks/useAuth"
 import useCustomToast from "@/hooks/useCustomToast"
 import { cn } from "@/lib/utils"
@@ -78,7 +65,12 @@ function TwoFactorSetup() {
       startMutation.mutate()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [
+    startMutation.mutate,
+    startMutation.isPending,
+    startMutation.isError,
+    setup,
+  ])
 
   // ── Step 2: confirmar con código TOTP
   const {
@@ -131,13 +123,19 @@ function TwoFactorSetup() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12" style={{ backgroundColor: "#0a1628" }}>
+    <div
+      className="flex min-h-screen items-center justify-center px-4 py-12"
+      style={{ backgroundColor: "#0a1628" }}
+    >
       <div className="w-full max-w-lg">
         {/* ── Header ─────────────────────────────────────────────── */}
         <div className="mb-6 flex flex-col items-center text-center">
           <div
             className="mb-4 flex h-14 w-14 items-center justify-center rounded-full"
-            style={{ backgroundColor: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.35)" }}
+            style={{
+              backgroundColor: "rgba(201,168,76,0.12)",
+              border: "1px solid rgba(201,168,76,0.35)",
+            }}
           >
             <ShieldCheck size={26} style={{ color: "#c9a84c" }} />
           </div>
@@ -180,8 +178,14 @@ function TwoFactorSetup() {
                 border: "1px solid rgba(224,82,82,0.35)",
               }}
             >
-              <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" style={{ color: "#e05252" }} />
-              <p className="text-sm" style={{ color: "#e05252" }}>{error}</p>
+              <AlertTriangle
+                size={16}
+                className="mt-0.5 flex-shrink-0"
+                style={{ color: "#e05252" }}
+              />
+              <p className="text-sm" style={{ color: "#e05252" }}>
+                {error}
+              </p>
             </div>
           )}
 
@@ -190,7 +194,11 @@ function TwoFactorSetup() {
             <div className="space-y-4">
               {startMutation.isPending && (
                 <div className="flex flex-col items-center py-8">
-                  <Loader2 size={28} className="animate-spin" style={{ color: "#c9a84c" }} />
+                  <Loader2
+                    size={28}
+                    className="animate-spin"
+                    style={{ color: "#c9a84c" }}
+                  />
                   <p className="mt-3 text-sm" style={{ color: "#8a9bb5" }}>
                     Generando tu código QR…
                   </p>
@@ -199,12 +207,22 @@ function TwoFactorSetup() {
 
               {setup && (
                 <>
-                  <p className="text-sm leading-relaxed" style={{ color: "#8a9bb5" }}>
-                    Escanea este QR con <strong style={{ color: "#f0ede8" }}>Google Authenticator</strong>,
-                    {" "}<strong style={{ color: "#f0ede8" }}>Authy</strong> o cualquier app compatible TOTP.
+                  <p
+                    className="text-sm leading-relaxed"
+                    style={{ color: "#8a9bb5" }}
+                  >
+                    Escanea este QR con{" "}
+                    <strong style={{ color: "#f0ede8" }}>
+                      Google Authenticator
+                    </strong>
+                    , <strong style={{ color: "#f0ede8" }}>Authy</strong> o
+                    cualquier app compatible TOTP.
                   </p>
 
-                  <div className="flex justify-center rounded-lg p-4" style={{ backgroundColor: "#f0ede8" }}>
+                  <div
+                    className="flex justify-center rounded-lg p-4"
+                    style={{ backgroundColor: "#f0ede8" }}
+                  >
                     <img
                       src={`data:image/png;base64,${setup.qr_png_base64}`}
                       alt="QR para configurar 2FA"
@@ -213,13 +231,20 @@ function TwoFactorSetup() {
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs uppercase tracking-wider" style={{ color: "#4a6080" }}>
+                    <label
+                      className="mb-1.5 block text-xs uppercase tracking-wider"
+                      style={{ color: "#4a6080" }}
+                    >
                       O ingresa el secret manualmente
                     </label>
                     <div className="flex gap-2">
                       <code
                         className="flex-1 overflow-x-auto rounded-lg border px-3 py-2 font-mono text-sm"
-                        style={{ backgroundColor: "#0a1628", borderColor: "#1b2e4a", color: "#f0ede8" }}
+                        style={{
+                          backgroundColor: "#0a1628",
+                          borderColor: "#1b2e4a",
+                          color: "#f0ede8",
+                        }}
                       >
                         {setup.secret_base32}
                       </code>
@@ -228,12 +253,18 @@ function TwoFactorSetup() {
                         onClick={copySecret}
                         className="flex h-auto items-center gap-1.5 rounded-lg px-3 text-sm transition-colors"
                         style={{
-                          backgroundColor: copiedSecret ? "rgba(74,222,128,0.10)" : "#1b2e4a",
+                          backgroundColor: copiedSecret
+                            ? "rgba(74,222,128,0.10)"
+                            : "#1b2e4a",
                           color: copiedSecret ? "#4ade80" : "#c9a84c",
                           border: `1px solid ${copiedSecret ? "rgba(74,222,128,0.35)" : "#1b2e4a"}`,
                         }}
                       >
-                        {copiedSecret ? <Check size={14} /> : <Copy size={14} />}
+                        {copiedSecret ? (
+                          <Check size={14} />
+                        ) : (
+                          <Copy size={14} />
+                        )}
                         {copiedSecret ? "Copiado" : "Copiar"}
                       </button>
                     </div>
@@ -255,12 +286,20 @@ function TwoFactorSetup() {
           {/* ── Step 2: confirmar código ──────────────────────── */}
           {step === 2 && (
             <form onSubmit={handleSubmit(onSubmitCode)} className="space-y-4">
-              <p className="text-sm leading-relaxed" style={{ color: "#8a9bb5" }}>
-                Ingresa el código de 6 dígitos que muestra tu app authenticator ahora mismo.
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: "#8a9bb5" }}
+              >
+                Ingresa el código de 6 dígitos que muestra tu app authenticator
+                ahora mismo.
               </p>
 
               <div>
-                <label htmlFor="code" className="mb-1.5 block text-sm" style={{ color: "#8a9bb5" }}>
+                <label
+                  htmlFor="code"
+                  className="mb-1.5 block text-sm"
+                  style={{ color: "#8a9bb5" }}
+                >
                   Código de verificación
                 </label>
                 <input
@@ -268,7 +307,6 @@ function TwoFactorSetup() {
                   type="text"
                   inputMode="numeric"
                   autoComplete="one-time-code"
-                  autoFocus
                   maxLength={6}
                   placeholder="123456"
                   disabled={confirmMutation.isPending}
@@ -308,7 +346,11 @@ function TwoFactorSetup() {
                   onClick={() => setStep(1)}
                   disabled={confirmMutation.isPending}
                   className="h-11 flex-1 rounded-lg text-sm font-semibold transition-all"
-                  style={{ backgroundColor: "transparent", color: "#8a9bb5", border: "1px solid #1b2e4a" }}
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "#8a9bb5",
+                    border: "1px solid #1b2e4a",
+                  }}
                 >
                   Atrás
                 </button>
@@ -341,19 +383,30 @@ function TwoFactorSetup() {
                   border: "1px solid rgba(217,119,6,0.35)",
                 }}
               >
-                <p className="text-sm leading-relaxed" style={{ color: "#d97706" }}>
-                  <strong>Importante:</strong> guarda estos códigos en un lugar seguro.
-                  Sólo se muestran una vez. Si pierdes acceso a tu app authenticator,
-                  podrás usar uno de estos códigos para iniciar sesión.
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: "#d97706" }}
+                >
+                  <strong>Importante:</strong> guarda estos códigos en un lugar
+                  seguro. Sólo se muestran una vez. Si pierdes acceso a tu app
+                  authenticator, podrás usar uno de estos códigos para iniciar
+                  sesión.
                 </p>
               </div>
 
               <div
                 className="grid grid-cols-2 gap-2 rounded-lg p-4 font-mono text-sm"
-                style={{ backgroundColor: "#0a1628", border: "1px solid #1b2e4a" }}
+                style={{
+                  backgroundColor: "#0a1628",
+                  border: "1px solid #1b2e4a",
+                }}
               >
                 {backupCodes.map((code) => (
-                  <div key={code} className="text-center" style={{ color: "#f0ede8" }}>
+                  <div
+                    key={code}
+                    className="text-center"
+                    style={{ color: "#f0ede8" }}
+                  >
                     {code}
                   </div>
                 ))}
@@ -367,7 +420,8 @@ function TwoFactorSetup() {
                   className="mt-0.5 h-4 w-4 rounded accent-[#c9a84c]"
                 />
                 <span className="text-sm" style={{ color: "#8a9bb5" }}>
-                  Confirmo que he guardado los códigos de respaldo en un lugar seguro.
+                  Confirmo que he guardado los códigos de respaldo en un lugar
+                  seguro.
                 </span>
               </label>
 
