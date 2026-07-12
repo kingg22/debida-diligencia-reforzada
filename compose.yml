@@ -90,6 +90,8 @@ services:
         condition: service_completed_successfully
     env_file:
       - .env
+    volumes:
+      - app-media-data:/app/backend/uploads
     environment:
       - DOMAIN=${DOMAIN}
       - FRONTEND_HOST=${FRONTEND_HOST?Variable not set}
@@ -167,6 +169,7 @@ services:
       - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.middlewares=https-redirect
 volumes:
   app-db-data:
+  app-media-data:
 
 networks:
   traefik-public:
