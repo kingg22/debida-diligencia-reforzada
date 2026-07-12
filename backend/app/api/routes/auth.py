@@ -191,11 +191,7 @@ class TwoFactorStatus(BaseModel):
     disabled_at: datetime | None = None
 
 
-class TwoFactorDisableInput(BaseModel):
-    password: str = Field(min_length=8, max_length=128)
-
-
-class TwoFactorRegenerateInput(BaseModel):
+class TwoFactorPasswordInput(BaseModel):
     password: str = Field(min_length=8, max_length=128)
 
 
@@ -222,6 +218,27 @@ def _get_twofa_for_user(session: SessionDep, user_id) -> TwoFactorAuth | None:
 
 def _requires_2fa_for_role(role: UserRole) -> bool:
     return role in REQUIRES_2FA_ROLES
+
+
+def _client_ip(request: Request) -> str | None:
+    return request.client.host if request.client else None
+
+
+def _resolve_role(role: UserRole | str) -> UserRole:
+    return role if isinstance(role, UserRole) else UserRole(role)
+
+
+def _create_user_token(user_id: str) -> str:
+    return security.create_access_token(
+        user_id,
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
+
+
+def _verify_user_password(user: User, password: str) -> None:
+    verified, _ = verify_password(password, user.hashed_password)
+    if not verified:
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta.")
 
 
 def _prepare_2fa_secret(
@@ -266,7 +283,7 @@ def _prepare_2fa_secret(
         usuario_id=user.id,
         modulo="AUTH",
         accion=audit_action,
-        ip_origen=request.client.host if request.client else None,
+        ip_origen=_client_ip(request),
     )
 
     uri = provisioning_uri(user.email, secret)
@@ -312,7 +329,7 @@ def _confirm_2fa_activation(
             modulo="AUTH",
             accion="2FA_SETUP_FALLIDO",
             descripcion=f"Código TOTP inválido en {audit_action}",
-            ip_origen=request.client.host if request.client else None,
+            ip_origen=_client_ip(request),
         )
         raise HTTPException(
             status_code=400,
@@ -339,7 +356,7 @@ def _confirm_2fa_activation(
         modulo="AUTH",
         accion=audit_action,
         descripcion=f"{len(codes)} backup codes emitidos",
-        ip_origen=request.client.host if request.client else None,
+        ip_origen=_client_ip(request),
     )
 
     return codes
@@ -359,7 +376,7 @@ def login(body: LoginInput, request: Request, session: SessionDep) -> Any:
             modulo="AUTH",
             accion="LOGIN_FALLIDO",
             descripcion=f"Correo no registrado: {body.correo}",
-            ip_origen=request.client.host if request.client else None,
+            ip_origen=_client_ip(request),
         )
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
 
@@ -371,7 +388,7 @@ def login(body: LoginInput, request: Request, session: SessionDep) -> Any:
             modulo="AUTH",
             accion="LOGIN_FALLIDO",
             descripcion="Intento de acceso con cuenta bloqueada",
-            ip_origen=request.client.host if request.client else None,
+            ip_origen=_client_ip(request),
         )
         raise HTTPException(
             status_code=403,
@@ -394,7 +411,7 @@ def login(body: LoginInput, request: Request, session: SessionDep) -> Any:
                 modulo="AUTH",
                 accion="CUENTA_BLOQUEADA",
                 descripcion=f"Cuenta bloqueada tras {MAX_INTENTOS} intentos fallidos",
-                ip_origen=request.client.host if request.client else None,
+                ip_origen=_client_ip(request),
             )
             raise HTTPException(
                 status_code=403,
@@ -409,7 +426,7 @@ def login(body: LoginInput, request: Request, session: SessionDep) -> Any:
             modulo="AUTH",
             accion="LOGIN_FALLIDO",
             descripcion=f"Intento #{user.intentos_fallidos} fallido",
-            ip_origen=request.client.host if request.client else None,
+            ip_origen=_client_ip(request),
         )
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
 
@@ -420,7 +437,7 @@ def login(body: LoginInput, request: Request, session: SessionDep) -> Any:
             modulo="AUTH",
             accion="LOGIN_FALLIDO",
             descripcion="Usuario inactivo",
-            ip_origen=request.client.host if request.client else None,
+            ip_origen=_client_ip(request),
         )
         raise HTTPException(status_code=403, detail="Usuario inactivo")
 
@@ -433,23 +450,20 @@ def login(body: LoginInput, request: Request, session: SessionDep) -> Any:
     session.commit()
 
     # Determinar rama 2FA
-    user_role = user.role if isinstance(user.role, UserRole) else UserRole(user.role)
+    user_role = _resolve_role(user.role)
     twofa = _get_twofa_for_user(session, user.id)
     twofa_enabled = twofa is not None and twofa.is_enabled
     role_requires_2fa = _requires_2fa_for_role(user_role)
 
     # Rama 1: 2FA no aplica
     if not twofa_enabled and not role_requires_2fa:
-        token = security.create_access_token(
-            user.id,
-            expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
-        )
+        token = _create_user_token(user.id)
         registrar_auditoria(
             session=session,
             usuario_id=user.id,
             modulo="AUTH",
             accion="LOGIN_EXITOSO",
-            ip_origen=request.client.host if request.client else None,
+            ip_origen=_client_ip(request),
         )
         return LoginResponse(
             access_token=token,
@@ -467,7 +481,7 @@ def login(body: LoginInput, request: Request, session: SessionDep) -> Any:
             modulo="AUTH",
             accion="LOGIN_EXITOSO_PENDIENTE_2FA",
             descripcion="Login requiere verificación 2FA",
-            ip_origen=request.client.host if request.client else None,
+            ip_origen=_client_ip(request),
         )
         return LoginResponse(
             requires_2fa="verify",
@@ -484,7 +498,7 @@ def login(body: LoginInput, request: Request, session: SessionDep) -> Any:
         modulo="AUTH",
         accion="LOGIN_REQUIERE_2FA_SETUP",
         descripcion=f"Rol {user_role.value} requiere configurar 2FA",
-        ip_origen=request.client.host if request.client else None,
+        ip_origen=_client_ip(request),
     )
     return LoginResponse(
         requires_2fa="setup",
@@ -506,7 +520,7 @@ def logout(
         usuario_id=current_user.id,
         modulo="AUTH",
         accion="LOGOUT",
-        ip_origen=request.client.host if request.client else None,
+        ip_origen=_client_ip(request),
     )
     return Message(message="Sesión cerrada")
 
@@ -519,16 +533,13 @@ def extend_session(
     current_user: CurrentUser, request: Request, session: SessionDep
 ) -> Token:
     """Reemite el access token del usuario actual con una nueva expiración."""
-    token = security.create_access_token(
-        current_user.id,
-        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
-    )
+    token = _create_user_token(current_user.id)
     registrar_auditoria(
         session=session,
         usuario_id=current_user.id,
         modulo="AUTH",
         accion="SESION_EXTENDIDA",
-        ip_origen=request.client.host if request.client else None,
+        ip_origen=_client_ip(request),
     )
     return Token(access_token=token)
 
@@ -570,11 +581,8 @@ def twofa_setup_confirm(
     # El usuario demostró posesión del secret TOTP al verificar el código.
     # Emitimos el JWT final directamente para que la UI no necesite un
     # paso extra.
-    token = security.create_access_token(
-        user.id,
-        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
-    )
-    user_role = user.role if isinstance(user.role, UserRole) else UserRole(user.role)
+    token = _create_user_token(user.id)
+    user_role = _resolve_role(user.role)
     return TwoFactorSetupConfirmResponse(
         access_token=token,
         rol=user_role.value,
@@ -633,7 +641,7 @@ def twofa_verify(
                 usuario_id=user.id,
                 modulo="AUTH",
                 accion=accion,
-                ip_origen=request.client.host if request.client else None,
+                ip_origen=_client_ip(request),
             )
             detail = (
                 "Código TOTP ya utilizado o fuera de la ventana."
@@ -666,7 +674,7 @@ def twofa_verify(
                 modulo="AUTH",
                 accion="2FA_VERIFY_FALLIDO",
                 descripcion="Backup code inválido",
-                ip_origen=request.client.host if request.client else None,
+                ip_origen=_client_ip(request),
             )
             raise HTTPException(status_code=401, detail="Código de respaldo inválido.")
 
@@ -700,17 +708,14 @@ def twofa_verify(
     session.commit()
     _reset_rate_limit(str(user.id))
 
-    token = security.create_access_token(
-        user.id,
-        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
-    )
-    user_role = user.role if isinstance(user.role, UserRole) else UserRole(user.role)
+    token = _create_user_token(user.id)
+    user_role = _resolve_role(user.role)
     registrar_auditoria(
         session=session,
         usuario_id=user.id,
         modulo="AUTH",
         accion="2FA_VERIFY_OK",
-        ip_origen=request.client.host if request.client else None,
+        ip_origen=_client_ip(request),
     )
     return TwoFactorVerifyResponse(
         access_token=token,
@@ -727,11 +732,7 @@ def twofa_status(
     current_user: CurrentUser, session: SessionDep
 ) -> Any:
     twofa = _get_twofa_for_user(session, current_user.id)
-    user_role = (
-        current_user.role
-        if isinstance(current_user.role, UserRole)
-        else UserRole(current_user.role)
-    )
+    user_role = _resolve_role(current_user.role)
     enabled = twofa is not None and twofa.is_enabled
     return TwoFactorStatus(
         enabled=enabled,
@@ -744,16 +745,12 @@ def twofa_status(
 
 @router.post("/2fa/disable", response_model=Message)
 def twofa_disable(
-    body: TwoFactorDisableInput,
+    body: TwoFactorPasswordInput,
     request: Request,
     current_user: CurrentUser,
     session: SessionDep,
 ) -> Any:
-    verified, _ = verify_password(body.password, current_user.hashed_password)
-    if not verified:
-        raise HTTPException(
-            status_code=401, detail="Contraseña incorrecta."
-        )
+    _verify_user_password(current_user, body.password)
 
     twofa = _get_twofa_for_user(session, current_user.id)
     if not twofa or not twofa.is_enabled:
@@ -761,11 +758,7 @@ def twofa_disable(
             status_code=400, detail="2FA no está activo."
         )
 
-    user_role = (
-        current_user.role
-        if isinstance(current_user.role, UserRole)
-        else UserRole(current_user.role)
-    )
+    user_role = _resolve_role(current_user.role)
     if _requires_2fa_for_role(user_role):
         raise HTTPException(
             status_code=400,
@@ -783,7 +776,7 @@ def twofa_disable(
         usuario_id=current_user.id,
         modulo="AUTH",
         accion="2FA_DESACTIVADA",
-        ip_origen=request.client.host if request.client else None,
+        ip_origen=_client_ip(request),
     )
     return Message(message="2FA desactivado.")
 
@@ -793,16 +786,12 @@ def twofa_disable(
     response_model=TwoFactorRegenerateResponse,
 )
 def twofa_regenerate_backup_codes(
-    body: TwoFactorRegenerateInput,
+    body: TwoFactorPasswordInput,
     request: Request,
     current_user: CurrentUser,
     session: SessionDep,
 ) -> Any:
-    verified, _ = verify_password(body.password, current_user.hashed_password)
-    if not verified:
-        raise HTTPException(
-            status_code=401, detail="Contraseña incorrecta."
-        )
+    _verify_user_password(current_user, body.password)
 
     twofa = _get_twofa_for_user(session, current_user.id)
     if not twofa or not twofa.is_enabled:
@@ -825,7 +814,7 @@ def twofa_regenerate_backup_codes(
         modulo="AUTH",
         accion="2FA_BACKUP_REGENERADO",
         descripcion=f"{len(codes)} nuevos códigos emitidos",
-        ip_origen=request.client.host if request.client else None,
+        ip_origen=_client_ip(request),
     )
     return TwoFactorRegenerateResponse(backup_codes=codes)
 

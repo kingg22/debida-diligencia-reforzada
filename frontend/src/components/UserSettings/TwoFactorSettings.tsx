@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   CheckCircle2,
-  Copy,
   KeyRound,
   Loader2,
   RefreshCw,
@@ -26,6 +25,10 @@ import useCustomToast from "@/hooks/useCustomToast"
 import { cn } from "@/lib/utils"
 import { handleError } from "@/utils"
 import TwoFactorSetupWizard from "./TwoFactorSetupWizard"
+import {
+  BackupCodesGrid,
+  CopyCodesButton,
+} from "./twoFaHelpers"
 
 const TwoFactorSettings = () => {
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -70,16 +73,6 @@ const TwoFactorSettings = () => {
   })
 
   const closeNewCodes = () => setNewCodes(null)
-
-  const copyCodes = async () => {
-    if (!newCodes) return
-    try {
-      await navigator.clipboard.writeText(newCodes.join("\n"))
-      showSuccessToast("Códigos copiados al portapapeles")
-    } catch {
-      showErrorToast("No se pudo copiar")
-    }
-  }
 
   if (isLoading || !data) {
     return (
@@ -252,20 +245,9 @@ const TwoFactorSettings = () => {
               Guárdalos en un lugar seguro. Sólo se muestran una vez.
             </DialogDescription>
           </DialogHeader>
-          {newCodes && (
-            <div className="grid grid-cols-2 gap-2 rounded-lg border p-4 font-mono text-sm">
-              {newCodes.map((code) => (
-                <div key={code} className="text-center">
-                  {code}
-                </div>
-              ))}
-            </div>
-          )}
+          {newCodes && <BackupCodesGrid codes={newCodes} />}
           <DialogFooter>
-            <Button variant="outline" onClick={copyCodes}>
-              <Copy size={14} />
-              Copiar
-            </Button>
+            {newCodes && <CopyCodesButton codes={newCodes} />}
             <Button onClick={closeNewCodes}>
               <CheckCircle2 size={14} />
               Ya los guardé
