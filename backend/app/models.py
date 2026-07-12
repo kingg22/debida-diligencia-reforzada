@@ -388,7 +388,7 @@ class PersonaNaturalPublic(PersonaNaturalBase):
 class PersonaJuridicaBase(SQLModel):
     razon_social: str = Field(max_length=200)
     ruc: str = Field(max_length=50)
-    tipo_sociedad: str = Field(max_length=30)
+    tipo_sociedad: str = Field(max_length=40)
     fecha_constitucion: str = Field(max_length=20)
     pais_constitucion: str = Field(max_length=80)
     numero_registro_mercantil: str = Field(max_length=80)
