@@ -23,6 +23,7 @@ import {
 import useCustomToast from "@/hooks/useCustomToast"
 import { cn } from "@/lib/utils"
 import { handleError } from "@/utils"
+import { BackupCodesGrid, copyToClipboardCodes } from "./twoFaHelpers"
 
 const codeSchema = z.object({
   code: z
@@ -126,14 +127,8 @@ export default function TwoFactorSetupWizard({
     }
   }
 
-  const copyCodes = async () => {
-    try {
-      await navigator.clipboard.writeText(backupCodes.join("\n"))
-      showSuccessToast("Códigos copiados al portapapeles")
-    } catch {
-      showErrorToast("No se pudo copiar")
-    }
-  }
+  const copyCodes = () =>
+    copyToClipboardCodes(backupCodes, showSuccessToast, showErrorToast)
 
   const finish = () => {
     if (!savedCodes) return
@@ -354,13 +349,10 @@ export default function TwoFactorSetupWizard({
               sesión.
             </div>
 
-            <div className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-muted/30 p-4 font-mono text-sm">
-              {backupCodes.map((code) => (
-                <div key={code} className="text-center text-foreground">
-                  {code}
-                </div>
-              ))}
-            </div>
+            <BackupCodesGrid
+              codes={backupCodes}
+              className="border-border bg-muted/30"
+            />
 
             <label className="flex cursor-pointer items-start gap-2.5">
               <input
