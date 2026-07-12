@@ -224,6 +224,127 @@ def _requires_2fa_for_role(role: UserRole) -> bool:
     return role in REQUIRES_2FA_ROLES
 
 
+def _prepare_2fa_secret(
+    session: SessionDep, user: User, request: Request, audit_action: str
+) -> TwoFactorSetupStartResponse:
+    """Genera secret TOTP y crea/actualiza la fila TwoFactorAuth.
+
+    Compartido por ``/2fa/setup/start`` y ``/2fa/activate/start``.
+    """
+    twofa = _get_twofa_for_user(session, user.id)
+    if twofa and twofa.is_enabled:
+        raise HTTPException(
+            status_code=400,
+            detail="2FA ya está activo. Desactívelo desde Settings para reconfigurar.",
+        )
+
+    secret = generate_secret()
+    encrypted = encrypt_secret(secret)
+    now = datetime.now(timezone.utc)
+
+    if twofa:
+        twofa.encrypted_secret = encrypted
+        twofa.is_enabled = False
+        twofa.backup_codes_hashed = None
+        twofa.backup_codes_remaining = settings.TWO_FA_BACKUP_CODES_COUNT
+        twofa.last_used_counter = 0
+        twofa.disabled_at = None
+        twofa.updated_at = now
+    else:
+        twofa = TwoFactorAuth(
+            user_id=user.id,
+            encrypted_secret=encrypted,
+            is_enabled=False,
+            backup_codes_remaining=settings.TWO_FA_BACKUP_CODES_COUNT,
+            last_used_counter=0,
+        )
+        session.add(twofa)
+    session.commit()
+
+    registrar_auditoria(
+        session=session,
+        usuario_id=user.id,
+        modulo="AUTH",
+        accion=audit_action,
+        ip_origen=request.client.host if request.client else None,
+    )
+
+    uri = provisioning_uri(user.email, secret)
+    return TwoFactorSetupStartResponse(
+        secret_base32=secret,
+        otpauth_url=uri,
+        qr_png_base64=qr_png_b64(uri),
+    )
+
+
+def _confirm_2fa_activation(
+    session: SessionDep,
+    user: User,
+    code: str,
+    request: Request,
+    audit_action: str,
+) -> list[str]:
+    """Verifica TOTP, activa 2FA y genera backup codes.
+
+    Compartido por ``/2fa/setup/confirm`` y ``/2fa/activate/confirm``.
+    Devuelve la lista de backup codes generados.
+    """
+    twofa = _get_twofa_for_user(session, user.id)
+    if not twofa:
+        raise HTTPException(
+            status_code=400,
+            detail="Inicie el setup primero.",
+        )
+    if twofa.is_enabled:
+        raise HTTPException(
+            status_code=400,
+            detail="2FA ya está activo.",
+        )
+
+    secret = decrypt_secret(twofa.encrypted_secret)
+    result: TotpVerifyResult = verify_totp(
+        secret, code, last_counter=0, window=settings.TWO_FA_WINDOW
+    )
+    if not result.valid:
+        registrar_auditoria(
+            session=session,
+            usuario_id=user.id,
+            modulo="AUTH",
+            accion="2FA_SETUP_FALLIDO",
+            descripcion=f"Código TOTP inválido en {audit_action}",
+            ip_origen=request.client.host if request.client else None,
+        )
+        raise HTTPException(
+            status_code=400,
+            detail="Código TOTP inválido. Verifique la hora del dispositivo.",
+        )
+
+    codes = generate_backup_codes()
+    hashes = hash_backup_codes(codes)
+    now = datetime.now(timezone.utc)
+
+    twofa.is_enabled = True
+    twofa.confirmed_at = now
+    twofa.disabled_at = None
+    twofa.backup_codes_hashed = json.dumps(hashes)
+    twofa.backup_codes_remaining = len(codes)
+    twofa.last_used_counter = result.counter or 0
+    twofa.updated_at = now
+    session.add(twofa)
+    session.commit()
+
+    registrar_auditoria(
+        session=session,
+        usuario_id=user.id,
+        modulo="AUTH",
+        accion=audit_action,
+        descripcion=f"{len(codes)} backup codes emitidos",
+        ip_origen=request.client.host if request.client else None,
+    )
+
+    return codes
+
+
 # ── POST /auth/login ───────────────────────────────────────────────────────
 
 
@@ -428,53 +549,7 @@ def twofa_setup_start(
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="Usuario inválido")
 
-    # Idempotente: si ya hay una fila (incluso disabled) la reutilizamos
-    # para que un setup a medias pueda continuarse; si está habilitado
-    # pedimos que primero lo desactive.
-    twofa = _get_twofa_for_user(session, user.id)
-    if twofa and twofa.is_enabled:
-        raise HTTPException(
-            status_code=400,
-            detail="2FA ya está activo. Desactívelo desde Settings para reconfigurar.",
-        )
-
-    secret = generate_secret()
-    encrypted = encrypt_secret(secret)
-    now = datetime.now(timezone.utc)
-
-    if twofa:
-        twofa.encrypted_secret = encrypted
-        twofa.is_enabled = False
-        twofa.backup_codes_hashed = None
-        twofa.backup_codes_remaining = settings.TWO_FA_BACKUP_CODES_COUNT
-        twofa.last_used_counter = 0
-        twofa.disabled_at = None
-        twofa.updated_at = now
-    else:
-        twofa = TwoFactorAuth(
-            user_id=user.id,
-            encrypted_secret=encrypted,
-            is_enabled=False,
-            backup_codes_remaining=settings.TWO_FA_BACKUP_CODES_COUNT,
-            last_used_counter=0,
-        )
-        session.add(twofa)
-    session.commit()
-
-    registrar_auditoria(
-        session=session,
-        usuario_id=user.id,
-        modulo="AUTH",
-        accion="2FA_SETUP_START",
-        ip_origen=request.client.host if request.client else None,
-    )
-
-    uri = provisioning_uri(user.email, secret)
-    return TwoFactorSetupStartResponse(
-        secret_base32=secret,
-        otpauth_url=uri,
-        qr_png_base64=qr_png_b64(uri),
-    )
+    return _prepare_2fa_secret(session, user, request, "2FA_SETUP_START")
 
 
 @router.post(
@@ -490,60 +565,7 @@ def twofa_setup_confirm(
     if not user or not user.is_active:
         raise HTTPException(status_code=401, detail="Usuario inválido")
 
-    twofa = _get_twofa_for_user(session, user.id)
-    if not twofa:
-        raise HTTPException(
-            status_code=400,
-            detail="Inicie el setup primero con /auth/2fa/setup/start.",
-        )
-    if twofa.is_enabled:
-        raise HTTPException(
-            status_code=400,
-            detail="2FA ya está activo. Use /auth/2fa/verify para iniciar sesión.",
-        )
-
-    # Verificar el código TOTP contra el secret (sin anti-replay porque
-    # aún no está confirmado).
-    secret = decrypt_secret(twofa.encrypted_secret)
-    result: TotpVerifyResult = verify_totp(
-        secret, body.code, last_counter=0, window=settings.TWO_FA_WINDOW
-    )
-    if not result.valid:
-        registrar_auditoria(
-            session=session,
-            usuario_id=user.id,
-            modulo="AUTH",
-            accion="2FA_SETUP_FALLIDO",
-            descripcion="Código TOTP inválido en setup_confirm",
-            ip_origen=request.client.host if request.client else None,
-        )
-        raise HTTPException(
-            status_code=400, detail="Código TOTP inválido. Verifique la hora del dispositivo."
-        )
-
-    # Generar backup codes
-    codes = generate_backup_codes()
-    hashes = hash_backup_codes(codes)
-    now = datetime.now(timezone.utc)
-
-    twofa.is_enabled = True
-    twofa.confirmed_at = now
-    twofa.disabled_at = None
-    twofa.backup_codes_hashed = json.dumps(hashes)
-    twofa.backup_codes_remaining = len(codes)
-    twofa.last_used_counter = result.counter or 0
-    twofa.updated_at = now
-    session.add(twofa)
-    session.commit()
-
-    registrar_auditoria(
-        session=session,
-        usuario_id=user.id,
-        modulo="AUTH",
-        accion="2FA_ACTIVADA",
-        descripcion=f"{len(codes)} backup codes emitidos",
-        ip_origen=request.client.host if request.client else None,
-    )
+    codes = _confirm_2fa_activation(session, user, body.code, request, "2FA_SETUP_CONFIRM")
 
     # El usuario demostró posesión del secret TOTP al verificar el código.
     # Emitimos el JWT final directamente para que la UI no necesite un
@@ -820,51 +842,7 @@ def twofa_activate_start(
     session: SessionDep,
 ) -> Any:
     """Inicio de setup 2FA para usuario ya autenticado (desde Settings)."""
-    user = current_user
-    twofa = _get_twofa_for_user(session, user.id)
-    if twofa and twofa.is_enabled:
-        raise HTTPException(
-            status_code=400,
-            detail="2FA ya está activo. Desactívelo desde Settings para reconfigurar.",
-        )
-
-    secret = generate_secret()
-    encrypted = encrypt_secret(secret)
-    now = datetime.now(timezone.utc)
-
-    if twofa:
-        twofa.encrypted_secret = encrypted
-        twofa.is_enabled = False
-        twofa.backup_codes_hashed = None
-        twofa.backup_codes_remaining = settings.TWO_FA_BACKUP_CODES_COUNT
-        twofa.last_used_counter = 0
-        twofa.disabled_at = None
-        twofa.updated_at = now
-    else:
-        twofa = TwoFactorAuth(
-            user_id=user.id,
-            encrypted_secret=encrypted,
-            is_enabled=False,
-            backup_codes_remaining=settings.TWO_FA_BACKUP_CODES_COUNT,
-            last_used_counter=0,
-        )
-        session.add(twofa)
-    session.commit()
-
-    registrar_auditoria(
-        session=session,
-        usuario_id=user.id,
-        modulo="AUTH",
-        accion="2FA_ACTIVATE_START",
-        ip_origen=request.client.host if request.client else None,
-    )
-
-    uri = provisioning_uri(user.email, secret)
-    return TwoFactorSetupStartResponse(
-        secret_base32=secret,
-        otpauth_url=uri,
-        qr_png_base64=qr_png_b64(uri),
-    )
+    return _prepare_2fa_secret(session, current_user, request, "2FA_ACTIVATE_START")
 
 
 @router.post(
@@ -877,58 +855,7 @@ def twofa_activate_confirm(
     session: SessionDep,
 ) -> Any:
     """Confirmación de setup 2FA para usuario ya autenticado (desde Settings)."""
-    user = current_user
-    twofa = _get_twofa_for_user(session, user.id)
-    if not twofa:
-        raise HTTPException(
-            status_code=400,
-            detail="Inicie la activación primero con /auth/2fa/activate/start.",
-        )
-    if twofa.is_enabled:
-        raise HTTPException(
-            status_code=400,
-            detail="2FA ya está activo.",
-        )
-
-    secret = decrypt_secret(twofa.encrypted_secret)
-    result: TotpVerifyResult = verify_totp(
-        secret, body.code, last_counter=0, window=settings.TWO_FA_WINDOW
+    codes = _confirm_2fa_activation(
+        session, current_user, body.code, request, "2FA_ACTIVATED"
     )
-    if not result.valid:
-        registrar_auditoria(
-            session=session,
-            usuario_id=user.id,
-            modulo="AUTH",
-            accion="2FA_ACTIVATE_FALLIDO",
-            descripcion="Código TOTP inválido en activate_confirm",
-            ip_origen=request.client.host if request.client else None,
-        )
-        raise HTTPException(
-            status_code=400,
-            detail="Código TOTP inválido. Verifique la hora del dispositivo.",
-        )
-
-    codes = generate_backup_codes()
-    hashes = hash_backup_codes(codes)
-    now = datetime.now(timezone.utc)
-
-    twofa.is_enabled = True
-    twofa.confirmed_at = now
-    twofa.disabled_at = None
-    twofa.backup_codes_hashed = json.dumps(hashes)
-    twofa.backup_codes_remaining = len(codes)
-    twofa.last_used_counter = result.counter or 0
-    twofa.updated_at = now
-    session.add(twofa)
-    session.commit()
-
-    registrar_auditoria(
-        session=session,
-        usuario_id=user.id,
-        modulo="AUTH",
-        accion="2FA_ACTIVATED",
-        descripcion=f"{len(codes)} backup codes emitidos",
-        ip_origen=request.client.host if request.client else None,
-    )
-
     return TwoFactorActivateConfirmResponse(backup_codes=codes)
