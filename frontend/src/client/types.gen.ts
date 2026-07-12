@@ -483,6 +483,14 @@ export type TwoFactorStatus = {
     disabled_at?: (string | null);
 };
 
+export type TwoFactorActivateConfirmInput = {
+    code: string;
+};
+
+export type TwoFactorActivateConfirmResponse = {
+    backup_codes: Array<(string)>;
+};
+
 export type TwoFactorVerifyInput = {
     temp_token: string;
     code: string;
@@ -588,6 +596,14 @@ export type AuthTwofaSetupConfirmData = {
 };
 
 export type AuthTwofaSetupConfirmResponse = (TwoFactorSetupConfirmResponse);
+
+export type AuthTwofaActivateStartResponse = (TwoFactorSetupStartResponse);
+
+export type AuthTwofaActivateConfirmData = {
+    requestBody: TwoFactorActivateConfirmInput;
+};
+
+export type AuthTwofaActivateConfirmResponse = (TwoFactorActivateConfirmResponse);
 
 export type AuthTwofaVerifyData = {
     requestBody: TwoFactorVerifyInput;
