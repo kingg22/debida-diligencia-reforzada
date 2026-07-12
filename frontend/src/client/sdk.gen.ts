@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { AuditoriaReadAuditoriaData, AuditoriaReadAuditoriaResponse, AuthLoginData, AuthLoginResponse, AuthLogoutResponse, AuthExtendSessionResponse, AuthTwofaSetupStartData, AuthTwofaSetupStartResponse, AuthTwofaSetupConfirmData, AuthTwofaSetupConfirmResponse, AuthTwofaVerifyData, AuthTwofaVerifyResponse, AuthTwofaStatusResponse, AuthTwofaDisableData, AuthTwofaDisableResponse, AuthTwofaRegenerateBackupCodesData, AuthTwofaRegenerateBackupCodesResponse, CasosDdrReadCasosDdrData, CasosDdrReadCasosDdrResponse, CasosDdrEstadisticasCasosDdrResponse, CasosDdrReadCasoDdrData, CasosDdrReadCasoDdrResponse, CasosDdrReadExpedienteDelCasoData, CasosDdrReadExpedienteDelCasoResponse, CasosDdrAsignarAnalistaData, CasosDdrAsignarAnalistaResponse, CasosDdrEnviarAprobacionData, CasosDdrEnviarAprobacionResponse, CasosDdrValidarCasoData, CasosDdrValidarCasoResponse, CasosDdrDevolverCasoData, CasosDdrDevolverCasoResponse, CasosDdrReabrirCasoData, CasosDdrReabrirCasoResponse, CasosDdrDevolverAOficialData, CasosDdrDevolverAOficialResponse, CasosDdrAprobarCasoData, CasosDdrAprobarCasoResponse, CasosDdrRechazarCasoData, CasosDdrRechazarCasoResponse, CasosDdrGetCuestionarioData, CasosDdrGetCuestionarioResponse, CasosDdrUpdateCuestionarioData, CasosDdrUpdateCuestionarioResponse, CasosDdrUploadDocumentoDdrData, CasosDdrUploadDocumentoDdrResponse, CasosDdrListDocumentosDdrData, CasosDdrListDocumentosDdrResponse, ClientesCreateClienteData, ClientesCreateClienteResponse, ClientesReadClientesData, ClientesReadClientesResponse, ClientesEstadisticasClientesResponse, ClientesReadClienteData, ClientesReadClienteResponse, ClientesUpdateClienteData, ClientesUpdateClienteResponse, ClientesUploadDocumentoData, ClientesUploadDocumentoResponse, ClientesDeleteDocumentoData, ClientesDeleteDocumentoResponse, ClientesDescargarDocumentoData, ClientesDescargarDocumentoResponse, ClientesEvaluarRiesgoData, ClientesEvaluarRiesgoResponse, ClientesVerificarListasData, ClientesVerificarListasResponse, ClientesListarScreeningData, ClientesListarScreeningResponse, ClientesMarcarFalsoPositivoData, ClientesMarcarFalsoPositivoResponse, ClientesFactoresRiesgoData, ClientesFactoresRiesgoResponse, ClientesOverrideRiesgoData, ClientesOverrideRiesgoResponse, DashboardGetDashboardResponse, ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, ParametrosListarParametrosResponse, ParametrosActualizarParametroData, ParametrosActualizarParametroResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { AuditoriaReadAuditoriaData, AuditoriaReadAuditoriaResponse, AuthLoginData, AuthLoginResponse, AuthLogoutResponse, AuthExtendSessionResponse, AuthTwofaSetupStartData, AuthTwofaSetupStartResponse, AuthTwofaSetupConfirmData, AuthTwofaSetupConfirmResponse, AuthTwofaActivateStartResponse, AuthTwofaActivateConfirmData, AuthTwofaActivateConfirmResponse, AuthTwofaVerifyData, AuthTwofaVerifyResponse, AuthTwofaStatusResponse, AuthTwofaDisableData, AuthTwofaDisableResponse, AuthTwofaRegenerateBackupCodesData, AuthTwofaRegenerateBackupCodesResponse, CasosDdrReadCasosDdrData, CasosDdrReadCasosDdrResponse, CasosDdrEstadisticasCasosDdrResponse, CasosDdrReadCasoDdrData, CasosDdrReadCasoDdrResponse, CasosDdrReadExpedienteDelCasoData, CasosDdrReadExpedienteDelCasoResponse, CasosDdrAsignarAnalistaData, CasosDdrAsignarAnalistaResponse, CasosDdrEnviarAprobacionData, CasosDdrEnviarAprobacionResponse, CasosDdrValidarCasoData, CasosDdrValidarCasoResponse, CasosDdrDevolverCasoData, CasosDdrDevolverCasoResponse, CasosDdrReabrirCasoData, CasosDdrReabrirCasoResponse, CasosDdrDevolverAOficialData, CasosDdrDevolverAOficialResponse, CasosDdrAprobarCasoData, CasosDdrAprobarCasoResponse, CasosDdrRechazarCasoData, CasosDdrRechazarCasoResponse, CasosDdrGetCuestionarioData, CasosDdrGetCuestionarioResponse, CasosDdrUpdateCuestionarioData, CasosDdrUpdateCuestionarioResponse, CasosDdrUploadDocumentoDdrData, CasosDdrUploadDocumentoDdrResponse, CasosDdrListDocumentosDdrData, CasosDdrListDocumentosDdrResponse, ClientesCreateClienteData, ClientesCreateClienteResponse, ClientesReadClientesData, ClientesReadClientesResponse, ClientesEstadisticasClientesResponse, ClientesReadClienteData, ClientesReadClienteResponse, ClientesUpdateClienteData, ClientesUpdateClienteResponse, ClientesUploadDocumentoData, ClientesUploadDocumentoResponse, ClientesDeleteDocumentoData, ClientesDeleteDocumentoResponse, ClientesDescargarDocumentoData, ClientesDescargarDocumentoResponse, ClientesEvaluarRiesgoData, ClientesEvaluarRiesgoResponse, ClientesVerificarListasData, ClientesVerificarListasResponse, ClientesListarScreeningData, ClientesListarScreeningResponse, ClientesMarcarFalsoPositivoData, ClientesMarcarFalsoPositivoResponse, ClientesFactoresRiesgoData, ClientesFactoresRiesgoResponse, ClientesOverrideRiesgoData, ClientesOverrideRiesgoResponse, DashboardGetDashboardResponse, ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, ParametrosListarParametrosResponse, ParametrosActualizarParametroData, ParametrosActualizarParametroResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class AuditoriaService {
     /**
@@ -112,6 +112,37 @@ export class AuthService {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/auth/2fa/setup/confirm',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Twofa Activate Start (autenticado)
+     * @returns TwoFactorSetupStartResponse Successful Response
+     * @throws ApiError
+     */
+    public static twofaActivateStart(): CancelablePromise<AuthTwofaActivateStartResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/auth/2fa/activate/start'
+        });
+    }
+    
+    /**
+     * Twofa Activate Confirm (autenticado)
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns TwoFactorActivateConfirmResponse Successful Response
+     * @throws ApiError
+     */
+    public static twofaActivateConfirm(data: AuthTwofaActivateConfirmData): CancelablePromise<AuthTwofaActivateConfirmResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/auth/2fa/activate/confirm',
             body: data.requestBody,
             mediaType: 'application/json',
             errors: {

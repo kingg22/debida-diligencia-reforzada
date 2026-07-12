@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
+import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router"
 import { Clock, KeyRound, LogOut, X } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -108,6 +108,7 @@ function Layout() {
 function TwoFactorBanner() {
   const { user } = useAuth()
   const [dismissed, setDismissed] = useState(false)
+  const navigate = useNavigate()
 
   const showBanner = roleRequires2FA(user?.role)
 
@@ -142,8 +143,16 @@ function TwoFactorBanner() {
         Tu rol requiere autenticación de dos factores. Configúrala para acceder
         a todas las funciones del sistema.
       </p>
-      <Button asChild size="sm" variant="outline" className="h-7">
-        <a href="/two-factor/setup">Configurar ahora</a>
+      <Button
+        size="sm"
+        variant="outline"
+        className="h-7"
+        onClick={() => {
+          sessionStorage.setItem("settings_initial_tab", "two-factor")
+          navigate({ to: "/settings" })
+        }}
+      >
+        Configurar ahora
       </Button>
       <button
         type="button"

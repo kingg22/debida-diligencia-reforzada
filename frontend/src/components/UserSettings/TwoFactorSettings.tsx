@@ -25,6 +25,7 @@ import { PasswordInput } from "@/components/ui/password-input"
 import useCustomToast from "@/hooks/useCustomToast"
 import { cn } from "@/lib/utils"
 import { handleError } from "@/utils"
+import TwoFactorSetupWizard from "./TwoFactorSetupWizard"
 
 const TwoFactorSettings = () => {
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -37,6 +38,7 @@ const TwoFactorSettings = () => {
 
   const [disableOpen, setDisableOpen] = useState(false)
   const [regenOpen, setRegenOpen] = useState(false)
+  const [setupOpen, setSetupOpen] = useState(false)
   const [password, setPassword] = useState("")
   const [newCodes, setNewCodes] = useState<string[] | null>(null)
 
@@ -165,11 +167,13 @@ const TwoFactorSettings = () => {
           </>
         )}
         {!data.enabled && (
-          <Button asChild size="sm" disabled={data.required_by_role}>
-            <a href="/two-factor/setup">
-              <KeyRound size={14} />
-              Activar 2FA
-            </a>
+          <Button
+            size="sm"
+            disabled={data.required_by_role}
+            onClick={() => setSetupOpen(true)}
+          >
+            <KeyRound size={14} />
+            Activar 2FA
           </Button>
         )}
       </div>
@@ -269,6 +273,13 @@ const TwoFactorSettings = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* ── Wizard: activar 2FA (autenticado) ─────────── */}
+      <TwoFactorSetupWizard
+        open={setupOpen}
+        onOpenChange={setSetupOpen}
+        onCompleted={invalidate}
+      />
     </div>
   )
 }

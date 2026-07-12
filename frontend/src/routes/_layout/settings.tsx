@@ -35,6 +35,24 @@ function UserSettings() {
     return null
   }
 
+  // Allow selecting an initial tab via ?tab=<value> or sessionStorage handoff.
+  const params =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : new URLSearchParams()
+  const fromQuery = params.get("tab")
+  const fromSession =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem("settings_initial_tab")
+      : null
+  const requestedTab = fromQuery ?? fromSession ?? "my-profile"
+  const initialTab = finalTabs.some((t) => t.value === requestedTab)
+    ? requestedTab
+    : "my-profile"
+  if (typeof window !== "undefined" && fromSession) {
+    sessionStorage.removeItem("settings_initial_tab")
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -44,7 +62,7 @@ function UserSettings() {
         </p>
       </div>
 
-      <Tabs defaultValue="my-profile">
+      <Tabs defaultValue={initialTab}>
         <TabsList>
           {finalTabs.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
